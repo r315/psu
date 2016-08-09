@@ -1,29 +1,68 @@
 
 #include <timers.c>
 
-unsigned int _miliseconds, _seconds;
-char _secondsChange;
-
+#define CONST_1S 123
+unsigned int _seconds;
+char _secondsChange, _ticks;
+//--------------------------------------------
+//
+//--------------------------------------------
+void rtcInit(void){
+	OPTION &= 0xC0;
+	OPTION |=
+     (0<<5)  // CLK = CLKOUT (T0CS)
+    |(1<<4)  // increment timer on rising edge (T0SE)
+    |(0<<3)  // PSA Assign prescaler to timer0
+    |(1<<2)  // PS2 1:256
+    |(1<<2)  // PS1
+    |(1<<0); // PS0   	
+    PEIE = 1;	
+	GIE = 1;
+}
 //--------------------------------------------
 //
 //--------------------------------------------
 void startCounting(void)
 {
-	stopTimer1;
-	_miliseconds = 1000;
+	_ticks = CONST_1S;
 	_seconds = 0;
-	_secondsChange = 0;
-	setTimer1(1000);  // Interrupt every 1ms
-	startTimer1;
+	TMR0IE = 1;   
 }
 //--------------------------------------------
 //
 //--------------------------------------------
 void stopCounting(void)
 {
-	stopTimer1;
+	TMR0IE = 0; 
 }
 //--------------------------------------------
+//
+//--------------------------------------------
+void getDigits(char *dst, char t){
+	if(t < 10){
+		dst[0] = '0';
+		intToString(&dst[1],t,10);
+	}
+	else
+		intToString(&dst[0],t,10);
+}
+//--------------------------------------------
+//
+//--------------------------------------------
+void getTime(char *dst){
+char aux;
+unsigned int tmp;
+	aux = _seconds/3600;
+	getDigits(dst,aux);
+	*(dst + 2) = ':';	
+	tmp = _seconds-(aux*3600);	
+	aux = tmp/60;
+	getDigits(dst + 3,aux);
+	*(dst + 5) = ':';	
+	getDigits(dst + 6,_seconds%60);
+	*(dst + 8) = '\0';	
+}
+//------------------------------------------*/
 //
 //--------------------------------------------
 int getSeconds(void)
@@ -41,18 +80,19 @@ char hasUpdate(void)
 //--------------------------------------------
 //interrupt every ms, count seconds
 //--------------------------------------------
-void interrupt handler(void)
-{
-	if(CCP1IF)
+void interrupt handler(void){
+	if(TMR0IF )
 	{
-		_miliseconds--;
-		if(!_miliseconds)
+		_ticks--;
+		if(!_ticks)
 		{
 			_seconds++;
-			_miliseconds = 1000;
+			_ticks = CONST_1S;
 			_secondsChange = 1;
-		}
-		CCP1IF = 0;
-		//RC0 = _miliseconds & 1;
+			#ifdef DEBUG
+			DBG_PIN ^= 1;
+			#endif			
+		}		
+		TMR0IF  = 0;
 	}
 }

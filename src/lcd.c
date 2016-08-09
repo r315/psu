@@ -30,7 +30,7 @@ void lcdcmd(char c)
 //-----------------------------------------------
 // 
 //-----------------------------------------------
-void lcddata(char d)
+void lcdData(char d)
 {
 	LCDRS1
 	sout(d);
@@ -90,4 +90,14 @@ unsigned w,h;
 	//
 	//lcdcmd(0xA4);  // all off
 	lcdsetPos(0,0);
+}
+
+void solidFill(char d)
+{
+	unsigned char p,c;
+	for(p = 0; p < LCD_PAGES; p++){
+		lcdsetPos(0,p);
+		for(c=0;c<LCD_W;c++)
+			lcdData(d);
+	}
 }

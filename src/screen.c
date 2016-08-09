@@ -1,6 +1,6 @@
 
-#ifdef WIN32
-    #include "..\emulator\ks0713.h"
+#ifdef _WIN32
+    #include "ks0713.h"
 #else
     #include "lcd.h"	
 #endif
@@ -10,7 +10,9 @@
 
 char _outstr[10], _inv;
 char drawBigDigit(char x, char y, char d);
-#ifdef WIN32
+void intToString(char* dst, unsigned int value, char radix);
+
+#ifdef _WIN32
 char graphdata[GRAPHSIZE],ndata;
 #else
 bank1 char graphdata[GRAPHSIZE],ndata;
@@ -24,8 +26,8 @@ unsigned char y = VOLTAGE_P, x = VOLTAGE_C;
 int dig = v/1000;	
 	x = drawBigDigit(x,y,(dig/10));
 	x = drawBigDigit(x,y,(dig%10));
-	lcddata(0x30);
-	lcddata(0x30);
+	lcdData(0x30);
+	lcdData(0x30);
 	x+=4;
 	dig = v%1000;
 	if(dig>100)
@@ -53,12 +55,12 @@ unsigned int dig, div = 1000;
 void printc(char c)
 {
 	c -= 0x20;
-	lcddata(FONT[c][0]^_inv);
-	lcddata(FONT[c][1]^_inv);
-	lcddata(FONT[c][2]^_inv);
-	lcddata(FONT[c][3]^_inv);
-	lcddata(FONT[c][4]^_inv);
-	lcddata(0^_inv);
+	lcdData(FONT[c][0]^_inv);
+	lcdData(FONT[c][1]^_inv);
+	lcdData(FONT[c][2]^_inv);
+	lcdData(FONT[c][3]^_inv);
+	lcdData(FONT[c][4]^_inv);
+	lcdData(0^_inv);
 }
 //------------------------------------------------------
 //print string with background pattern
@@ -114,14 +116,14 @@ const char *e;
 	// upper half
 	lcdsetPos(x,y);
 	for(i = 0; i< HIT_FONT_W; i++)
-		lcddata(*e++);
-	lcddata(0);
+		lcdData(*e++);
+	lcdData(0);
 
 	// lower half	
 	lcdsetPos(x,y+1);
 	for(i = 0; i<HIT_FONT_W; i++)
-		lcddata(*e++);
-	lcddata(0);
+		lcdData(*e++);
+	lcdData(0);
 return x + HIT_FONT_W + 1;
 }
 //------------------------------------------------------
@@ -148,7 +150,7 @@ unsigned char i;
 	
 	for(i=0; i<7 ;i++){
 		lcdsetPos(GRAPH_C,i);// linha V separadora de frames
-		lcddata(255);
+		lcdData(255);
 	}
 	setFontPatern(NORMAL);				
 }
@@ -168,18 +170,18 @@ unsigned char i;
 	drawFrame();
 	for(i=0; i<4 ;i++){
 		lcdsetPos(LFRAMESIZ,i);// linha V separadora de frames
-		lcddata(255);
+		lcdData(255);
 	}
 	lcdsetPos(LFRAMESIZ,i);
-	lcddata(0x1f);
+	lcdData(0x1f);
 	for(i=LFRAMESIZ+1; i< LCD_W-1 ;i++){// linha H separadora de frames
-		lcddata(0x10);
+		lcdData(0x10);
 	}
 	
 	
 	lcdsetPos(LFRAMESIZ+1,1);  // bitmap SET
 	for(i = 0; i < sizeof(bmSET); i++){
-		lcddata(~bmSET[i]);
+		lcdData(~bmSET[i]);
 	}	
 	
 	setFontPatern(NORMAL);
@@ -211,27 +213,27 @@ unsigned char i,j;
 	{
 		lcdsetPos(0,i);
 		for(j=0;j<LCD_W;j++)
-			lcddata(0x0);
+			lcdData(0x0);
 	}
 	
 	lcdsetPos(0,0);
 	for(i = 0; i<LCD_W;i++) // barra titulo
-		lcddata(INVERTED);	
+		lcdData(INVERTED);	
 	
 	for(i=0;i<LCD_W;i++){
 		lcdsetPos(i,1);		
-		lcddata(0x01);		// linha H por baixo titulo
+		lcdData(0x01);		// linha H por baixo titulo
 		lcdsetPos(i,6);	
-		lcddata(0x80);		// linha H topo menu
+		lcdData(0x80);		// linha H topo menu
 		lcdsetPos(i,7);	
-		lcddata(0x80);		// linha H fundo menu
+		lcdData(0x80);		// linha H fundo menu
 	}
 	
 	for(i=1;i<LCD_H/8;i++){
 		lcdsetPos(0,i);
-		lcddata(0xFF);		// linhas laterais	
+		lcdData(0xFF);		// linhas laterais	
 		lcdsetPos(LCD_W-1,i);
-		lcddata(0xFF);
+		lcdData(0xFF);
 	}	
 	// unidades na janela principal comuns a todos os menus
 	setFontPatern(NORMAL);
@@ -253,14 +255,14 @@ unsigned char i,tmp,pat,offset;
 	for(i = 0; i < GRAPHSIZE; i++,offset++)
 	{
 		lcdsetPos(GRAPH_C+i+1,GRAPH_P);  //limpa o traco antigo
-		lcddata(0x80);
+		lcdData(0x80);
 		lcdsetPos(GRAPH_C+i+1,GRAPH_P-1);// tem de ser limpo nas duas paginas
-		lcddata(0);
+		lcdData(0);
 		tmp = graphdata[offset%GRAPHSIZE];
 		pat = 0x80 >> (tmp&7);
 		if(tmp<8) pat |= 0x80; // para corrigir a sobreposição da linha superior do menu
 		lcdsetPos(GRAPH_C+i+1,GRAPH_P-(tmp>>3));
-		lcddata(pat);
+		lcdData(pat);
 	}		
 }
 void addgraphData(char data){

@@ -47,10 +47,12 @@
 
 #define LCD_W 128
 #define LCD_H 64
+#define LCD_PAGES (LCD_H/8)
 
-#if !defined(LCDRS) || !defined(LCDRST)
-   #error "define LCDRS, LCDRST"
-#endif
+#define LCDSDI RC7
+#define LCDRS  RB5
+#define LCDCLK RB6
+#define LCDRST RB4
 
 #define LCDSDI0 LCDSDI = 0;
 #define LCDSDI1 LCDSDI = 1;
@@ -60,10 +62,13 @@
 #define LCDRS1  LCDRS  = 1;
 #define LCDRST0 LCDRST = 0;
 #define LCDRST1 LCDRST = 1;
+#define lcdUpdate() 
 
 void lcdInit(void);
 void lcdcmd(char c);
-void lcddata(char d);
+void lcdData(char d);
 void lcdsetPos(char x, char y);
 void lcdScroll(char line);
+void solidFill(char d);
+
 #endif

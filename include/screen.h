@@ -50,4 +50,12 @@ void printWattage(unsigned int v, unsigned int a);
 void printString(char c, char p, const char *str);
 void printInt(char c, char p, unsigned int v, char radix);
 char printIntBig(char x, char y, const char *v);
+
+void psFrame(void);
+void loadFrame(void);
+void printc(char c);
+void printInt(char c, char p, unsigned int v, char radix);
+void printDval(char c, char p, unsigned int v);
+void updateGraph(void);
+void addgraphData(char data);
 #endif
