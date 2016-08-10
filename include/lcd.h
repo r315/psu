@@ -49,10 +49,10 @@
 #define LCD_H 64
 #define LCD_PAGES (LCD_H/8)
 
-#define LCDSDI RC7
-#define LCDRS  RB5
-#define LCDCLK RB6
-#define LCDRST RB4
+#define LCDCLK RC3
+#define LCDRS  RC4
+#define LCDSDI RC5
+#define LCDRST RC6
 
 #define LCDSDI0 LCDSDI = 0;
 #define LCDSDI1 LCDSDI = 1;

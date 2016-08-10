@@ -10,4 +10,8 @@
 #define VSET_CH 0
 #define ISET_CH 1
 
+#define VOUT_CH1 0
+#define VOUT_CH2 4
+#define IOUT_CH  2
+
 #endif

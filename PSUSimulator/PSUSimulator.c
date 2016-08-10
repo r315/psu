@@ -6,16 +6,16 @@
 #include "system.h"
 #include "selector.h"
 
-#define TITLE "PIC PSU V2.0.0"
-const string title = { TITLE,sizeof(TITLE),INVERTED,(LCD_W/2)-(sizeof(TITLE)*(FONT_W/2)),0 };
+#define TITLE "PIC PSU V2.0"
+string title = { TITLE,sizeof(TITLE),INVERTED,(LCD_W/2)-(sizeof(TITLE)*(FONT_W/2)),0 };
 
 void powerSupply(void);
 
 struct MenuItem modes[]={
-	{" PSU ",0,powerSupply},		//power Supply
-	{" Pow ",0,powerSupply},		//power curve
-	{" Lod ",0,powerSupply},		//constant load
-	{" Opt ",0,powerSupply}		//
+	{" PSU ",powerSupply},		//power Supply
+	{" Pow ",powerSupply},		//power curve
+	{" Lod ",powerSupply},		//constant load
+	{" Opt ",powerSupply}		//
 };
 
 //------------------------------
@@ -23,15 +23,11 @@ struct MenuItem modes[]={
 //------------------------------
 int main(int argc, char *argv[])
 {
-	lcdInit();
+	systemInit();
 	drawFrame(&title);
 	lcdUpdate();
-	while (!done())
-	{		
-		//if (keyDown(M_KEY)){
-			changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->run();			
-			lcdUpdate();
-		//}		
+	while (!done()){		
+		  ((void(*)(void))(changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->data))();
 	}
 	SDL_Quit();
 	exit(0);

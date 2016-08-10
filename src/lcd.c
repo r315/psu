@@ -10,9 +10,8 @@
 
 #include <htc.h>
 #include <stdarg.h>
+#include "system.h"
 #include "lcd.h"
-
-void DelayMs(unsigned char cnt);
 
 void sout(char bits) 
 {
@@ -61,7 +60,7 @@ unsigned w,h;
 
 	LCDRST0	
     lcdcmd(0xFF);
-	DelayMs(250);
+	delayMs(250);
 	LCDRST1
 
 	lcdcmd(0xA0);  // ADC select
@@ -69,9 +68,9 @@ unsigned w,h;
 	lcdcmd(0xA3);  // select bias	
 	
 	lcdcmd(0x2C);  // voltage converter on
-	DelayMs(2);
+	delayMs(2);
 	lcdcmd(0x2E);  // voltage regulator on
-	DelayMs(2);
+	delayMs(2);
 	lcdcmd(0x2F);  // voltage follower on
 	
 	lcdcmd(0x27);  // regulator resistor

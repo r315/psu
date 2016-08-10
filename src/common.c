@@ -12,7 +12,7 @@ void printChar(char c, char atr){
 }
 
 void printString(string *str){
-	char *p = str->chars;
+	const char *p = str->chars;
 	lcdsetPos(str->col,str->page);
 	while (*p) 
 		printChar(*p++,str->atribute);
@@ -24,6 +24,25 @@ void printText(char c, char p, const char *text){
 		printChar(*text++,NORMAL);
 }
 
+void printInt(uchar c, uchar p, unsigned int value)
+{
+#define radix 10
+ char k, i=0, tmp[8];
+ 
+	do{
+		k = (char)(value % radix);
+		if(k > 9)
+			k += 'A';
+		else
+			k += '0';
+		value /= radix;			
+		tmp[i++] = k;		
+	}while(value != 0);		
+	
+	lcdsetPos(c,p);
+	while(i--)
+		printChar(tmp[i],NORMAL);
+}
 void drawMenu(string *mns){
 #define MENU_PAGE 7	
 	mns->page = MENU_PAGE;
@@ -32,12 +51,22 @@ void drawMenu(string *mns){
 	lcdUpdate();
 }
 
-void clrMenu(){
+void clrMenu(void){
 uchar i;
 	lcdsetPos(1,MENU_PAGE);
 	for(i=1; i<LCD_W-1;i++){
 		lcdData(UNDERLINE);
 	}
+}
+
+void drawMenuItem(menuitem *mitem){
+string item;
+	clrMenu();
+	item.chars = mitem->name;
+	item.atribute = INVERTED;
+	item.col = MENU_START;
+	item.page = MENU_PAGE;
+	printString(&item);
 }
 
 void drawMenuItems(struct MenuItem *items, uchar nitems, uchar highlight, uchar spacing){
@@ -73,7 +102,7 @@ unsigned char done = 1, selection = 0;
 //      |    menu               |
 //      -------------------------
 //------------------------------------------------------
-void drawFrame(const string *title){
+void drawFrame(string *title){
 unsigned char i;
 
 	solidFill(NORMAL);
@@ -97,7 +126,7 @@ unsigned char i;
 		lcdsetPos(LCD_W-1,i);
 		lcdData(0xFF);
 	}		
-	printString((string*)title);
+	printString(title);
 }
 
 //------------------------------------------------------

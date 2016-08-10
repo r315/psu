@@ -57,7 +57,7 @@ char getKey(void){
 //------------------------------
 //
 //------------------------------
-int getVout(void)
+int getVout(char ch)
 {	
 	return 0;
 }
@@ -99,4 +99,11 @@ void delayMs(char ms){
 
 void setDuty(char ch, int duty){
 
+}
+
+void systemInit(void){
+	lcdInit();
+}
+void finish(void){
+	SDL_Quit();
 }
