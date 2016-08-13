@@ -1,24 +1,27 @@
 
 #include "system.h"
 #include "spi.h"
+#include "pwm.h"
 
 void systemInit(void){	
 	__CONFIG(0x3FBA);
 	ADCON0 = 0b11000001;  // Frc clock | ADON
 	ADCON1 = 0b00000011;  // RA3 = ref, AN0,1,2,5
 	OPTION &= ~0x80;      // enable pull-ups on PORTB
-	TRISA = 0b11111111;
+	TRISA = TRISA_VALUE;
 	TRISB = TRISB_VALUE;
 	TRISC = TRISC_VALUE;
 	PORTB = 255; // 0?
 	spiInit(SPI_MODE3); 
-	lcdInit();
+	lcdInit();	
 //rtcInit();
+	setFpwm(PWMFREQ);	
+	setDuty(ISET_CH,MINIOUT);
+	setDuty(VSET_CH,MINVOUT);
 }
 
 char done(void) { return 0;}
 void finish(void){};
-void setDuty(char ch, int duty){}
 void enableLoad(char state){LOAD_EN = state;}
 
 char scanKeys(void){ return (~BPORT) & BPORTMask; }

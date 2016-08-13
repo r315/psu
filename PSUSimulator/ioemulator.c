@@ -1,6 +1,7 @@
 
 //Lib SDL 1.2
 #include "system.h"
+#include "display.h"
 
 static SDL_Event event;
 Uint8* inkeys;
@@ -59,14 +60,14 @@ char getKey(void){
 //------------------------------
 int getVout(char ch)
 {	
-	return 0;
+	return ch ? 0:50;
 }
 //--------------------------------------------
 // returns I in mA
 //--------------------------------------------
 int getIout(void)
 {	
-	return 0;
+	return 100;
 }
 
 char readKeysUpdate(uchar max, uchar min, uchar *var){
@@ -101,9 +102,21 @@ void setDuty(char ch, int duty){
 
 }
 
+void enableLoad(char state){}
+
 void systemInit(void){
 	lcdInit();
 }
 void finish(void){
 	SDL_Quit();
+}
+
+void getMesures(mesure *msr){
+	msr->adc_ch1 = getVout(VOUT_CH1);
+	msr->adc_ch2 = 0; //getVout(VOUT_CH2); change when channel is connected
+	msr->ch1_voltage = (msr->adc_ch1 - msr->adc_ch2) * VCONST; //mV	
+	msr->current = getIout() * ICONST; //mA
+	msr->power = (msr->ch1_voltage/100);
+	msr->power *= (msr->current/100);
+	msr->power /= 10;
 }

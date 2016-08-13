@@ -10,12 +10,13 @@
 string title = { TITLE,sizeof(TITLE),INVERTED,(LCD_W/2)-(sizeof(TITLE)*(FONT_W/2)),0 };
 
 void powerSupply(void);
+void electronicLoad(void);
 
 struct MenuItem modes[]={
-	{" PSU ",powerSupply},		//power Supply
-	{" Pow ",powerSupply},		//power curve
-	{" Lod ",powerSupply},		//constant load
-	{" Opt ",powerSupply}		//
+	{" PSU ",powerSupply},		//power Supply	
+	{" Lod ",electronicLoad},	//constant load
+	{" Bat ",powerSupply},		//battery discharge curve an capacity
+	{" OPT ",powerSupply}		//
 };
 
 //------------------------------
@@ -28,6 +29,7 @@ int main(int argc, char *argv[])
 	lcdUpdate();
 	while (!done()){		
 		  ((void(*)(void))(changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->data))();
+		  clrCanvas();
 	}
 	SDL_Quit();
 	exit(0);

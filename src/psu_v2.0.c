@@ -6,7 +6,7 @@ PSU V2.0.0
 #include "selector.h"
 
 #define TITLE "PIC PSU V2.0"
-string title = { 
+bank1 string title = { 
 	TITLE,
 	sizeof(TITLE),
 	INVERTED,
@@ -16,7 +16,7 @@ string title = {
 
 void powerSupply(void);
 
-struct MenuItem modes[]={
+bank1 struct MenuItem modes[]={
 	{" PSU ",0,powerSupply},		//power Supply
 	{" Pow ",0,powerSupply},		//power curve
 	{" Lod ",0,powerSupply},		//constant load

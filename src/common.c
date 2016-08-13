@@ -1,7 +1,9 @@
 #include "common.h"
 #include "display.h"
 
-void printChar(char c, char atr){
+#include "font.h"
+
+void printChar(uchar c, uchar atr){
 	c -= 0x20;
 	lcdData(FONT[c][0]^atr);
 	lcdData(FONT[c][1]^atr);
@@ -18,31 +20,12 @@ void printString(string *str){
 		printChar(*p++,str->atribute);
 }
 
-void printText(char c, char p, const char *text){
+void printText(uchar c, uchar p, const char *text){
 	lcdsetPos(c,p);
 	while(*text)
 		printChar(*text++,NORMAL);
 }
 
-void printInt(uchar c, uchar p, unsigned int value)
-{
-#define radix 10
- char k, i=0, tmp[8];
- 
-	do{
-		k = (char)(value % radix);
-		if(k > 9)
-			k += 'A';
-		else
-			k += '0';
-		value /= radix;			
-		tmp[i++] = k;		
-	}while(value != 0);		
-	
-	lcdsetPos(c,p);
-	while(i--)
-		printChar(tmp[i],NORMAL);
-}
 void drawMenu(string *mns){
 #define MENU_PAGE 7	
 	mns->page = MENU_PAGE;
@@ -56,6 +39,15 @@ uchar i;
 	lcdsetPos(1,MENU_PAGE);
 	for(i=1; i<LCD_W-1;i++){
 		lcdData(UNDERLINE);
+	}
+}
+
+void clrCanvas(void){
+uchar i,j;	
+	for(j = 1; j < 7;j++){
+		lcdsetPos(1,j);
+		for(i=1; i<LCD_W-1;i++)
+			lcdData(j == 6 ? UNDERLINE : NORMAL);
 	}
 }
 
@@ -82,7 +74,7 @@ string item;
 	lcdUpdate();
 }
 
-struct MenuItem *selectMenuItem(struct MenuItem *items, char nitems, uchar spacing){
+struct MenuItem *selectMenuItem(struct MenuItem *items, uchar nitems, uchar spacing){
 unsigned char done = 1, selection = 0;	
 	do{
 		if(done)
@@ -111,9 +103,7 @@ unsigned char i;
 	for(i = 0; i < LCD_W;i++)// barra titulo
 		lcdData(INVERTED);	
 	
-	for(i=0;i<LCD_W;i++){
-		lcdsetPos(i,1);		
-		lcdData(0x01);		// linha H por baixo titulo
+	for(i=0;i<LCD_W;i++){		
 		lcdsetPos(i,6);	
 		lcdData(0x80);		// linha H topo menu
 		lcdsetPos(i,7);	
@@ -132,10 +122,19 @@ unsigned char i;
 //------------------------------------------------------
 //draw number 0-9 in big font
 //------------------------------------------------------
-char drawBigNumber(char x, char y, char d)
+char drawBigNumber(uchar x, uchar y, uchar d)
 {
 char i; 
-const char *e =
+const char *e;
+	
+	if(d == '.'){
+		lcdData(0);		//separate dot from digit
+		lcdData(0x30);	//place decimal dot
+		lcdData(0x30);
+		return x + 3;
+	}
+
+	d -= '0';
 	e = HITACHI_FONT + (d * HITACHI_FONT_LINE_BYTES);	
 	// upper half
 	lcdsetPos(x,y);
@@ -150,16 +149,40 @@ const char *e =
 return x + HIT_FONT_W + 1;
 }
 
-void printBigDecimal(char x, char y, unsigned int val, unsigned int div, char dot){
+char callprintChar(uchar x, uchar y, uchar d){
+	printChar(d,NORMAL);
+	return x + FONT_W + 1;
+}
+
+void printDecimal(uchar x, uchar y, uchar bigdigit, unsigned int val, unsigned int magnitude, uchar dot){
 unsigned int dig;
-	while(div){
-		dig = val / div;		
-		x = drawBigNumber(x,y,(dig%10));	
-		if(div == dot){ 
-			lcdData(0x30);	//place decimal dot
-			lcdData(0x30);
-			x += 4;			//position for next digit
-		}
-		div /= 10;
+char (*drawDigit)(uchar x, uchar y, uchar d);
+
+	if(bigdigit){
+		drawDigit = drawBigNumber;
+	}else{
+		lcdsetPos(x,y);
+		drawDigit = callprintChar;
+	}
+
+	while(magnitude){
+		dig = val / magnitude;		
+			x = drawDigit(x,y,(dig%10) + '0');	
+			if(magnitude == dot){
+				x = drawDigit(x,y,'.');	
+		}		
+		magnitude /= 10;
 	}
 }
+
+void printVoltage(uchar c, uchar p, unsigned int mv)
+{
+	mv = mv / 100;
+	printDecimal(c,p,BIG_DIGIT,mv,100,10);
+}
+
+void printCurrent(uchar c, uchar p, unsigned int ma)
+{
+	printDecimal(c,p,BIG_DIGIT,ma,1000,0);	
+}
+

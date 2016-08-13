@@ -7,9 +7,27 @@
 	#include "iopsu.h"	
 #endif
 
-#include "display.h"
-
 typedef unsigned char uchar;
+typedef unsigned int uint;
+
+typedef struct Mesure{
+	uchar adc_ch1;
+	uchar adc_ch2;
+	uint ch1_voltage;
+	uint ch2_voltage;
+	uint current;
+	uint power;
+}mesure;
+
+#define MINVOUT 22
+#define MAXVOUT 255
+#define MINIOUT 0
+#define MAXIOUT 255
+
+#define VCONST 60 
+#define ICONST 6
+
+
 
 char done(void);
 char scanKeys(void);
@@ -25,4 +43,5 @@ void enableLoad(char state);
 void finish(void);
 int getVout(char ch);
 int getIout(void);
+void getMesures(mesure *msr);
 #endif
