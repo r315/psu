@@ -1,3 +1,4 @@
+
 #include "common.h"
 
 #define LD_MENU_SPACING (FONT_W*5)
@@ -7,7 +8,7 @@
 #define LD_CURRENT_COL 66
 #define LD_CURRENT_PAGE 1
 
-bank1 static pwm loadpwm = {MINVOUT,ISET_CH,MINIOUT,MAXIOUT};
+bank1 static pwm loadpwm = {MINIOUT,ISET_CH,MINIOUT,MAXIOUT};
 bank1 static menuitem loadmenu[] = {
 	{"Set",&loadpwm},
 	{"Exit",0}
@@ -40,7 +41,8 @@ mesure ldout;
 				if(!loadctrl) return;	
 				drawMenuItem(item);
 			}
-			printDecimal(90,4,NORMAL_DIGIT,loadctrl->duty,1000,0);
+			setDuty(loadctrl->channel,loadctrl->duty);
+			printDecimal(90,4,NORMAL_DIGIT,loadctrl->duty*ICONST,1000,0);
 			updateTime = 0;
 		}
 		done = readKeysUpdate(loadctrl->maxduty,loadctrl->minduty,&loadctrl->duty);		
@@ -60,10 +62,8 @@ unsigned char i;
 	for(i=1; i< LCD_W-1 ;i++){// linha H
 		lcdData(0x1);
 	}	
-	
 	printText(48,1,"V");
 	printText(110,1,"mA");	
 	printText(120,3,"W");
 	printText(114,4,"mA");
-
 }

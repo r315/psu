@@ -1,6 +1,5 @@
 #include "common.h"
 #include "display.h"
-
 #include "font.h"
 
 void printChar(uchar c, uchar atr){
@@ -184,5 +183,13 @@ void printVoltage(uchar c, uchar p, unsigned int mv)
 void printCurrent(uchar c, uchar p, unsigned int ma)
 {
 	printDecimal(c,p,BIG_DIGIT,ma,1000,0);	
+}
+
+void drawSetIcon(uchar c, uchar p){
+	uchar i;
+	lcdsetPos(c,p);
+	for(i = 0; i < sizeof(bmSET); i++){
+		lcdData(~bmSET[i]);
+	}	
 }
 

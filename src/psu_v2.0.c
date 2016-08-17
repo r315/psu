@@ -15,12 +15,13 @@ bank1 string title = {
 };
 
 void powerSupply(void);
+void electronicLoad(void);
 
-bank1 struct MenuItem modes[]={
-	{" PSU ",0,powerSupply},		//power Supply
-	{" Pow ",0,powerSupply},		//power curve
-	{" Lod ",0,powerSupply},		//constant load
-	{" Opt ",0,powerSupply}		//
+struct MenuItem modes[]={
+	{" PSU ",0,powerSupply},		//power Supply	
+	{" Lod ",0,electronicLoad},	//constant load
+	{" Bat ",0,powerSupply},		//battery discharge curve an capacity
+	{" OPT ",0,powerSupply}		//
 };
 //------------------------------------------------------
 //
@@ -32,6 +33,7 @@ void main(void)
 	while (!done()){
 		//((void(*)(void))(changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->data))();
 		changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->run();
+		clrCanvas();
 	}
 }
 

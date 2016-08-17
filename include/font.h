@@ -1,6 +1,8 @@
 #ifndef _FONT_H_
 #define _FONT_H_
 
+static const char bmSET[]={174,170,186,128,190,170,162,128,130,190,130,128};
+
 #define HIT_FONT_W 10
 #define HIT_FONT_H 2
 #define HITACHI_FONT_LINE_BYTES HIT_FONT_W * HIT_FONT_H

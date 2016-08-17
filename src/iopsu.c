@@ -2,6 +2,7 @@
 #include "system.h"
 #include "spi.h"
 #include "pwm.h"
+#include "display.h"
 
 void systemInit(void){	
 	__CONFIG(0x3FBA);
@@ -61,4 +62,14 @@ int getVout(char ch){
 
 int getIout(void){
 	return ADIN(IOUT_CH);
+}
+
+void getMesures(mesure *msr){
+	msr->adc_ch1 = getVout(VOUT_CH1);
+	msr->adc_ch2 = 0; //getVout(VOUT_CH2); change when channel is connected
+	msr->ch1_voltage = (msr->adc_ch1 - msr->adc_ch2) * VCONST; //mV	
+	msr->current = getIout() * ICONST; //mA
+	msr->power = (msr->ch1_voltage/100);
+	msr->power *= (msr->current/100);
+	msr->power /= 10;
 }

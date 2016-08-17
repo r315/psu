@@ -45,4 +45,6 @@ void drawMenuItem(menuitem *mitem);
 void drawFrame(string *title);
 void printVoltage(uchar c, uchar p, unsigned int mv);
 void printCurrent(uchar c, uchar p, unsigned int ma);
+void drawSetIcon(uchar c, uchar p);
+
 #endif
