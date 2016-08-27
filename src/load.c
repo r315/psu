@@ -10,8 +10,9 @@
 
 bank1 static pwm loadpwm = {MINIOUT,ISET_CH,MINIOUT,MAXIOUT};
 bank1 static menuitem loadmenu[] = {
-	{"Set",&loadpwm},
-	{"Exit",0}
+	//{" C Load ",&loadpwm},
+	{" Start ",&loadpwm},
+	{" Exit ",0}
 };
 void loadFrame(void);
 
@@ -36,7 +37,7 @@ mesure ldout;
 
 		if(done){
 			if(done == M_KEY){
-				item = selectMenuItem(loadmenu,LD_MENU_ITEMS,LD_MENU_SPACING);			
+				item = selectMenuItem(loadmenu,LD_MENU_ITEMS);			
 				loadctrl = (pwm*)(item->data);
 				if(!loadctrl) return;	
 				drawMenuItem(item);

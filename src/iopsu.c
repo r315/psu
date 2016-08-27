@@ -73,3 +73,8 @@ void getMesures(mesure *msr){
 	msr->power *= (msr->current/100);
 	msr->power /= 10;
 }
+
+void disableOutput(void){
+	enableLoad(1);
+	setDuty(ISET_CH,MINIOUT);
+}

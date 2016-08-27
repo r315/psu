@@ -12,25 +12,18 @@ void printChar(uchar c, uchar atr){
 	lcdData(0^atr);
 }
 
-void printString(string *str){
-	const char *p = str->chars;
-	lcdsetPos(str->col,str->page);
-	while (*p) 
-		printChar(*p++,str->atribute);
+uchar printTextAtr(uchar c, uchar p, const char *text, uchar atr){
+uchar x = 0;
+	lcdsetPos(c,p);
+	while(*text){
+		printChar(*text++,atr);
+		x++;
+	}
+	return c + (x*FONT_W);
 }
 
 void printText(uchar c, uchar p, const char *text){
-	lcdsetPos(c,p);
-	while(*text)
-		printChar(*text++,NORMAL);
-}
-
-void drawMenu(string *mns){
-#define MENU_PAGE 7	
-	mns->page = MENU_PAGE;
-	mns->atribute |= UNDERLINE;
-	printString(mns);
-	lcdUpdate();
+	printTextAtr(c,p,text,NORMAL);
 }
 
 void clrMenu(void){
@@ -51,33 +44,27 @@ uchar i,j;
 }
 
 void drawMenuItem(menuitem *mitem){
-string item;
 	clrMenu();
-	item.chars = mitem->name;
-	item.atribute = INVERTED;
-	item.col = MENU_START;
-	item.page = MENU_PAGE;
-	printString(&item);
+	printTextAtr(MENU_START_COL, MENU_PAGE, mitem->name, INVERTED);	
 }
 
-void drawMenuItems(struct MenuItem *items, uchar nitems, uchar highlight, uchar spacing){
-uchar i;
-string item;
+//------------------------------------------
+//draw all items that compose menu
+//------------------------------------------
+void drawMenuItems(struct MenuItem *items, uchar nitems, uchar highlight){
+uchar i,x = MENU_START_COL;
 	clrMenu();
 	for(i = 0; i < nitems; i++){
-		item.chars = items[i].name;
-		item.atribute = i == highlight ? INVERTED:UNDERLINE;
-		item.col = MENU_START + (i*spacing);
-		drawMenu(&item);		
+		x = printTextAtr(x, MENU_PAGE, items[i].name, (i == highlight) ? INVERTED:UNDERLINE);			
 	}
 	lcdUpdate();
 }
 
-struct MenuItem *selectMenuItem(struct MenuItem *items, uchar nitems, uchar spacing){
+struct MenuItem *selectMenuItem(struct MenuItem *items, uchar nitems){
 unsigned char done = 1, selection = 0;	
 	do{
 		if(done)
-			drawMenuItems(items,nitems,selection,spacing);
+			drawMenuItems(items,nitems,selection);
 		done = readKeysUpdate(nitems-1,0,&selection);			
 	}while (done != M_KEY);	
 	return &items[selection];
@@ -93,7 +80,7 @@ unsigned char done = 1, selection = 0;
 //      |    menu               |
 //      -------------------------
 //------------------------------------------------------
-void drawFrame(string *title){
+void drawFrame(const char *title, uchar col){
 unsigned char i;
 
 	solidFill(NORMAL);
@@ -114,8 +101,8 @@ unsigned char i;
 		lcdData(0xFF);		// linhas laterais	
 		lcdsetPos(LCD_W-1,i);
 		lcdData(0xFF);
-	}		
-	printString(title);
+	}	
+	printTextAtr(col, 0, title, INVERTED);
 }
 
 //------------------------------------------------------
@@ -185,11 +172,19 @@ void printCurrent(uchar c, uchar p, unsigned int ma)
 	printDecimal(c,p,BIG_DIGIT,ma,1000,0);	
 }
 
-void drawSetIcon(uchar c, uchar p){
+void drawSetIcon(uchar c1, uchar p1){
 	uchar i;
-	lcdsetPos(c,p);
+	lcdsetPos(c1,p1);
 	for(i = 0; i < sizeof(bmSET); i++){
 		lcdData(~bmSET[i]);
 	}	
+}
+
+void clrSetIcon(uchar c1, uchar p1){
+	uchar i;
+	lcdsetPos(c1,p1);
+	for(i = 0; i < sizeof(bmSET); i++){
+		lcdData(0);
+	}		
 }
 

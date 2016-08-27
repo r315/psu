@@ -8,24 +8,21 @@
 #define PS_CURRENT_PAGE 4
 #define LFRAMESIZ 76
 
-
-
 void psFrame(void);
-
 
 bank1 static pwm voutpwm = {MINVOUT,VSET_CH,MINVOUT,MAXVOUT},ioutpwm = {MINIOUT,ISET_CH,MINIOUT,MAXIOUT};
 bank1 static mesure psout;
 bank1 static menuitem psmenu[3] = {
-	{"Voltage",&voutpwm},
-	{"Current",&ioutpwm},
-	{"Exit",0}
+	{" Volt ",&voutpwm},
+	{" Amps ",&ioutpwm},
+	{" Main ",0}
 };
 
 void powerSupply(void){
 uchar updateTime = 0, done = M_KEY;	
-menuitem *item;
+menuitem *item = 0;
 pwm *pwmch;
-
+unsigned int a,b;
 	psFrame();	
 	enableLoad(0);
 	do{
@@ -41,16 +38,17 @@ pwm *pwmch;
 
 		if(done){
 			if(done == M_KEY){
-				item = selectMenuItem(psmenu,PS_MENU_ITEMS,PS_MENU_SPACING);				
+				if(item)
+					clrSetIcon(LFRAMESIZ+1, 2+((uint)item - (uint)psmenu)/sizeof(menuitem));
+				item = selectMenuItem(psmenu,PS_MENU_ITEMS);				
 				pwmch = (pwm*)(item->data);
 				if(!pwmch) return;
-				drawMenuItem(item);
-				drawSetIcon(LFRAMESIZ+1,2+(psmenu - item)/sizeof(menuitem));
-
+				drawMenuItem(item);				
+				drawSetIcon(LFRAMESIZ+1, 2+((uint)item - (uint)psmenu)/sizeof(menuitem));
 			}
 			setDuty(pwmch->channel,pwmch->duty);
-			printDecimal(90,2,NORMAL_DIGIT,(psout.adc_ch1*VCONST)/100,100,10);
-			printDecimal(90,3,NORMAL_DIGIT,ioutpwm.duty * ICONST,1000,0);
+			printDecimal(90,2,NORMAL_DIGIT,(psout.adc_ch1*VCONST)/100,100,10); //set voltage is read directly from regulator
+			printDecimal(90,3,NORMAL_DIGIT,ioutpwm.duty * ICONST,1000,0);      //set current is calculated based on pwm reg
 			updateTime = 0;			
 		}
 		done = readKeysUpdate(pwmch->maxduty,pwmch->minduty,&pwmch->duty);		

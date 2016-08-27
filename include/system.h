@@ -44,4 +44,5 @@ void finish(void);
 int getVout(char ch);
 int getIout(void);
 void getMesures(mesure *msr);
+void disableOutput(void);
 #endif

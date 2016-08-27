@@ -5,14 +5,7 @@ PSU V2.0.0
 #include "common.h"
 #include "selector.h"
 
-#define TITLE "PIC PSU V2.0"
-bank1 string title = { 
-	TITLE,
-	sizeof(TITLE),
-	INVERTED,
-	(LCD_W/2)-(sizeof(TITLE)*(FONT_W/2)),
-	0
-};
+static const char title[]= {"PIC PSU V2.0"};
 
 void powerSupply(void);
 void electronicLoad(void);
@@ -29,10 +22,11 @@ struct MenuItem modes[]={
 void main(void)
 {
 	systemInit();	
-	drawFrame(&title);	
+	drawFrame(title,(LCD_W/2)-(sizeof(title)*(FONT_W/2)));	
 	while (!done()){
 		//((void(*)(void))(changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->data))();
 		changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->run();
+		disableOutput();
 		clrCanvas();
 	}
 }

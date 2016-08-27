@@ -70,6 +70,10 @@ int getIout(void)
 	return 100;
 }
 
+//--------------------------------------------
+// scans keys and update inc/dec param
+// if key detected
+//--------------------------------------------
 char readKeysUpdate(uchar max, uchar min, uchar *var){
 	
 	if(!scanKeys()) 
@@ -119,4 +123,9 @@ void getMesures(mesure *msr){
 	msr->power = (msr->ch1_voltage/100);
 	msr->power *= (msr->current/100);
 	msr->power /= 10;
+}
+
+void disableOutput(void){
+	enableLoad(1);
+	setDuty(ISET_CH,MINIOUT);
 }

@@ -6,17 +6,16 @@
 #include "system.h"
 #include "selector.h"
 
-#define TITLE "PIC PSU V2.0"
-string title = { TITLE,sizeof(TITLE),INVERTED,(LCD_W/2)-(sizeof(TITLE)*(FONT_W/2)),0 };
+const char title[] =  {"PIC PSU V2.0"};
 
 void powerSupply(void);
 void electronicLoad(void);
 
 struct MenuItem modes[]={
 	{" PSU ",powerSupply},		//power Supply	
-	{" Lod ",electronicLoad},	//constant load
-	{" Bat ",powerSupply},		//battery discharge curve an capacity
-	{" OPT ",powerSupply}		//
+	{" Load ",electronicLoad},	//constant load
+	//{" Bat ",powerSupply},		//battery discharge curve an capacity
+	//{" OPT ",powerSupply}		//
 };
 
 //------------------------------
@@ -25,10 +24,11 @@ struct MenuItem modes[]={
 int main(int argc, char *argv[])
 {
 	systemInit();
-	drawFrame(&title);
+	drawFrame(title, (LCD_W/2)-(sizeof(title)*(FONT_W/2)));
 	lcdUpdate();
 	while (!done()){		
 		  ((void(*)(void))(changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->data))();
+		  disableOutput();
 		  clrCanvas();
 	}
 	SDL_Quit();

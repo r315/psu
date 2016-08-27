@@ -2,6 +2,5 @@
 
 
 struct MenuItem *changeMode(struct MenuItem *mods, char nmods){
-#define MODS_SPACING 5*FONT_W
-	return selectMenuItem(mods,nmods,MODS_SPACING);
+	return selectMenuItem(mods,nmods);
 }
