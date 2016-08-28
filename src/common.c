@@ -34,10 +34,10 @@ uchar i;
 	}
 }
 
-void clrCanvas(void){
+void clrSetsArea(void){
 uchar i,j;	
 	for(j = 1; j < 7;j++){
-		lcdsetPos(1,j);
+		lcdsetPos(DRO_SIZE+1,j);
 		for(i=1; i<LCD_W-1;i++)
 			lcdData(j == 6 ? UNDERLINE : NORMAL);
 	}
@@ -65,7 +65,7 @@ unsigned char done = 1, selection = 0;
 	do{
 		if(done)
 			drawMenuItems(items,nitems,selection);
-		done = readKeysUpdate(nitems-1,0,&selection);			
+		done = readKeysAndUpdateValue(nitems-1,0,&selection);			
 	}while (done != M_KEY);	
 	return &items[selection];
 }
@@ -81,7 +81,7 @@ unsigned char done = 1, selection = 0;
 //      |    menu               |
 //      -------------------------
 //------------------------------------------------------
-#define LFRAMESIZ 76
+
 void drawFrame(const char *title, uchar col){
 unsigned char i;
 
@@ -106,18 +106,21 @@ unsigned char i;
 	}	
 
 	for(i=1; i < 7 ;i++){
-		lcdsetPos(LFRAMESIZ,i);// linha V separadora de frames
+		lcdsetPos(DRO_SIZE,i);// linha V separadora de frames
 		lcdData(255);
 	}
 
 	printText(48,2,"V");
-	printText(54,4,"mA");
+	printText(54,4,"mA");	
+	printTextAtr(col, 0, title, INVERTED);
+	drawSetsUnits();
+}
+
+void drawSetsUnits(void){
 	printText(114,2,"V");
 	printText(114,3,"mA");
 	printText(114,4,"W");
-	printTextAtr(col, 0, title, INVERTED);
 }
-
 //------------------------------------------------------
 //draw number 0-9 in big font
 //------------------------------------------------------

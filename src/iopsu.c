@@ -17,8 +17,8 @@ void systemInit(void){
 	lcdInit();	
 //rtcInit();
 	setFpwm(PWMFREQ);	
-	setDuty(ISET_CH,MINIOUT);
-	setDuty(VSET_CH,MINVOUT);
+	setDuty(ISET_CH,MIN_IOUT_PWM_VAL);
+	setDuty(VSET_CH,MIN_VOUT_PWM_VAL);
 }
 
 char done(void) { return 0;}
@@ -27,21 +27,32 @@ void enableLoad(char state){LOAD_EN = state;}
 
 char scanKeys(void){ return (~BPORT) & BPORTMask; }
 char keyDown(char k){return (~BPORT) & k & BPORTMask;}
+char getKey(void){return scanKeys();}
 
-char readKeysUpdate(uchar max, uchar min, uchar *var){	
-char key = scanKeys();
+//--------------------------------------------
+// scans keys and update inc/dec param
+// if key detected
+//--------------------------------------------
+char readKeysAndUpdateValue(uchar max, uchar min, uchar *var){	
+	if(!scanKeys()) 
+		return 0;	
+	return updateValueForKey(max,min,var);
+}
 
+char updateValueForKey(uchar max, uchar min, uchar *var){
+	uchar key;
+	key = getKey();
 	switch(key){
 		case L_KEY:
 			if(*var > min)
 				(*var)--;
-			break;
+			break;	
+	
 		case R_KEY:
 			if(*var < max)
 				(*var)++;
-			break;		
+			break;	
 	}
-	while(scanKeys());
 	return key;
 }
 
@@ -76,5 +87,5 @@ void getMesures(mesure *msr){
 
 void disableOutput(void){
 	enableLoad(1);
-	setDuty(ISET_CH,MINIOUT);
+	setDuty(ISET_CH,MIN_IOUT_PWM_VAL);
 }

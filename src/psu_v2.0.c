@@ -23,11 +23,12 @@ void main(void)
 {
 	systemInit();	
 	drawFrame(title,(LCD_W/2)-(sizeof(title)*(FONT_W/2)));	
+	updateDro();
 	while (!done()){
 		//((void(*)(void))(changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->data))();
 		changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->run();
 		disableOutput();
-		clrCanvas();
+		clrSetsArea();
 	}
 }
 

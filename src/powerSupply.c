@@ -2,7 +2,7 @@
 
 #define PS_MENU_ITEMS sizeof(psmenu)/sizeof(menuitem)
 
-bank1 static pwm voutpwm = {MINVOUT,VSET_CH,MINVOUT,MAXVOUT},ioutpwm = {MINIOUT,ISET_CH,MINIOUT,MAXIOUT};
+bank1 static pwm voutpwm = {MIN_VOUT_PWM_VAL,VSET_CH,MIN_VOUT_PWM_VAL,MAX_VOUT_PWM_VAL},ioutpwm = {MIN_IOUT_PWM_VAL,ISET_CH,MIN_IOUT_PWM_VAL,MAX_IOUT_PWM_VAL};
 bank1 static menuitem psmenu[3] = {
 	{" Volt ",&voutpwm},
 	{" Amps ",&ioutpwm},
@@ -16,6 +16,7 @@ pwm *pwmch;
 unsigned int a,b;
 
 	enableLoad(0);
+	drawSetsUnits();
 	do{
 		if(!updateTime){			
 			updateDro();
@@ -39,7 +40,7 @@ unsigned int a,b;
 			printDecimal(90,3,NORMAL_DIGIT,ioutpwm.duty * ICONST,1000,0);      //set current is calculated based on pwm reg
 			updateTime = 0;			
 		}
-		done = readKeysUpdate(pwmch->maxduty,pwmch->minduty,&pwmch->duty);		
+		done = readKeysAndUpdateValue(pwmch->maxduty,pwmch->minduty,&pwmch->duty);		
 		delayMs(20);
 	}while(item->data);
 }

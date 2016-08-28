@@ -12,7 +12,7 @@ char SDL_scanKeys(void){
 	if(SDL_PollEvent(&event)){
 		if(event.type == SDL_KEYDOWN){
    			inkeys  = SDL_GetKeyState(NULL);
-			return 1;
+			return getKey();
 		}
 	}
 	return 0;
@@ -38,9 +38,7 @@ char done(void){
 }
 
 char getKey(void){
-	if(!scanKeys()) 
-		return 0;
-
+	
 	if(keyDown(L_KEY)){		
 		return L_KEY;		
 	}
@@ -74,27 +72,27 @@ int getIout(void)
 // scans keys and update inc/dec param
 // if key detected
 //--------------------------------------------
-char readKeysUpdate(uchar max, uchar min, uchar *var){
-	
+char readKeysAndUpdateValue(uchar max, uchar min, uchar *var){	
 	if(!scanKeys()) 
-		return 0;
+		return 0;	
+	return updateValueForKey(max,min,var);
+}
 
-	if(keyDown(L_KEY)){
-		if(*var > min)
-			(*var)--;
-		return L_KEY;		
-	}
+char updateValueForKey(uchar max, uchar min, uchar *var){
+	uchar key;
+	key = getKey();
+	switch(key){
+		case L_KEY:
+			if(*var > min)
+				(*var)--;
+			break;	
 	
-	if(keyDown(R_KEY)){
-		if(*var < max)
-			(*var)++;
-		return R_KEY;	
+		case R_KEY:
+			if(*var < max)
+				(*var)++;
+			break;	
 	}
-	
-	if(keyDown(M_KEY)){		
-		return M_KEY;	
-	}
-	return 0;
+	return key;
 }
 
 
@@ -127,5 +125,5 @@ void getMesures(mesure *msr){
 
 void disableOutput(void){
 	enableLoad(1);
-	setDuty(ISET_CH,MINIOUT);
+	setDuty(ISET_CH,MIN_IOUT_PWM_VAL);
 }

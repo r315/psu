@@ -30,7 +30,8 @@ int main(int argc, char *argv[])
 	lcdUpdate();
 	while (!done()){		
 		  ((void(*)(void))(changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->data))();
-		  disableOutput();		  	  
+		  disableOutput();	
+		  clrSetsArea();
 	}
 	SDL_Quit();
 	exit(0);
