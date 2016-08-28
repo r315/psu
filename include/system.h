@@ -19,6 +19,8 @@ typedef struct Mesure{
 	uint power;
 }mesure;
 
+bank1 static mesure outvalues; //TODO: min ensure current when change modes(PSU/load)
+
 #define MINVOUT 22
 #define MAXVOUT 255
 #define MINIOUT 0

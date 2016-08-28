@@ -24,12 +24,13 @@ struct MenuItem modes[]={
 int main(int argc, char *argv[])
 {
 	systemInit();
+	disableOutput();
 	drawFrame(title, (LCD_W/2)-(sizeof(title)*(FONT_W/2)));
+	updateDro();
 	lcdUpdate();
 	while (!done()){		
 		  ((void(*)(void))(changeMode(modes,sizeof(modes)/sizeof(struct MenuItem))->data))();
-		  disableOutput();
-		  clrCanvas();
+		  disableOutput();		  	  
 	}
 	SDL_Quit();
 	exit(0);

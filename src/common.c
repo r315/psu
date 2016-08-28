@@ -73,13 +73,15 @@ unsigned char done = 1, selection = 0;
 //      -------------------------
 //      |        titulo         |
 //      -------------------------
-//      |                       |
-//      |                       |
-//      |                       |
+//      |               |     V |
+//      |               |     mA|
+//      |               |     W |
+//      |               |       |
 //      -------------------------
 //      |    menu               |
 //      -------------------------
 //------------------------------------------------------
+#define LFRAMESIZ 76
 void drawFrame(const char *title, uchar col){
 unsigned char i;
 
@@ -102,6 +104,17 @@ unsigned char i;
 		lcdsetPos(LCD_W-1,i);
 		lcdData(0xFF);
 	}	
+
+	for(i=1; i < 7 ;i++){
+		lcdsetPos(LFRAMESIZ,i);// linha V separadora de frames
+		lcdData(255);
+	}
+
+	printText(48,2,"V");
+	printText(54,4,"mA");
+	printText(114,2,"V");
+	printText(114,3,"mA");
+	printText(114,4,"W");
 	printTextAtr(col, 0, title, INVERTED);
 }
 
@@ -161,17 +174,6 @@ char (*drawDigit)(uchar x, uchar y, uchar d);
 	}
 }
 
-void printVoltage(uchar c, uchar p, unsigned int mv)
-{
-	mv = mv / 100;
-	printDecimal(c,p,BIG_DIGIT,mv,100,10);
-}
-
-void printCurrent(uchar c, uchar p, unsigned int ma)
-{
-	printDecimal(c,p,BIG_DIGIT,ma,1000,0);	
-}
-
 void drawSetIcon(uchar c1, uchar p1){
 	uchar i;
 	lcdsetPos(c1,p1);
@@ -188,3 +190,9 @@ void clrSetIcon(uchar c1, uchar p1){
 	}		
 }
 
+void updateDro(){
+	getMesures(&outvalues);	
+	printDecimal(DRO_VOLTAGE_COL,DRO_VOLTAGE_PAGE,BIG_DIGIT, outvalues.ch1_voltage/100 ,100,10);
+	printDecimal(DRO_CURRENT_COL, DRO_CURRENT_PAGE, BIG_DIGIT, outvalues.current, 1000, 0);
+	printDecimal(DRO_POWER_COL, DRO_POWER_PAGE, NORMAL_DIGIT, outvalues.power, 100, 10);
+}

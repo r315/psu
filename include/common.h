@@ -13,6 +13,13 @@
 #define BIG_DIGIT 1
 #define NORMAL_DIGIT 0
 
+#define DRO_VOLTAGE_COL 10
+#define DRO_VOLTAGE_PAGE 2
+#define DRO_CURRENT_COL 10
+#define DRO_CURRENT_PAGE 4
+#define DRO_POWER_COL 90
+#define DRO_POWER_PAGE 4
+
 typedef struct MenuItem{
 	const char *name;
 	void *data;
@@ -36,8 +43,7 @@ void clrMenu(void);
 void clrCanvas(void);
 void drawMenuItem(menuitem *mitem);
 void drawFrame(const char *title, uchar col);
-void printVoltage(uchar c, uchar p, unsigned int mv);
-void printCurrent(uchar c, uchar p, unsigned int ma);
 void drawSetIcon(uchar c1, uchar p1);
 void clrSetIcon(uchar c1, uchar p1);
+void updateDro(void);
 #endif
