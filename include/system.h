@@ -19,7 +19,7 @@ typedef struct Mesure{
 	uint power;
 }mesure;
 
-bank1 static mesure outvalues; //TODO: min ensure current when change modes(PSU/load)
+extern bank1 mesure outvalues;
 
 #define MIN_VOUT_PWM_VAL 22
 #define MAX_VOUT_PWM_VAL 255
@@ -34,11 +34,17 @@ bank1 static mesure outvalues; //TODO: min ensure current when change modes(PSU/
 #define VCONST 60 
 #define ICONST 6
 
+#define VSET_CH 1  // PWM2
+#define ISET_CH 0  // PWM1
+#define VOUT_CH1 0 // AN
+#define VOUT_CH2 4 // AN
+#define IOUT_CH  2 // AN
+
 char done(void);
 char scanKeys(void);
 char keyDown(char key);
-char getKey(void);
-char readKeysAndUpdateValue(uchar max, uchar min, uchar *var);
+char filterKey(void);
+char scanKeysAndUpdateValue(uchar max, uchar min, uchar *var);
 char updateValueForKey(uchar max, uchar min, uchar *var);
 
 void delayMs(char ms);

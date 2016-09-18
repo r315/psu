@@ -2,7 +2,22 @@
 #include "display.h"
 #include "font.h"
 
+bank1 mesure outvalues; //TODO: min ensure current when change modes(PSU/load)
+
+void printCostumChar(uchar c){
+uchar i;
+const char *p;
+	c -= 0x80;
+	p = &special_chars[c][0];
+	for(i=0; i< 6; i++)
+		lcdData(*p++);
+}
+
 void printChar(uchar c, uchar atr){
+	/*if(c > 127){
+		printCostumChar(c);
+		return;
+	}*/
 	c -= 0x20;
 	lcdData(FONT[c][0]^atr);
 	lcdData(FONT[c][1]^atr);
@@ -29,7 +44,7 @@ void printText(uchar c, uchar p, const char *text){
 void clrMenu(void){
 uchar i;
 	lcdsetPos(1,MENU_PAGE);
-	for(i=1; i<LCD_W-1;i++){
+	for(i = 1; i < LCD_W-1; i++){
 		lcdData(UNDERLINE);
 	}
 }
@@ -38,18 +53,23 @@ void clrSetsArea(void){
 uchar i,j;	
 	for(j = 1; j < 7;j++){
 		lcdsetPos(DRO_SIZE+1,j);
-		for(i=1; i<LCD_W-1;i++)
+		for(i = DRO_SIZE+1; i < LCD_W-1; i++)
 			lcdData(j == 6 ? UNDERLINE : NORMAL);
 	}
 }
 
-void drawMenuItem(menuitem *mitem){
+//------------------------------------------
+//draw single menu item 
+//------------------------------------------
+void drawMenuItem(struct MenuItem *mitem){
 	clrMenu();
 	printTextAtr(MENU_START_COL, MENU_PAGE, mitem->name, INVERTED);	
+	lcdUpdate();
 }
 
 //------------------------------------------
 //draw all items that compose menu
+//and highlight the selected
 //------------------------------------------
 void drawMenuItems(struct MenuItem *items, uchar nitems, uchar highlight){
 uchar i,x = MENU_START_COL;
@@ -64,8 +84,9 @@ struct MenuItem *selectMenuItem(struct MenuItem *items, uchar nitems){
 unsigned char done = 1, selection = 0;	
 	do{
 		if(done)
-			drawMenuItems(items,nitems,selection);
-		done = readKeysAndUpdateValue(nitems-1,0,&selection);			
+			//drawMenuItems(items,nitems,selection);
+			drawMenuItem(&items[selection]);
+		done = scanKeysAndUpdateValue(nitems-1,0,&selection);			
 	}while (done != M_KEY);	
 	return &items[selection];
 }
@@ -178,19 +199,15 @@ char (*drawDigit)(uchar x, uchar y, uchar d);
 }
 
 void drawSetIcon(uchar c1, uchar p1){
-	uchar i;
 	lcdsetPos(c1,p1);
-	for(i = 0; i < sizeof(bmSET); i++){
-		lcdData(~bmSET[i]);
-	}	
+	printCostumChar(CHAR_SET_LEFT);
+	printCostumChar(CHAR_SET_RIGHT);
 }
 
 void clrSetIcon(uchar c1, uchar p1){
-	uchar i;
 	lcdsetPos(c1,p1);
-	for(i = 0; i < sizeof(bmSET); i++){
-		lcdData(0);
-	}		
+	printChar(' ',NORMAL);
+	printChar(' ',NORMAL);
 }
 
 void updateDro(){

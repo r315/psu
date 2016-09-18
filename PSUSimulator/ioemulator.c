@@ -12,10 +12,11 @@ char SDL_scanKeys(void){
 	if(SDL_PollEvent(&event)){
 		if(event.type == SDL_KEYDOWN){
    			inkeys  = SDL_GetKeyState(NULL);
-			return getKey();
+			return filterKey();
 		}
 	}
-	return 0;
+	inkeys = NULL;
+	return NULL;
 }
 
 char scanKeys(void){	
@@ -37,7 +38,7 @@ char done(void){
 	return 0;
 }
 
-char getKey(void){
+char filterKey(void){
 	
 	if(keyDown(L_KEY)){		
 		return L_KEY;		
@@ -58,21 +59,21 @@ char getKey(void){
 //------------------------------
 int getVout(char ch)
 {	
-	return ch ? 0:50;
+	return ch ? 0:54;
 }
 //--------------------------------------------
 // returns I in mA
 //--------------------------------------------
 int getIout(void)
 {	
-	return 100;
+	return 0;
 }
 
 //--------------------------------------------
 // scans keys and update inc/dec param
 // if key detected
 //--------------------------------------------
-char readKeysAndUpdateValue(uchar max, uchar min, uchar *var){	
+char scanKeysAndUpdateValue(uchar max, uchar min, uchar *var){	
 	if(!scanKeys()) 
 		return 0;	
 	return updateValueForKey(max,min,var);
@@ -80,7 +81,7 @@ char readKeysAndUpdateValue(uchar max, uchar min, uchar *var){
 
 char updateValueForKey(uchar max, uchar min, uchar *var){
 	uchar key;
-	key = getKey();
+	key = filterKey();
 	switch(key){
 		case L_KEY:
 			if(*var > min)

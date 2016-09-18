@@ -60,9 +60,13 @@ unsigned int tmp;
 	tmp = _seconds-(aux*3600);	
 	aux = tmp/60;
 	getDigits(dst + 3,aux);
+	#if 0 //use seconds	
 	*(dst + 5) = ':';	
 	getDigits(dst + 6,_seconds%60);
 	*(dst + 8) = '\0';	
+	#else
+	*(dst + 5) = '\0';	
+	#endif
 }
 //------------------------------------------*/
 //
@@ -75,7 +79,7 @@ int getSeconds(void)
 //--------------------------------------------
 //
 //--------------------------------------------
-char hasUpdate(void)
+char timeChange(void)
 {
 	return _secondsChange;
 }

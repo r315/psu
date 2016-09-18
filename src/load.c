@@ -2,83 +2,149 @@
 #include "common.h"
 #include "rtc.h"
 
-#define LD_MENU_ITEMS sizeof(LD_menu)/sizeof(menuitem)
-void LD_changePwm(void);
-void LD_changeLimit(void);
-void LD_start(void);
-
-bank1 uchar LD_pwmval=254;
-bank1 uint LD_limitval = 1200;
-bank1 static menuitem LD_menu[] = {
-	{" MIN ",0,LD_changeLimit},
-	{" AMP ",0,LD_changePwm},	
-	{" STA ",0,LD_start},
-	{" Exit ",0,0}
+enum LD_States{
+	S_CUT_OFF_SEL = 1,
+	S_DISCHARGE,
+	S_DISCH_SEL,
+	S_IDLE,
+	S_PAUSE,
+	S_START,
+	S_STOP
 };
 
-void checkEnd(void){
+#define LD_MENU_ITEMS sizeof(LD_menu)/sizeof(menuitem)
+#define LD_DISCHARGE_MENU_ITEMS sizeof(LD_dischargemenu)/sizeof(menuitem)
+
+bank1 uchar LD_pwmval= MIN_IOUT;
+bank1 uint LD_cutoff = 0;
+bank1 uchar LD_state = S_IDLE;
+
+bank1 static menuitem LD_menu[] = {
+	{" Cut-Off voltage ",(void*)S_CUT_OFF_SEL},
+	{" Discharge Current ",(void*)S_DISCH_SEL},	
+	{" Start ",(void*)S_START},	
+	{" Exit ",(void*)0}
+};
+
+bank1 static menuitem LD_dischargemenu[] = {
+	{" Resume ",(void*)S_PAUSE},
+	{" Stop ",(void*)S_STOP},	
+};
+
+void drawLoadSetsValues(void){		
+	printDecimal(90,2,NORMAL_DIGIT, LD_cutoff/100,100,10);	
+	printDecimal(90,3,NORMAL_DIGIT, LD_pwmval*ICONST,1000,0);	
+}
+
+char LD_StateProcess(void){
 char time[10];
-	//if vsel > vmesure
-	//if imesured < 2-5ma
-	//stopCounting();
-	//getTime(time);
-	//printText(90,5,time);
-}
+menuitem *item;
+uchar keys = scanKeys();
 
-void LD_start(void){
-//setDuty(loadctrl->channel, loadctrl->duty);
-}
+switch(LD_state){
 
-void LD_changePwm(void){
-	updateValueForKey(MAX_IOUT_PWM_VAL, MIN_IOUT_PWM_VAL, &LD_pwmval);
-	printDecimal(90,3,NORMAL_DIGIT, LD_pwmval*ICONST,1000,0);
-}
+	case S_IDLE:		
+		item = selectMenuItem(LD_menu, LD_MENU_ITEMS);			
+		if(!item->data){
+			setDuty(ISET_CH, MIN_IOUT);
+			return ON; //done
+		}				
+		clrMenu();
+		LD_state = (uchar)item->data;
+		clrSetIcon(77,2);
+		clrSetIcon(77,3);		
+		break;
 
-void LD_changeLimit(void){
-	switch(getKey()){
-		case L_KEY:
-			if(LD_limitval > MIN_VOUT)
-				LD_limitval -= 100;
-			break;	
+	case S_CUT_OFF_SEL:
+		switch(keys){
+				case L_KEY:
+					if(LD_cutoff > 0)
+						LD_cutoff -= 100;
+					break;	
 	
-		case R_KEY:
-			if(LD_limitval < MAX_VOUT)
-				LD_limitval += 100;
-			break;	
-	}	
-	printDecimal(90,2,NORMAL_DIGIT, LD_limitval/100,100,10);
+				case R_KEY:
+					if(LD_cutoff < MAX_VOUT)
+						LD_cutoff += 100;
+					break;	
+				case M_KEY:
+					LD_state = S_IDLE;
+					return OFF;
+			}
+			drawSetIcon(77, 2);
+			drawLoadSetsValues();
+			break;
+
+	case S_DISCH_SEL:
+			if(updateValueForKey(MAX_IOUT_PWM_VAL, MIN_IOUT_PWM_VAL, &LD_pwmval) == M_KEY){
+				LD_state = S_IDLE;
+				break;
+			}
+			drawSetIcon(77, 3);
+			drawLoadSetsValues();
+			break;
+
+	case S_START:
+			drawLoadSetsValues();
+			setDuty(ISET_CH, LD_pwmval);
+			startCounting();
+			LD_state = S_DISCHARGE;
+			printTextAtr(MENU_START_COL,MENU_PAGE,"Discharging!",UNDERLINE);
+			break;
+
+	case S_DISCHARGE:
+		if(outvalues.ch1_voltage < LD_cutoff){
+			setDuty(ISET_CH, MIN_IOUT);
+			stopCounting();
+			clrMenu();
+			printTextAtr(MENU_START_COL,MENU_PAGE,"End!",UNDERLINE);
+			while(!scanKeys());
+			LD_state = S_IDLE;
+			break;
+		}
+
+		if(timeChange()){
+			getTime(time);
+			printText(90,5,time);
+		}
+
+		if(keys == M_KEY){
+			item = selectMenuItem(LD_dischargemenu, LD_DISCHARGE_MENU_ITEMS);
+			switch((uchar)item->data){
+				case S_STOP: 
+					LD_state = S_STOP;
+					break;
+				case S_PAUSE:
+					clrMenu();
+					break;		
+			}
+			printTextAtr(MENU_START_COL,MENU_PAGE,"Discharging!",UNDERLINE);
+		}
+		break;	
+		
+	case S_PAUSE:
+		break;
+	case S_STOP:
+		setDuty(ISET_CH, MIN_IOUT);
+		LD_state = S_IDLE;
+		break;
+}
+return OFF;
 }
 
 void electronicLoad(void){
-menuitem *item;
-uchar keys = M_KEY, updateTime = 0;
-
-	enableLoad(1);
-	drawSetsUnits();
-	
+uchar updateTime = 0;
+	enableLoad(ON);
+	drawSetsUnits();	
+	LD_state = S_IDLE;
 	do{
 		if(!updateTime){			
 			updateDro();			
-			checkEnd();		
-			lcdUpdate();
-			updateTime = 20;
+			lcdUpdate();			
+			updateTime = 50;
 		}
-		updateTime--;
-
-		if(keys){
-			if(keys == M_KEY){
-				item = selectMenuItem(LD_menu, LD_MENU_ITEMS);			
-				if(!item->run) return;	
-				drawMenuItem(item);
-			}
-			//drawSetIcon(77, 2+((uint)item - (uint)LD_menu)/sizeof(menuitem));
-			//item->run();
-			//Error: recursive function calls: 
-	//_electronicLoad -> ARG(_electronicLoad) -> indirect(88) -> indirect(88) -> 
-			updateTime = 0;
-		}
-		keys = scanKeys();
-		delayMs(20);
-	}while(item->run);
+		updateTime--;		
+		//delayMs(20);
+	}while(!LD_StateProcess());
+	setDuty(ISET_CH, MIN_IOUT);
 }
 

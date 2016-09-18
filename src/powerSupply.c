@@ -6,14 +6,13 @@ bank1 static pwm voutpwm = {MIN_VOUT_PWM_VAL,VSET_CH,MIN_VOUT_PWM_VAL,MAX_VOUT_P
 bank1 static menuitem psmenu[3] = {
 	{" Volt ",&voutpwm},
 	{" Amps ",&ioutpwm},
-	{" Main ",0}
+	{" Exit",0}
 };
 
 void powerSupply(void){
 uchar updateTime = 0, done = M_KEY;	
 menuitem *item = 0;
 pwm *pwmch;
-unsigned int a,b;
 
 	enableLoad(0);
 	drawSetsUnits();
@@ -32,7 +31,8 @@ unsigned int a,b;
 				item = selectMenuItem(psmenu,PS_MENU_ITEMS);				
 				pwmch = (pwm*)(item->data);
 				if(!pwmch) return;
-				drawMenuItem(item);				
+				clrMenu();
+				//drawMenuItem(item);
 				drawSetIcon(77, 2+((uint)item - (uint)psmenu)/sizeof(menuitem));
 			}
 			setDuty(pwmch->channel,pwmch->duty);
@@ -40,7 +40,7 @@ unsigned int a,b;
 			printDecimal(90,3,NORMAL_DIGIT,ioutpwm.duty * ICONST,1000,0);      //set current is calculated based on pwm reg
 			updateTime = 0;			
 		}
-		done = readKeysAndUpdateValue(pwmch->maxduty,pwmch->minduty,&pwmch->duty);		
+		done = scanKeysAndUpdateValue(pwmch->maxduty,pwmch->minduty,&pwmch->duty);		
 		delayMs(20);
 	}while(item->data);
 }

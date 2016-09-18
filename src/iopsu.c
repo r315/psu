@@ -3,6 +3,7 @@
 #include "spi.h"
 #include "pwm.h"
 #include "display.h"
+#include "rtc.h"
 
 void systemInit(void){	
 	__CONFIG(0x3FBA);
@@ -15,7 +16,7 @@ void systemInit(void){
 	PORTB = 255; // 0?
 	spiInit(SPI_MODE3); 
 	lcdInit();	
-//rtcInit();
+	rtcInit();
 	setFpwm(PWMFREQ);	
 	setDuty(ISET_CH,MIN_IOUT_PWM_VAL);
 	setDuty(VSET_CH,MIN_VOUT_PWM_VAL);
@@ -25,24 +26,40 @@ char done(void) { return 0;}
 void finish(void){};
 void enableLoad(char state){LOAD_EN = state;}
 
-char scanKeys(void){ return (~BPORT) & BPORTMask; }
-char keyDown(char k){return (~BPORT) & k & BPORTMask;}
-char getKey(void){return scanKeys();}
+bank1 static _rkey;
+//char scanKeys(void){return (~BPORT) & BPORTMask;}
+char scanKeys(void){
+uchar ky;
+	ky = (~BPORT) & BPORTMask;
+	if(ky){
+		if(ky == (_rkey & (~K_HOLD) )){
+			_rkey |= K_HOLD;
+			return 0;
+		}
+	}
+	_rkey = ky;
+	return _rkey;
+}
+//char keyDown(char k){return (~BPORT) & k & BPORTMask;}
+char keyDown(char k){return _rkey & k;}
+char getKey(void){
+	while(!scanKeys());
+return _rkey;
+}
 
 //--------------------------------------------
 // scans keys and update inc/dec param
 // if key detected
 //--------------------------------------------
-char readKeysAndUpdateValue(uchar max, uchar min, uchar *var){	
+char scanKeysAndUpdateValue(uchar max, uchar min, uchar *var){	
 	if(!scanKeys()) 
 		return 0;	
 	return updateValueForKey(max,min,var);
 }
 
 char updateValueForKey(uchar max, uchar min, uchar *var){
-	uchar key;
-	key = getKey();
-	switch(key){
+
+	switch(_rkey){
 		case L_KEY:
 			if(*var > min)
 				(*var)--;
@@ -53,7 +70,7 @@ char updateValueForKey(uchar max, uchar min, uchar *var){
 				(*var)++;
 			break;	
 	}
-	return key;
+	return _rkey;
 }
 
 uchar ADIN(char ch)

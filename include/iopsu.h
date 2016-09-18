@@ -3,17 +3,12 @@
 
 #include <htc.h>
 
-#define VSET_CH 1  // PWM2
-#define ISET_CH 0  // PWM1
-#define VOUT_CH1 0 // AN
-#define VOUT_CH2 4 // AN
-#define IOUT_CH  2 // AN
-
 #define BPORT   PORTB
 #define BPORTMask 0x07
 #define L_KEY (1<<2)	//RB2
 #define R_KEY (1<<0)	//RB0
 #define M_KEY (1<<1)	//RB1
+#define K_HOLD (1<<7)   //Key Hold Flag
 
 #define LOAD_EN RB4
 #define TRISA_VALUE 0b11111111

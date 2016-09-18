@@ -22,6 +22,9 @@
 #define DRO_POWER_COL 90
 #define DRO_POWER_PAGE 4
 
+#define ON 1
+#define OFF 0
+
 typedef struct MenuItem{
 	const char *name;
 	void *data;
@@ -34,6 +37,8 @@ typedef struct Pwm{
 	uchar minduty;
 	uchar maxduty;
 }pwm;
+
+
 
 void printChar(uchar c, uchar atr);
 void printInt(uchar c, uchar p, unsigned int value);

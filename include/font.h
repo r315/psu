@@ -1,7 +1,7 @@
 #ifndef _FONT_H_
 #define _FONT_H_
 
-static const char bmSET[]={174,170,186,128,190,170,162,128,130,190,130,128};
+
 
 #define HIT_FONT_W 10
 #define HIT_FONT_H 2
@@ -116,4 +116,15 @@ static const char FONT[][5] ={
 #endif      	 
 };
 
+
+#define CHAR_SET_LEFT  0x80
+#define CHAR_SET_RIGHT 0x81
+#define CHAR_RETURN		0x82
+
+static const char special_chars[][6]={
+	0x51,0x55,0x45,0x7F,0x41,0x55,	//SET left
+	0x5D,0x7F,0x7D,0x41,0x7D,0x7F,	//SET right
+	0x08,0x1c,0x2A,0x08,0x0F,0x00
+
+};
 #endif

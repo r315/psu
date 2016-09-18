@@ -12,9 +12,7 @@ void electronicLoad(void);
 
 struct MenuItem modes[]={
 	{" PSU ",0,powerSupply},		//power Supply	
-	{" Lod ",0,electronicLoad},	//constant load
-	{" Bat ",0,powerSupply},		//battery discharge curve an capacity
-	{" OPT ",0,powerSupply}		//
+	{" Load ",0,electronicLoad}	//constant load	
 };
 //------------------------------------------------------
 //
