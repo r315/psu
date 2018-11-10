@@ -3,13 +3,18 @@
 #include <stdio.h>
 
 #include "vcom.h"
+
 extern "C" {
 #include "usbd_cdc_if.h"
 #include "strfunctions.h"
+#include "fifo.h"
+
+Fifo rxfifo;
+
 }
 
-void Vcom::init(void)
-{
+void Vcom::init(void){
+	fifoInit(&rxfifo);
 }
 
 char Vcom::getc()
