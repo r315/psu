@@ -120,15 +120,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_Delay(3000);
   SEVEN_Init();  
-
-  
-  
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  //double i = 0;  
-  SEVEN_Init();
+    
   while (1)
   {   
 
