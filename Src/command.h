@@ -25,7 +25,6 @@ class Command{
 
 private:
 
-
 protected:
 	const char *name;
 public:
@@ -35,8 +34,8 @@ public:
 
 	char isNameEqual(char *cmd){ return xstrcmp(cmd, (char*)this->name) == 0; }
 
-	char execute(void *ptr);
-	void help(void);
+	virtual char execute(void *ptr);
+	virtual void help(void);
 
     Command(const char *nm){ this->name = nm; }
 };

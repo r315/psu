@@ -10,22 +10,36 @@ extern "C" {
 #include "command.h"
 #include "vcom.h"
 
-class Console{
-    Command *cmdList[COMMAND_MAX_CMD];
-public:
+#define NO        0
+#define YES       1
+
+#define LINE_MAX_LEN    64
+
+
+class Console : public Command
+{
+    Command *cmdList[COMMAND_MAX_CMD];    
+    uint8_t executing;
+    char line[LINE_MAX_LEN];
     Vcom vcom;
+public:
     void init(void);
     char getLine(char *line, uint8_t max);
-    void printf (const char* str, ...);
+    void process(void);
+
+    char execute(void *ptr);
+	void help(void);
 
     void addCommand(Command *cmd);
-    char parseCommand(char *line);
+    char parseCommand(char *line, uint8_t len);
     char executeCommand(void *ptr);
     void puts(const char* str);
     char getchar(void);
     void gets(char* str);
     char getline(char *line, uint8_t max);
     void print(const char* str, ...);
+
+    Console(void) : Command("help"){ init(); }
 };
 
 

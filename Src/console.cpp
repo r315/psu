@@ -10,22 +10,25 @@
 #include "command.h"
 #include "strfunctions.h"
 
+static const char prompt[] = {"psu >"};
+
+
 void Console::init(void){
 		memset(cmdList, 0 , COMMAND_MAX_CMD * sizeof(Command*));	
-		print("\rConsole Started\n");	
+		executing = NO;
+		addCommand(this);
+		vcom.puts("\rConsole Started");
 }
 
-/**
-void Console::help(void){
-    
+void Console::help(void){    
     puts("Available commands:\n\n");
-    // first entry is this help
-    for (uint8_t i = 1; i < COMMAND_MAX_CMD; i++){
+    // first entry is this
+    for (uint8_t i = 0; i < COMMAND_MAX_CMD; i++){
         if(cmdList[i] != NULL)
-            printf("\t%s\n",cmdList[i]->getName());
+            print("\t%s\n",cmdList[i]->getName());
     }
-    putc('\n');
-}*/
+    putchar('\n');
+}
 
 void Console::addCommand(Command *cmd){
     for (uint8_t i = 0; i < COMMAND_MAX_CMD; i++){
@@ -34,12 +37,15 @@ void Console::addCommand(Command *cmd){
             return;
         }
     }
-    printf("Command list full!");
+    print("Command list full!");
 }
 
-char Console::parseCommand(char *line){
+char Console::parseCommand(char *line, uint8_t len){
 char res = CMD_NOT_FOUND, *cmdname, *param;  
 Command **cmd = cmdList;
+
+	if (len == 1) /* if only one char it can only be \n or \r */
+		return CMD_OK;
 
     cmdname = strtok_s(line, ' ', COMMAND_MAX_LINE, &param);
 
@@ -55,17 +61,23 @@ Command **cmd = cmdList;
     }
 
     if (res == CMD_NOT_FOUND){
-        printf("Command not found\n");
+        print("Command not found\n");
     }else if(res == CMD_BAD_PARAM){ 
-        printf("Bad parameter \n");
+        print("Bad parameter \n");
     }
 
     return res;
 }
 
-char Console::executeCommand(void *ptr){
-    //help();
+char Console::execute(void *ptr){
+    help();
     return CMD_OK; 
+}
+
+void Console::process(void){
+	print(prompt);
+	uint8_t len = getline(line,LINE_MAX_LEN);
+	parseCommand(line, len);
 }
 
 /**
@@ -73,62 +85,54 @@ char Console::executeCommand(void *ptr){
  * */
 void Console::puts(const char* str)
 {
-	while(*str != '\0')
-	{
-		vcom.putc(*str++);
-	}
-    vcom.putc('\n');
+	vcom.puts(str);
+    vcom.putchar('\n');
 }
 
 void Console::gets(char* str)
 {
 	char c;
-	c = vcom.getc();
+	c = vcom.getchar();
 	while((c != '\n') && (c != '\r'))
 	{
 		*str++ = c;
-		c = vcom.getc();
+		c = vcom.getchar();
 	}
 	*str = '\0';
 }
 
-
-
 char Console::getchar(void)
 {
-	char c = vcom.getc();
-	vcom.putc(c);
+	char c = vcom.getchar();
+	vcom.putchar(c);
 	return c;
 }
 
-
-
 char Console::getline(char *line, uint8_t max)
 {
-char s = 0;
+	uint8_t len = 0;
 	char c;
-	c = vcom.getc();
-	while((c != '\n') && (c != '\r'))
-	{
+
+	do{
+		c = vcom.getchar();
 		if(c == '\b'){
-			if(s != 0){
-				vcom.putc(c);
-				vcom.putc(' ');
-				vcom.putc(c);
+			if(len != 0){
+				vcom.putchar(c);
+				vcom.putchar(' ');
+				vcom.putchar(c);
 				line--;
-				s--;
+				len--;
 			}
 		}else{
-			if(s < max){
-				vcom.putc(c);
+			if(len < max){
+				vcom.putchar(c);
 			   *line++ = c;
-			   s++;
+			   len++;
 			}			
 		}
-		c = vcom.getc();
-	}
+	}while((c != '\n') && (c != '\r'));
 	*line = '\0';
-	return s;
+	return len;
 }
 
 void Console::print (const char* str, ...)
@@ -140,7 +144,7 @@ void Console::print (const char* str, ...)
 
 	while ((d = *str++) != 0) {
 		if (d != '%') {
-			vcom.putc(d); continue;
+			vcom.putchar(d); continue;
 		}
 		d = *str++; w = r = s = l = 0;
 		if(d == '.'){           
@@ -163,7 +167,7 @@ void Console::print (const char* str, ...)
 			continue;
 		}
 		if (d == 'c') {
-			vcom.putc((char)va_arg(arp, int));
+			vcom.putchar((char)va_arg(arp, int));
 			continue;
 		}		
 		if (d == 'u') r = 10;
