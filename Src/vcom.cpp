@@ -17,23 +17,37 @@ void Vcom::init(void){
 	fifoInit(&rxfifo);
 }
 
-char Vcom::getc()
+char Vcom::getchar(void)
 {
-    uint32_t len;
-	int c;
-	c = EOF;
+	int c = EOF;
 	while(c == EOF)
 	{
-		if(CDC_Receive_FS((uint8_t*)&c, &len) != USBD_OK)
-            return EOF;
+		fifoTake(&rxfifo, (uint8_t*)&c);
 	}
 	return (char)c;
 }
 
-void Vcom::putc(char c){
-	CDC_Transmit_FS((uint8_t*)&c, 1);
+uint8_t Vcom::checkForChar(char *c){
+	
+	return fifoTake(&rxfifo, (uint8_t*)c);
 }
 
-void Vcom::putString(const char *s, uint8_t len){
-	CDC_Transmit_FS((uint8_t*)s, len);
+void putAndRetry(uint8_t *data, uint16_t len){
+uint32_t retries = 1000;
+	while(retries--){
+		if(	CDC_Transmit_FS(data, len) == USBD_OK)
+			break;
+	}
+}
+void Vcom::putchar(char c){
+	putAndRetry((uint8_t*)&c, 1);
+}
+
+void Vcom::puts(const char *s){
+uint16_t len = 0;
+	
+	while( *((const char*)(s + len)) != '\0'){
+		len++;	
+	}
+	putAndRetry((uint8_t*)s, len);
 }

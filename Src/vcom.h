@@ -7,13 +7,15 @@ extern "C" {
 #endif
 
 class Vcom{
-	
+
 public:  
-    // All calls are blocking
+    
+    uint8_t checkForChar(char *c);
     void init(void);
-	void putc(char c);
-	char getc();
-    void putString(const char *s, uint8_t len);
+	char getchar(void);
+	void putchar(char c);
+    void puts(const char* str);
+    Vcom(void) {init();}
 };
 
 
