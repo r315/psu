@@ -83,11 +83,17 @@ uchar i,x = MENU_START_COL;
 struct MenuItem *selectMenuItem(struct MenuItem *items, uchar nitems){
 unsigned char done = 1, selection = 0;	
 	do{
-		if(done)
+		scanKeys();
+		if(scanKeysState() == BUTTON_PRESSED){
+		//if(done)
 			//drawMenuItems(items,nitems,selection);
 			drawMenuItem(&items[selection]);
-		done = scanKeysAndUpdateValue(nitems-1,0,&selection);			
+		//done = scanKeysAndUpdateValue(nitems-1, 0, &selection);
+		done = updateValueForKey(nitems-1, 0, &selection);
+		}else
+			done = BUTTON_EMPTY;
 	}while (done != M_KEY);	
+	
 	return &items[selection];
 }
 //------------------------------------------------------

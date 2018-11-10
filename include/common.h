@@ -38,8 +38,6 @@ typedef struct Pwm{
 	uchar maxduty;
 }pwm;
 
-
-
 void printChar(uchar c, uchar atr);
 void printInt(uchar c, uchar p, unsigned int value);
 void printDecimal(uchar x, uchar y, uchar bigdigit, unsigned int val, unsigned int magnitude, uchar dot);

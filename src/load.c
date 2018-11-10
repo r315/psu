@@ -131,7 +131,7 @@ switch(LD_state){
 return OFF;
 }
 
-void electronicLoad(void){
+void batDischarge(void){
 uchar updateTime = 0;
 	enableLoad(ON);
 	drawSetsUnits();	
@@ -147,4 +147,34 @@ uchar updateTime = 0;
 	}while(!LD_StateProcess());
 	setDuty(ISET_CH, MIN_IOUT);
 }
+
+void electronicLoad(void){
+uchar updateTime = 0;
+uchar done = 0;
+	enableLoad(ON);
+	drawSetsUnits();
+	
+	do{
+		scanKeys();
+		if(scanKeysState() == BUTTON_PRESSED || scanKeysState() == BUTTON_HOLD){		
+			if(updateValueForKey(MAX_IOUT_PWM_VAL, MIN_IOUT_PWM_VAL, &LD_pwmval) != M_KEY){
+				drawSetIcon(77, 3);
+				drawLoadSetsValues();
+				setDuty(ISET_CH, LD_pwmval);
+			}
+			else
+				done = 1;
+		}
+		if(!updateTime){			
+			updateDro();			
+			lcdUpdate();			
+			updateTime = 50;
+		}		
+		updateTime--;
+		delayMs(100);
+	}while(!done);
+	
+	setDuty(ISET_CH, MIN_IOUT);
+}
+
 

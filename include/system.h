@@ -40,8 +40,11 @@ extern bank1 mesure outvalues;
 #define VOUT_CH2 4 // AN
 #define IOUT_CH  2 // AN
 
+
 char done(void);
 char scanKeys(void);
+char scanKeysState(void);
+char scanKeysValue(void);
 char keyDown(char key);
 char filterKey(void);
 char scanKeysAndUpdateValue(uchar max, uchar min, uchar *var);

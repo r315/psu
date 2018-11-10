@@ -3,6 +3,14 @@
 
 #include <htc.h>
 
+typedef enum Benvent{
+    BUTTON_EMPTY = 0x0,
+    BUTTON_PRESSED,
+    BUTTON_TIMING,
+    BUTTON_HOLD,
+    BUTTON_RELEASED	
+}Bstate;
+
 #define BPORT   PORTB
 #define BPORTMask 0x07
 #define L_KEY (1<<2)	//RB2
