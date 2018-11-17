@@ -17,6 +17,10 @@ void Vcom::init(void){
 	fifoInit(&rxfifo);
 }
 
+char Vcom::getCharNonBlocking(char *c){
+	return fifoTake(&rxfifo, (uint8_t*)c);
+}
+
 char Vcom::getchar(void)
 {
 	int c = EOF;

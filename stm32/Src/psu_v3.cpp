@@ -1,8 +1,9 @@
 #include "stm32f1xx_hal.h"
 #include "console.h"
-#include "command.h"
+#include "common.h"
 #include "seven_seg.h"
 
+Console console;
 
 class VoltageDro : public Command{
     double v = 0;
@@ -19,15 +20,16 @@ public:
 
 
 extern "C" void psu_v3(void){
-Console console;
 VoltageDro vdro;
+CmdAdc adc1;
 
     console.addCommand(&vdro);
+    console.addCommand(&adc1);
 
     while(1){
-	    //(dynamic_cast<Console*>(&console))->process();
+	    
         console.process();
-        HAL_Delay(20);
+        //HAL_Delay(20);
         LCD_Update();
     }
 }

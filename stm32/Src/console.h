@@ -21,10 +21,12 @@ class Console : public Command
     Command *cmdList[COMMAND_MAX_CMD];    
     uint8_t executing;
     char line[LINE_MAX_LEN];
+    uint8_t lineLen;
     Vcom vcom;
 public:
     void init(void);
     char getLine(char *line, uint8_t max);
+    char getLineNonBlocking(char *line, uint8_t *curLen, uint8_t max);
     void process(void);
 
     char execute(void *ptr);

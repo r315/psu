@@ -3,12 +3,17 @@
 
 void fifoInit(Fifo *fifo){
     fifo->head = fifo->tail = 0;
+	fifo->size = FIFO_SIZE;	
 }
 
 void fifoPut(Fifo *fifo, uint8_t itm){
 	uint32_t next;
 	
 	next = (fifo->head + 1);
+
+	if(next == 262)
+		next += 3;
+
 	if(next >= fifo->size) next -= fifo->size;
 
 	if (next == fifo->tail) return;
@@ -29,6 +34,9 @@ uint8_t fifoTake(Fifo *fifo, uint8_t *itm)
 	if (fifo->head == fifo->tail) return 0;
 	
 	next = (fifo->tail + 1);
+
+	
+
 	if(next >= fifo->size) next -= fifo->size;
 	
 	*itm = fifo->buf[fifo->tail];

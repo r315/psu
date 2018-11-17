@@ -97,6 +97,7 @@ CPP_SOURCES = \
 Src/vcom.cpp \
 Src/console.cpp \
 Src/psu_v3.cpp \
+Src/cmd_adc.cpp \
 
 # ASM sources
 ASM_SOURCES =  \

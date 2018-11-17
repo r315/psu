@@ -16,8 +16,8 @@ static const char prompt[] = {"psu >"};
 void Console::init(void){
 		memset(cmdList, 0 , COMMAND_MAX_CMD * sizeof(Command*));	
 		executing = NO;
-		addCommand(this);
-		vcom.puts("\rConsole Started");
+		addCommand(this);		
+		print(prompt);
 }
 
 void Console::help(void){    
@@ -75,9 +75,11 @@ char Console::execute(void *ptr){
 }
 
 void Console::process(void){
-	print(prompt);
-	uint8_t len = getline(line,LINE_MAX_LEN);
-	parseCommand(line, len);
+	if(getLineNonBlocking(line, &lineLen, LINE_MAX_LEN)){
+		parseCommand(line, lineLen);
+		print(prompt);
+		lineLen = 0;
+	}
 }
 
 /**
@@ -106,6 +108,38 @@ char Console::getchar(void)
 	char c = vcom.getchar();
 	vcom.putchar(c);
 	return c;
+}
+
+char Console::getLineNonBlocking(char *line, uint8_t *curLen, uint8_t max){
+char c;
+uint8_t len = 0;
+
+	if(vcom.getCharNonBlocking(&c)){
+		len = *curLen;
+		if(c == '\b'){
+			if(len > 0){
+				vcom.putchar(c);
+				vcom.putchar(' ');
+				vcom.putchar(c);
+				len--;				
+			}
+		}else{
+			if(len < max){
+				vcom.putchar(c);
+			   *(line + len) = c;
+			   len++;
+			}			
+		}
+		
+		*curLen = len;
+		
+		if((c == '\n') || (c == '\r')){
+			*(line+len) = '\0';			
+		}else{
+			len = 0;
+		}		
+	}
+	return len;
 }
 
 char Console::getline(char *line, uint8_t max)
