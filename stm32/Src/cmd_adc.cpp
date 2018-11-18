@@ -1,6 +1,6 @@
 
 
-#include "cmd_adc.h"
+#include "common.h"
 
 void CmdAdc::help(void){ 
 

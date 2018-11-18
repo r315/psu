@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-#include "common.h"     // all drivers headers should be placed here 
+#include "command.h"
 
 class CmdAdc : public Command{
 

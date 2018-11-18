@@ -5,6 +5,9 @@
 #ifdef __cplusplus
 extern "C" {
 
+#include <button.h>
+
+#include "board.h"
 #include "console.h"
 #include "cmd_adc.h"
 
