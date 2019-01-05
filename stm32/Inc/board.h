@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "stm32f1xx_hal.h"
+#include "stm32f1xx.h"
 
 /**
  * HW symbols for button handling
@@ -25,6 +26,36 @@ inline uint32_t ElapsedTicks(uint32_t start_ticks){
     return (current > start_ticks) ? current - start_ticks : 0xFFFFFFFF - start_ticks + current;
 }
 
+#define DelayMs(d) HAL_Delay(d)
+
+
+/**
+ * Analog Pins
+ * */
+ 
+ // VOUT PA0
+ // IOUT PA1
+ // VLOAD PA2
+ // ILOAD PA3
+ 
+ /**
+ * PWM Pins
+ * */
+ // PB0 PWM_VOUT
+ // PB1 PWM_IOUT
+ // PWM_ILOAD
+ // PWM_VLOAD
+ 
+ /**
+ * I2C
+ * */
+ // PB10 SCL
+ // PB11 SDA
+ 
+ 
+ 
+ 
+ 
 #ifdef __cplusplus
 }
 #endif
