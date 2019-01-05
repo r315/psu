@@ -27,6 +27,13 @@ char *nextParameter(char *line){
     return line;
 }
 
+/**
+ * Try to parse an hex string to integer from parameter line
+ * and move to line pointer to next parameter
+ * 
+ * \param  line pointer to string pointer
+ * \return parsed hexvalue
+ * */
 uint32_t nextHex(char **line){
 uint32_t hex;    
     hex = hatoi(*line);

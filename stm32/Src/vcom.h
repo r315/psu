@@ -16,6 +16,7 @@ public:
 	void putchar(char c);
     void puts(const char* str);
     char getCharNonBlocking(char *c);
+    char kbhit(void);
     Vcom(void) {init();}
 };
 

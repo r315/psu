@@ -40,6 +40,7 @@ public:
     void gets(char* str);
     char getline(char *line, uint8_t max);
     void print(const char* str, ...);
+    uint8_t kbhit(void);
 
     Console(void) : Command("help"){ init(); }
 };

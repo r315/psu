@@ -197,7 +197,7 @@ void Console::print (const char* str, ...)
 		}
 		if (!d) break;
 		if (d == 's') {
-			puts(va_arg(arp, char*));
+			vcom.puts(va_arg(arp, char*));
 			continue;
 		}
 		if (d == 'c') {
@@ -211,22 +211,26 @@ void Console::print (const char* str, ...)
 		if(d == 'f'){
 			if(!f)
 				w = 6;						// dafault 6 decimal places
-			puts(pftoa(va_arg(arp, double), w));			
+			vcom.puts(pftoa(va_arg(arp, double), w));			
 			continue;
 		}	
 		if (!r) break;
 		if (s) w = -w;
 		if (l) {
-			puts(pitoa((long)va_arg(arp, long), r, w));
+			vcom.puts(pitoa((long)va_arg(arp, long), r, w));
 		} else {
 			if (r > 0)
-				puts(pitoa((unsigned long)va_arg(arp, int), r, w));
+				vcom.puts(pitoa((unsigned long)va_arg(arp, int), r, w));
 			else
-				puts(pitoa((long)va_arg(arp, int), r, w));
+				vcom.puts(pitoa((long)va_arg(arp, int), r, w));
 		}
 	}
 
 	va_end(arp);
 }
 
+
+uint8_t Console::kbhit(void){
+	return vcom.kbhit();
+}
 

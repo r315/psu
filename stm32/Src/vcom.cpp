@@ -55,3 +55,8 @@ uint16_t len = 0;
 	}
 	putAndRetry((uint8_t*)s, len);
 }
+
+
+char Vcom::kbhit(void){
+	return fifoAvailable(&rxfifo);
+}
