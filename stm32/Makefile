@@ -97,6 +97,7 @@ Src/fifo.c \
 Src/adc.c \
 Src/tim.c \
 psu_v3/adc_psuv3.c \
+psu_v3/pwm_psuv3.c \
 
 
 CPP_SOURCES = \

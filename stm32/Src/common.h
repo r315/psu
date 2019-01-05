@@ -10,8 +10,9 @@ extern "C" {
 
 #include <button.h>
 #include "board.h"
-#include "adc_psuv3.h"
 #include "seven_seg.h"
+#include "adc_psuv3.h"
+#include "pwm_psuv3.h"
 
 #ifdef __cplusplus
 }
