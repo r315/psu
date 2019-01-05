@@ -1,12 +1,20 @@
 
-
 #include "common.h"
 
 void CmdAdc::help(void){ 
-
+console.print("Adc Command\n");
 }
 
 char CmdAdc::execute(void *ptr){ 
-    console.print("Adc Command\n");
+uint16_t *buf;
+    do{
+        console.print("\n");
+        buf = ADC_LastConvertion();
+        for(uint8_t i = 0; i < 4; i++){
+            console.print("ADC[%d] = %u \n", i, buf[i]);
+        }      
+        DelayMs(400);
+    }while(!console.kbhit());
+    
     return CMD_OK; 
 }

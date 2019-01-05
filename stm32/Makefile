@@ -95,14 +95,15 @@ $(LIBEMB_PATH)/button/button.c \
 Src/strfunctions.c \
 Src/fifo.c \
 Src/adc.c \
-Src/tim.c
+Src/tim.c \
+psu_v3/adc_psuv3.c \
 
 
 CPP_SOURCES = \
 Src/vcom.cpp \
 Src/console.cpp \
-Src/psu_v3.cpp \
 Src/cmd_adc.cpp \
+psu_v3/psu_v3.cpp \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -166,7 +167,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
 -IDrivers/CMSIS/Include \
 -IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc\
--I$(LIBEMB_PATH)/include
+-I$(LIBEMB_PATH)/include \
+-ISrc \
 
 
 # compile gcc flags
