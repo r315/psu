@@ -10,8 +10,7 @@ static uint16_t adcres[ADC_SAMPLES];
  * simultaneous convertion. it converts 4 channels and transfers 
  * the result to memory using DMA 
  * 
- * \param ms    Time between events
- * \param dst   pointer to destination, at least 4*uint16_t
+ * \param ms    Time between convertions
  ************************************************************ */
 
 void ADC_Init(uint16_t ms){
@@ -30,18 +29,17 @@ void ADC_Init(uint16_t ms){
                             DMA_CCR_TCIE;       // Enable end of transfer interrupt    
     DMA1_Channel1->CCR |=   DMA_CCR_EN;
 
-     /* Configure Timer 3 */
-    RCC->APB1ENR  |= RCC_APB1ENR_TIM3EN;    // Enable Timer 3
-    RCC->APB1RSTR |= RCC_APB1ENR_TIM3EN;    // Reset timer registers
-    RCC->APB1RSTR &= ~RCC_APB1ENR_TIM3EN;
+     /* Configure Timer 2 */
+    RCC->APB1ENR  |= RCC_APB1ENR_TIM2EN;    // Enable Timer 2
+    RCC->APB1RSTR |= RCC_APB1ENR_TIM2EN;    // Reset timer registers
+    RCC->APB1RSTR &= ~RCC_APB1ENR_TIM2EN;
 
-    TIM3->CR2 = (4<<TIM_CR2_MMS_Pos);       // OC1REF signal is used as trigger output (TRGO)
-    TIM3->CCMR1 = (3<<TIM_CCMR1_OC1M_Pos);  // Toggle OC1REF on match
-    TIM3->CCER = TIM_CCER_CC1E;             // Enable compare output for CCR1
-    TIM3->PSC = (SystemCoreClock/ADC_TRIGGER_CLOCK) - 1; // 500kHz clock
+    TIM2->CCMR1 = (3<<TIM_CCMR1_OC2M_Pos);  // Toggle OC2REF on match
+    TIM2->CCER = TIM_CCER_CC2E;             // Enable compare output for CCR2
+    TIM2->PSC = (SystemCoreClock/ADC_TRIGGER_CLOCK) - 1; // 500kHz clock
 
-    TIM3->ARR = (ms * (SystemCoreClock/ADC_TRIGGER_CLOCK)) - 1;
-    TIM3->CCR1 = TIM3->ARR;
+    TIM2->ARR = (ms * (SystemCoreClock/ADC_TRIGGER_CLOCK)) - 1;
+    TIM2->CCR2 = TIM2->ARR;
 
 #if defined (OUTPUT_ADC_TRIGGER)
     /* Configure TIM3_CH1 Output PA6 */
@@ -56,8 +54,10 @@ void ADC_Init(uint16_t ms){
 
     ADC1->CR2 = ADC_CR2_ADON;               // Turn on ADC1
     ADC1->CR2 |=
-            ADC_CR2_EXTTRIG |               // Only the rising edge of external signal can start the conversion
-            ADC_CR2_EXTSEL_2 |              // Select TIM3_TRGO as Trigger source
+            ADC_CR2_EXTTRIG  |              // Only the rising edge of external signal can start the conversion
+            //ADC_CR2_EXTSEL_2 |              // 0b100 Select TIM3_TRGO as Trigger source
+            ADC_CR2_EXTSEL_1 |              // 0b011 Select TIM2_CC2 Event
+            ADC_CR2_EXTSEL_0 |              // 
             ADC_CR2_DMA;                    // Enable DMA Request
     ADC1->CR1 = ADC_CR1_DUALMOD_SIMULTANEOUS;
 
@@ -85,7 +85,7 @@ void ADC_Init(uint16_t ms){
     NVIC_SetPriority(DMA1_Channel1_IRQn, 0); // Highest priority
     NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
-    TIM3->CR1 |= TIM_CR1_CEN;
+    TIM2->CR1 |= TIM_CR1_CEN;
 
     eotcb = NULL;
 }

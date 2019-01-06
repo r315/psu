@@ -18,8 +18,7 @@ extern "C" {
  * simultaneous convertion. it converts 4 channels and transfers 
  * the result to memory using DMA 
  * 
- * \param ms    Time between events
- * \param dst   pointer to destination, at least 4*uint16_t
+ * \param ms    Time between convertions
  ************************************************************ */
 void ADC_Init(uint16_t);
 
