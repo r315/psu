@@ -8,6 +8,7 @@ extern "C" {
 #include <stdint.h>
 
 #define PWM_RESOLUTION 10UL
+#define PWM_MAXVALUE (1<<PWM_RESOLUTION)
 
 /**
  * Initialyse PWM signal on PA7-6 and PB1-0 pins
@@ -26,6 +27,13 @@ void PWM_Init(uint16_t *);
  * \return none
  * */
 void PWM_Set(uint8_t, uint16_t);
+
+/**
+ * Returns the current value for the given channel
+ * \param  ch   
+ * \retusn 16bit pwm value
+ * */
+uint16_t PWM_Get(uint8_t);
 
 #ifdef __cplusplus
 }

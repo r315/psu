@@ -6,6 +6,7 @@
 extern "C" {
 #include "console.h"
 #include "cmd_adc.h"
+#include "cmd_pwm.h"
 #endif
 
 #include <button.h>

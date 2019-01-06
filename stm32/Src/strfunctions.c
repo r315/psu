@@ -32,13 +32,15 @@ char *nextParameter(char *line){
  * and move to line pointer to next parameter
  * 
  * \param  line pointer to string pointer
- * \return parsed hexvalue
+ * \param  value pointer to output value
+ * \return 1 if success and increments line pointer, 0 on failure no parameters are affected
  * */
-uint32_t nextHex(char **line){
-uint32_t hex;    
-    hex = hatoi(*line);
-    *line = nextParameter(*line);
-    return hex;
+uint8_t nextHex(char **line, uint32_t *value){ 
+    if(hatoi(*line, value)){
+    	*line = nextParameter(*line);
+		return 1;
+	}
+    return 0;
 }
 
 int32_t nextInt(char **line){
@@ -158,8 +160,13 @@ char c;
 }
 #endif
 
-// convert hex str to integer
-uint32_t hatoi(char *str){
+/**
+ * Try to parse a string representing a hex number to integer
+ * \param  str	pointer to input string
+ * \param  value  pointer to output value
+ * \return 1 if success, 0 if failed
+ * */ 
+uint8_t hatoi(char *str, uint32_t *value){
 uint32_t val = 0;	
 char c = *str;
 	do{
@@ -171,7 +178,7 @@ char c = *str;
         }else if(c > '/' && c < ':'){
 			c -= '0';
         }else{
-			return -1;
+			return 0;
 		}
 
 		val |= c;		
@@ -179,7 +186,8 @@ char c = *str;
         
 	}while( c != '\0' && c != ' ' && c != '\n' );
 
-	return val;
+	*value = val;
+	return 1;
 }
 
 

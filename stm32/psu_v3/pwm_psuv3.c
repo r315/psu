@@ -31,9 +31,14 @@ void PWM_Init(uint16_t *initial){
 
 void PWM_Set(uint8_t ch, uint16_t value){
 
-    if(value >  PWM_RESOLUTION)    
+    if(value >  PWM_MAXVALUE)    
         return;
 
     uint32_t *ccr = (uint32_t*)&TIM3->CCR1;
-    ccr[ch] = value;    
+    ccr[ch&3] = value;    
+}
+
+uint16_t PWM_Get(uint8_t ch){
+    uint32_t *ccr = (uint32_t*)&TIM3->CCR1;     
+    return ccr[ch&3];
 }
