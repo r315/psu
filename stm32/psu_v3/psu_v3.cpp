@@ -1,6 +1,15 @@
 #include "common.h"
 #include "tim.h"
 
+/**
+ * HW modules configuration
+ * TIM4   program loop tick
+ * TIM2   ADC Trigger
+ * DMA1   ADC data transfer
+ * ADC1-2 Dual configuration for simultaneous convertion
+ * TIM3   PWM signals
+ * */
+
 Console console;
 
 class VoltageDro : public Command{
@@ -90,11 +99,12 @@ extern "C" void psu_v3(void){
 VoltageDro vdro;
 CmdAdc adc1;
 
-
     HAL_TIM_Base_Start_IT(&htim4); // start loop
 
     ADC_Init(100);
     ADC_SetCallBack(UpdateResult);
+
+    PWM_Init(PWM_FREQ, 512);
 
     console.addCommand(&vdro);
     console.addCommand(&adc1);
