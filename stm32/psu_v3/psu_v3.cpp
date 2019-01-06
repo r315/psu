@@ -98,13 +98,14 @@ extern "C" void psu_v3_loop(void){
 extern "C" void psu_v3(void){
 VoltageDro vdro;
 CmdAdc adc1;
+uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
 
     HAL_TIM_Base_Start_IT(&htim4); // start loop
 
     ADC_Init(100);
     ADC_SetCallBack(UpdateResult);
 
-    PWM_Init(PWM_FREQ, 512);
+    PWM_Init(pwm_start_values);
 
     console.addCommand(&vdro);
     console.addCommand(&adc1);

@@ -7,15 +7,25 @@ extern "C" {
 
 #include <stdint.h>
 
-#define PWM_FREQ 10000UL
+#define PWM_RESOLUTION 10UL
 
 /**
- * Initialyse pwm on PA7-6, PB1-0 
+ * Initialyse PWM signal on PA7-6 and PB1-0 pins
+ * Timer 3 is used to generate pwm signals with 10bit resolution,
+ * which using a 72MHz system frequency results in a 35,156KHz frequency
  * 
- * \param  freq     PWM signal frequency
- * \param  value    initial value [0...]
+ * \param  none
  * */ 
-void PWM_Init(uint32_t freq, uint16_t value);
+void PWM_Init(uint16_t *);
+
+/**
+ * Sets duty cycle for the given channel
+ * \param  ch     Channel 0-3 -> channel 1-4
+ * \param  value  10bit value
+ * 
+ * \return none
+ * */
+void PWM_Set(uint8_t, uint16_t);
 
 #ifdef __cplusplus
 }
