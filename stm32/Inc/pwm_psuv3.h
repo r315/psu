@@ -8,7 +8,8 @@ extern "C" {
 #include <stdint.h>
 
 #define PWM_RESOLUTION 10UL
-#define PWM_MAXVALUE (1<<PWM_RESOLUTION)
+#define PWM_MAX_VALUE (1<<PWM_RESOLUTION)
+#define PWM_MIN_VALUE 5
 
 /**
  * Initialyse PWM signal on PA7-6 and PB1-0 pins

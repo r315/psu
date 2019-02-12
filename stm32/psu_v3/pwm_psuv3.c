@@ -21,21 +21,26 @@ void PWM_Init(uint16_t *initial){
     TIM3->CCR3 = initial[2];
     TIM3->CCR4 = initial[3];
     
-    TIM3->CR1 |= TIM_CR1_CEN; // Start pwm before eneble outputs
+    TIM3->CR1 |= TIM_CR1_CEN;     // Start pwm before enable outputs
 
     GPIOA->CRL &= ~(0xFF << 24);
     GPIOA->CRL |= (0xAA << 24);   // PA7-6 AFO-PP
     GPIOB->CRL &= ~(0xFF << 0);
-    GPIOB->CRL |= (0xAA << 0);   // PB1-0 AFO-PP
+    GPIOB->CRL |= (0xAA << 0);    // PB1-0 AFO-PP
 }
 
-void PWM_Set(uint8_t ch, uint16_t value){
+/**
+ * Set new pwm value for the given channel
+ * \param ch        channel to be updated 0-3
+ * \param newvalue  New pwm value
+ * */
+void PWM_Set(uint8_t ch, uint16_t newvalue){
 
-    if(value >  PWM_MAXVALUE)    
+    if(newvalue >  PWM_MAX_VALUE || newvalue < PWM_MIN_VALUE)    
         return;
 
     uint32_t *ccr = (uint32_t*)&TIM3->CCR1;
-    ccr[ch&3] = value;    
+    ccr[ch&3] = newvalue;    
 }
 
 uint16_t PWM_Get(uint8_t ch){

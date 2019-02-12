@@ -6,20 +6,11 @@
 extern "C" {
 #endif
 
-class Vcom{
+#include <fifo.h>
 
-public:  
-    
-    uint8_t checkForChar(char *c);
-    void init(void);
-	char getchar(void);
-	void putchar(char c);
-    void puts(const char* str);
-    char getCharNonBlocking(char *c);
-    char kbhit(void);
-    Vcom(void) {init();}
-};
+#define VCOM_FIFO_SIZE 512
 
+extern fifo_t rxfifo;
 
 #ifdef __cplusplus
 }

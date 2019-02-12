@@ -4,9 +4,10 @@
 
 #ifdef __cplusplus
 extern "C" {
-#include "console.h"
-#include "cmd_adc.h"
-#include "cmd_pwm.h"
+#include <console.h>
+#include "cmdhelp.h"
+#include "cmdadc.h"
+#include "cmdpwm.h"
 #endif
 
 #include <button.h>

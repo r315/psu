@@ -62,8 +62,20 @@ Src/usbd_desc.c \
 Src/usbd_conf.c \
 Src/usb_device.c \
 Src/stm32f1xx_it.c \
-/Src/system_stm32f1xx.c \
+Src/i2c.c \
+Src/gpio.c \
+Src/ssd1306.c \
+Src/seven_seg.c \
+Src/usbd_cdc_if.c \
+Src/adc.c \
+Src/tim.c \
+psu_v3/adc_psuv3.c \
+psu_v3/pwm_psuv3.c \
+Src/system_stm32f1xx.c \
 Src/stm32f1xx_hal_msp.c \
+$(LIBEMB_PATH)/button/button.c \
+$(LIBEMB_PATH)/misc/strfunc.c \
+$(LIBEMB_PATH)/misc/fifo.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
@@ -86,26 +98,13 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \
-Src/i2c.c \
-Src/gpio.c \
-Src/ssd1306.c \
-Src/seven_seg.c \
-Src/usbd_cdc_if.c \
-$(LIBEMB_PATH)/button/button.c \
-Src/strfunctions.c \
-Src/fifo.c \
-Src/adc.c \
-Src/tim.c \
-psu_v3/adc_psuv3.c \
-psu_v3/pwm_psuv3.c \
-
+Src/vcom.c \
 
 CPP_SOURCES = \
-Src/vcom.cpp \
-Src/console.cpp \
-Src/cmd_adc.cpp \
-Src/cmd_pwm.cpp \
 psu_v3/psu_v3.cpp \
+$(LIBEMB_PATH)/console/console.cpp \
+Src/cmdadc.cpp \
+Src/cmdpwm.cpp \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -169,7 +168,7 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
 -IDrivers/CMSIS/Include \
 -IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc\
--I$(LIBEMB_PATH)/include \
+-I"$(LIBEMB_PATH)"/include \
 -ISrc \
 
 

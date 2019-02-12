@@ -1,3 +1,4 @@
+
 #include "common.h"
 #include "tim.h"
 
@@ -10,9 +11,9 @@
  * TIM3   PWM signals
  * */
 
-Console console;
+extern StdOut vcom;
 
-class VoltageDro : public Command{
+class VoltageDro : public ConsoleCommand{
     double v = 0;
 public:
     char execute(void *ptr){
@@ -22,7 +23,7 @@ public:
     }
     void help(void){}
 
-    VoltageDro(void) : Command("vdro") {}
+    VoltageDro(void) : ConsoleCommand("vdro") {}
 };
 
 enum Mode{
@@ -60,8 +61,6 @@ void UpdateResult(uint16_t *adcres){
     done += 1;
 }
 
-
-
 void handleButtons(void){
     BUTTON_Read();
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
@@ -97,6 +96,8 @@ extern "C" void psu_v3_loop(void){
 
 extern "C" void psu_v3(void){
 VoltageDro vdro;
+Console console;
+ConsoleHelp help;
 CmdAdc adc1;
 CmdPwm pwm;
 
@@ -108,6 +109,10 @@ uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
     ADC_SetCallBack(UpdateResult);
 
     PWM_Init(pwm_start_values);
+
+    vcom.init();    
+    console.init(&vcom, "PSU >");
+    console.addCommand(&help);
 
     console.addCommand(&vdro);
     console.addCommand(&adc1);

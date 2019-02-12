@@ -18,6 +18,7 @@ extern "C" {
 
 #define BUTTON_Capture() (~GPIOB->IDR & BUTTON_MASK)
 #define BUTTON_MASK (BUTTON_LEFT | BUTTON_RIGHT | BUTTON_A)
+#define BUTTON_Cfg()
 
 #define GetTicks HAL_GetTick
 
