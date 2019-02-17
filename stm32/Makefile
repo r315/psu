@@ -236,7 +236,7 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 	@echo "--- Linking ---"
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 	@echo "--- Size ---"
-	$(SZ) $@
+	$(SZ) -A $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@

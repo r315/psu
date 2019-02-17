@@ -39,6 +39,7 @@ uint32_t channel;
 
                 break;
         }       
-    }    
+    }
+    console->putc('\n');
     return CMD_OK; 
 }
