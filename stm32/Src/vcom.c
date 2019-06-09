@@ -50,9 +50,9 @@ uint16_t len = 0;
 
 StdOut vcom = {
     .init = vc_init,
-    .getchar = vc_getchar,
-    .putchar = vc_putchar,
-    .puts = vc_puts,
+    .xgetchar = vc_getchar,
+    .xputchar = vc_putchar,
+    .xputs = vc_puts,
     .getCharNonBlocking = vc_getCharNonBlocking,
     .kbhit = vc_kbhit
 };

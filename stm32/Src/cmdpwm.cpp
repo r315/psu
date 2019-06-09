@@ -25,7 +25,7 @@ uint32_t channel;
 
     uint8_t c = 0;
     uint16_t curValue = PWM_Get(channel);
-    while( (c = console->getchar()) != 'q'){
+    while( (c = console->xgetchar()) != 'q'){
         switch(c){
             case '+':
                 if(curValue < PWM_MAX_VALUE)
@@ -40,6 +40,6 @@ uint32_t channel;
                 break;
         }       
     }
-    console->putc('\n');
+    console->xputchar('\n');
     return CMD_OK; 
 }

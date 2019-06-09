@@ -29,22 +29,18 @@ OPT = -Og
 # paths
 #######################################
 # source path
-SOURCES_DIR =  \
-Application \
-Application/User/Src/usbd_dfu_if.c \
+SOURCES_PATH =  \
+Src \
+startup \
 Drivers \
-Application/User/Src \
-Application/User/Src/usb_device.c \
 Drivers/CMSIS \
-Application/User/Src/usbd_conf.c \
-Drivers/STM32F1xx_HAL_Driver \
-Application/User/Src/usbd_desc.c \
-Application/User \
-Middlewares/USB_Device_Library \
-Middlewares \
-Application/User/Src/stm32f1xx_it.c \
-Application/User/Src/stm32f1xx_hal_msp.c \
-Application/User/Src/main.c
+Drivers/STM32F1xx_HAL_Driver/Src \
+Middlewares/ST/STM32_USB_Device_Library/Core/Src/ \
+Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/ \
+$(LIBEMB_PATH)/button \
+$(LIBEMB_PATH)/misc \
+$(LIBEMB_PATH)/console \
+psu_v3 \
 
 # firmware library path
 PERIFLIB_PATH = 
@@ -102,7 +98,7 @@ Src/vcom.c \
 
 CPP_SOURCES = \
 psu_v3/psu_v3.cpp \
-$(LIBEMB_PATH)/console/console.cpp \
+console.cpp \
 Src/cmdadc.cpp \
 Src/cmdpwm.cpp \
 
@@ -208,31 +204,36 @@ $(TARGET).cfg:
 program: $(BUILD_DIR)/$(TARGET).elf $(TARGET).cfg
 	openocd -f $(TARGET).cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
+test:
+#@echo $(SOURCES_PATH)
+	@echo $(OBJECTS)
 #######################################
 # build the application
 #######################################
 # list of objects
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o))) 
-vpath %.c $(sort $(dir $(C_SOURCES)))
+#vpath %.c $(sort $(dir $(C_SOURCES)))
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SOURCES:.cpp=.obj)))
-vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
+#vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
-vpath %.s $(sort $(dir $(ASM_SOURCES)))
+#vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
-$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
+VPATH +=$(SOURCES_PATH)
+
+$(BUILD_DIR)/%.o: %.c #Makefile | $(BUILD_DIR)
 	@echo "Compiling  " $<
 	@$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
-$(BUILD_DIR)/%.obj: %.cpp Makefile | $(BUILD_DIR)
+$(BUILD_DIR)/%.obj: %.cpp #Makefile | $(BUILD_DIR)
 	@echo "Compiling  " $<
 	@$(CPP) -c $(CFLAGS)  -fno-exceptions -fno-unwind-tables -fno-rtti -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
 
-$(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: %.s #Makefile | $(BUILD_DIR)
 	@echo "Assembling " $<
 	@$(AS) -c $(CFLAGS) $< -o $@
 
-$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
+$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) #Makefile
 	@echo "--- Linking ---"
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 	@echo "--- Size ---"

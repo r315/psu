@@ -15,12 +15,12 @@ public:
 	void init(void *params) { console = static_cast<Console*>(params); }
 
 	void help(void) {
-		console->puts("Available commands:\n\n");
+		console->xputs("Available commands:\n\n");
 		
 		for (uint8_t i = 0; i < console->getCmdListSize(); i++) {			
 				console->print("\t%s\n", console->getCmdIndexed(i)->getName());
 		}
-		console->putc('\n');
+		console->xputchar('\n');
 	}
 
 	char execute(void *ptr) {
