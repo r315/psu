@@ -1,5 +1,0 @@
-build/
-.vscode/
-Drivers/CMSIS
-*.jdebug
-*.cfg

@@ -1,7 +1,8 @@
 PSUSimulator.vcxproj
 PSUSimulator.vcxproj.filters
 PSUSimulator.vcxproj.user
-Debug
-psu.pnproj
-psu.pnps
+Debug/
 .vscode/
+build/
+*.zip
+
