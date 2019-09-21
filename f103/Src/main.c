@@ -56,7 +56,7 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
-#include "seven_seg.h"
+#include "board.h"
 #include "usbd_cdc_if.h"
 //#include "console.h"
 /* USER CODE END Includes */
@@ -66,7 +66,7 @@
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 //Console console;
-void psu_v3(void);
+void psu(void);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -86,15 +86,17 @@ void SystemClock_Config(void);
   *
   * @retval None
   */
+extern uint32_t g_pfnVectors;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
 	/* 
 		PB10 -> SCL (LCD_CD)
 		PB11 -> SDA (LCD_LED)
     */ 
-
+  
+  /* Vector Table Relocation to startup vector table  */
+  SCB->VTOR = (uint32_t)(&g_pfnVectors) & 0xFFFF;
   //console.init();
 
   /* USER CODE END 1 */
@@ -118,17 +120,15 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C2_Init();
-  MX_USB_DEVICE_Init();
   MX_ADC1_Init();
   MX_TIM4_Init();
-  /* USER CODE BEGIN 2 */
-  HAL_Delay(3000);
-  SEVEN_Init();  
+  /* USER CODE BEGIN 2 */  
+  reenumerate_usb();
+  MX_USB_DEVICE_Init();  
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-    
   while (1)
   {   
 
@@ -136,7 +136,7 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 
-    psu_v3();
+    psu();
   }
   /* USER CODE END 3 */
 

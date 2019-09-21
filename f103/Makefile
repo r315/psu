@@ -34,6 +34,7 @@ APP_SRC_DIR :=../psu_v3
 
 SOURCES_PATH =  \
 Src \
+Src/dfu \
 startup \
 Drivers \
 Drivers/CMSIS \
@@ -104,6 +105,7 @@ $(APP_SRC_DIR)/psu_v3.cpp \
 $(LIBEMB_PATH)/console/console.cpp \
 $(APP_SRC_DIR)/cmdadc.cpp \
 $(APP_SRC_DIR)/cmdpwm.cpp \
+$(APP_SRC_DIR)/cmddfu.cpp \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -190,7 +192,8 @@ endif
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = startup/STM32F103C8Tx_FLASH.ld
+#LDSCRIPT = startup/STM32F103C8Tx_FLASH.ld
+LDSCRIPT =startup/f103c8tx_dfu.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 
@@ -242,7 +245,7 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) #Makefile
 	@echo "--- Linking ---"
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 	@echo "--- Size ---"
-	$(SZ) -A $@
+	$(SZ) -A -x $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@

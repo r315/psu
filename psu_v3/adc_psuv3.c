@@ -1,5 +1,5 @@
 
-#include "common.h"
+#include "board.h"
 
 
 static void (*eotcb)(uint16_t*);

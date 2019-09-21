@@ -1,5 +1,5 @@
-
-#include "common.h"
+#include "cmdpwm.h"
+#include "board.h"
 
 void CmdPwm::help(void){ 
 console->print("\tusage pwm <ch>\n\tch, 1-4\n");

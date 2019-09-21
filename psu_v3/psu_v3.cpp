@@ -1,5 +1,5 @@
 
-#include "common.h"
+#include "psu.h"
 #include "tim.h"
 
 /**
@@ -51,7 +51,7 @@ public:
 
 };
 
-static Instrument psu;
+static Instrument sup;
 volatile int done = 0;
 
 void UpdateResult(uint16_t *adcres){
@@ -66,14 +66,14 @@ void handleButtons(void){
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         switch(BUTTON_GetValue()){
             case BUTTON_LEFT:
-                psu.vout += 0.01;
+                sup.vout += 0.01;
                 break;
 
             case BUTTON_RIGHT: 
-                psu.vout -= 0.01;
+                sup.vout -= 0.01;
                 break;
         }
-        SEVEN_Double(1,1,psu.vout);
+        SEVEN_Double(1,1,sup.vout);
         LCD_Update();
     }
 }
@@ -85,7 +85,7 @@ extern "C" void psu_v3_loop(void){
     
     handleButtons();
      
-    /*    switch(psu.mode){
+    /*    switch(sup.mode){
             case PSU: break;
             case LOAD: break;
         }
@@ -94,14 +94,17 @@ extern "C" void psu_v3_loop(void){
     HAL_GPIO_TogglePin(GPIOA, DBG_Pin);
 }
 
-extern "C" void psu_v3(void){
+extern "C" void psu(void){
 VoltageDro vdro;
 Console console;
 ConsoleHelp help;
 CmdAdc adc1;
 CmdPwm pwm;
+CmdDfu dfu;
 
 uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
+
+    SEVEN_Init();
 
     HAL_TIM_Base_Start_IT(&htim4); // start loop
 
@@ -117,6 +120,7 @@ uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
     console.addCommand(&vdro);
     console.addCommand(&adc1);
     console.addCommand(&pwm);
+    console.addCommand(&dfu);
 
     while(1){
         console.process();       

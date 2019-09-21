@@ -1,5 +1,5 @@
-
-#include "common.h"
+#include "cmdadc.h"
+#include "board.h"
 
 void CmdAdc::help(void){ 
 console->print("Adc Command\n");

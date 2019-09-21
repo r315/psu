@@ -5,8 +5,15 @@
 extern "C" {
 #endif
 
+#include <button.h>
+
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx.h"
+
+#include "seven_seg.h"
+#include "adc_psuv3.h"
+#include "pwm_psuv3.h"
+
 
 /**
  * HW symbols for button handling
@@ -29,6 +36,19 @@ inline uint32_t ElapsedTicks(uint32_t start_ticks){
 
 #define DelayMs(d) HAL_Delay(d)
 
+/*
+* Vile hack to reenumerate, physically _drag_ d+ low.
+* (need at least 2.5us to trigger usb disconnect)
+*/
+static inline void reenumerate_usb(void){
+    USB->CNTR |= USB_CNTR_PDWN;
+    GPIOA->CRH = GPIOA->CRH & ~(0x0F << 16) | (2 << 16);
+    GPIOA->ODR &= ~GPIO_PIN_12;
+    HAL_Delay(500);
+}
+
+#define LCD_W SSD1306_LCDWIDTH
+#define LCD_H SSD1306_LCDHEIGHT
 
 /**
  * Analog Pins
