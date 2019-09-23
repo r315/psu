@@ -104,7 +104,6 @@ CmdDfu dfu;
 
 uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
 
-    SEVEN_Init();
 
     HAL_TIM_Base_Start_IT(&htim4); // start loop
 
@@ -112,6 +111,8 @@ uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
     ADC_SetCallBack(UpdateResult);
 
     PWM_Init(pwm_start_values);
+    
+    SEVEN_Init();
 
     vcom.init();    
     console.init(&vcom, "PSU >");

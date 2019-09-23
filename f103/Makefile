@@ -206,10 +206,14 @@ all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).bin #$(BUILD_DIR)/$(TARGE
 
 $(TARGET).cfg:
 	@echo "Creating opencod configuration file"
-	echo "interface jlink\ntransport select swd\nsource [find target/stm32f1x.cfg]\nadapter_khz 4000" > $(TARGET).cfg
+	echo "interface jlink" >> $@
+	echo "transport select swd" >> $@
+	echo "source [find target/stm32f1x.cfg]" >> $@
+	echo "adapter_khz 4000" >> $@
 
+#use winusb driver
 program: $(BUILD_DIR)/$(TARGET).elf $(TARGET).cfg
-	openocd -f $(TARGET).cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+	openocd -f $(TARGET).cfg -c "program $(BUILD_DIR)/$(TARGET).bin 0x08001000 verify reset exit"
 
 test:
 #@echo $(SOURCES_PATH)
