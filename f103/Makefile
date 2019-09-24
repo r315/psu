@@ -31,16 +31,15 @@ OPT = -Og
 # source path
 
 APP_SRC_DIR :=../psu_v3
+REPOSITORY :=C:/Users/hmr/STM32Cube/Repository/STM32Cube_FW_F1_V1.6.1/
 
 SOURCES_PATH =  \
 Src \
-Src/dfu \
 startup \
-Drivers \
-Drivers/CMSIS \
-Drivers/STM32F1xx_HAL_Driver/Src \
-Middlewares/ST/STM32_USB_Device_Library/Core/Src/ \
-Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/ \
+$(REPOSITORY)Drivers/CMSIS \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src \
+$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/ \
+$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/ \
 $(LIBEMB_PATH)/button \
 $(LIBEMB_PATH)/misc \
 $(LIBEMB_PATH)/console \
@@ -77,28 +76,28 @@ $(APP_SRC_DIR)/pwm_psuv3.c \
 $(LIBEMB_PATH)/button/button.c \
 $(LIBEMB_PATH)/misc/strfunc.c \
 $(LIBEMB_PATH)/misc/fifo.c \
-Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
-Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
-Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
-Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \
+$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
+$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
+$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
+$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
+$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \
 
 CPP_SOURCES = \
 $(APP_SRC_DIR)/psu_v3.cpp \
@@ -163,15 +162,15 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -IInc \
--IDrivers/STM32F1xx_HAL_Driver/Inc \
--IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
--IMiddlewares/ST/STM32_USB_Device_Library/Core/Inc \
--IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
--IDrivers/CMSIS/Include \
--IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc\
--I"$(LIBEMB_PATH)"/include \
 -ISrc \
 -I$(APP_SRC_DIR) \
+-I"$(LIBEMB_PATH)"/include \
+-I$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Inc \
+-I$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
+-I$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Inc \
+-I$(REPOSITORY)Drivers/CMSIS/Device/ST/STM32F1xx/Include \
+-I$(REPOSITORY)Drivers/CMSIS/Include \
+-I$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc\
 
 
 # compile gcc flags
