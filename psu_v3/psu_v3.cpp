@@ -101,6 +101,7 @@ ConsoleHelp help;
 CmdAdc adc1;
 CmdPwm pwm;
 CmdDfu dfu;
+CmdPwr pwr;
 
 uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
 
@@ -122,6 +123,7 @@ uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
     console.addCommand(&adc1);
     console.addCommand(&pwm);
     console.addCommand(&dfu);
+    console.addCommand(&pwr); 
 
     while(1){
         console.process();       

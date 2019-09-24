@@ -9,10 +9,13 @@ extern "C" {
 
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx.h"
+#include "i2c.h"
 
 #include "seven_seg.h"
 #include "adc_psuv3.h"
 #include "pwm_psuv3.h"
+
+#define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 10)
 
 
 /**
@@ -26,6 +29,11 @@ extern "C" {
 #define BUTTON_Capture() (~GPIOB->IDR & BUTTON_MASK)
 #define BUTTON_MASK (BUTTON_LEFT | BUTTON_RIGHT | BUTTON_A)
 #define BUTTON_Cfg()
+
+#define SPOWER_OFF \
+    GPIOA->CRL = (GPIOA->CRH & ~(0x0F << 8)) | (2 << 8); \
+    GPIOA->ODR &= ~GPIO_PIN_2; \
+    while(1);
 
 #define GetTicks HAL_GetTick
 

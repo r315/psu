@@ -1,6 +1,6 @@
 
 #include "ssd1306.h"
-#include "i2c.h"
+#include "board.h"
 
 
 typedef struct _Frame{
@@ -15,7 +15,8 @@ uint8_t data[2];
  	data[0] = 0x00;   // Co = 0, D/C = 0
 	data[1] = SSD1306_NOP;
     
-	while(HAL_I2C_Master_Transmit(&hi2c2, SSD1306_I2C_ADDRESS << 1, data, 2, 100) != HAL_OK){
+	//while(HAL_I2C_Master_Transmit(&hi2c2, SSD1306_I2C_ADDRESS << 1, data, 2, 100) != HAL_OK){
+  while(I2C_Write(SSD1306_I2C_ADDRESS, data, 2)){
     HAL_Delay(200);
   }   
 }
@@ -25,8 +26,9 @@ uint8_t data[2];
 
 	data[0] = 0x00;   // Co = 0, D/C = 0
 	data[1] = c;
-    
-	HAL_I2C_Master_Transmit(&hi2c2, SSD1306_I2C_ADDRESS << 1, data, 2, 100);
+
+  I2C_Write(SSD1306_I2C_ADDRESS, data, 2);  
+	//HAL_I2C_Master_Transmit(&hi2c2, SSD1306_I2C_ADDRESS << 1, data, 2, 100);
 }
 
 // startscrollright
@@ -142,7 +144,8 @@ void LCD_Update(void) {
   ssd1306_command(3); // Page end address
   
   frame.control = 0x40;
-  HAL_I2C_Master_Transmit(&hi2c2, SSD1306_I2C_ADDRESS << 1, (uint8_t*)&frame, sizeof(frame), 500);  
+  I2C_Write(SSD1306_I2C_ADDRESS, (uint8_t*)&frame, sizeof(frame));
+  //HAL_I2C_Master_Transmit(&hi2c2, SSD1306_I2C_ADDRESS << 1, (uint8_t*)&frame, sizeof(frame), 500);  
 }
 
 void LCD_ClrArea(uint16_t x, uint16_t y, uint16_t w, uint16_t h){

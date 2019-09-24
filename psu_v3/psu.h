@@ -12,6 +12,7 @@ extern "C" {
 #include "cmdadc.h"
 #include "cmdpwm.h"
 #include "cmddfu.h"
+#include "cmdpwr.h"
 
 #ifdef __cplusplus
 }
