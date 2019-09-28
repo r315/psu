@@ -75,8 +75,8 @@ Src/system_stm32f1xx.c \
 Src/stm32f1xx_hal_msp.c \
 Src/vcom.c \
 $(APP_SRC_DIR)/text.c \
-$(APP_SRC_DIR)/font.c \
-$(LIBEMB_PATH)/display/fonts.c \
+$(APP_SRC_DIR)/psu_font.c \
+$(LIBEMB_PATH)/display/font.c \
 $(APP_SRC_DIR)/ssd1306.c \
 $(APP_SRC_DIR)/adc_psuv3.c \
 $(APP_SRC_DIR)/pwm_psuv3.c \
@@ -107,7 +107,7 @@ $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \
 
 CPP_SOURCES = \
-$(APP_SRC_DIR)/psu_v3.cpp \
+$(APP_SRC_DIR)/psu_main.cpp \
 $(LIBEMB_PATH)/console/console.cpp \
 $(APP_SRC_DIR)/cmdadc.cpp \
 $(APP_SRC_DIR)/cmdpwm.cpp \

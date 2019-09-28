@@ -1,6 +1,5 @@
 
-#include "text.h"
-
+#include <font.h>
 
 const uint8_t font_seven_seg_data[] = {
 0x7f,0xe0,0xff,0xf0,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xc0,0x30,0xff,0xf0,0x7f,0xe0,
@@ -16,21 +15,13 @@ const uint8_t font_seven_seg_data[] = {
 };
 
 font_t font_seven_seg = {
-    .width = 12,
-    .height = 20,
-    .chartable = font_seven_seg_data,
+    .w = 12,
+    .h = 20,
+    .data = font_seven_seg_data,
+    .data_len = sizeof(font_seven_seg_data),
     .bpl = 2,
     .offset = '0',
     .spacing = 1
 };
 
-extern const uint8_t defaultFontData[];
 
-font_t font_default = {
-    .width = 8,
-    .height = 8,
-    .chartable = defaultFontData,
-    .bpl = 1,
-    .offset = ' ',
-    .spacing = 1
-};

@@ -6,15 +6,8 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <font.h>
 
-typedef struct _font_t{
-    uint8_t width;
-    uint8_t height;
-    const uint8_t *chartable;
-    uint8_t bpl;        // Bytes per line
-    uint8_t offset;     // offset from ascii table
-    uint8_t spacing;
-}font_t;
 
 #define MAX_LINE_CHARS 16
 #define DEFAULT_FONT &font_default //&font_seven_seg

@@ -36,11 +36,14 @@ static uint8_t drawChar(uint16_t x, uint16_t y, uint8_t c){
     const uint8_t *p;
     
     c -= font->offset;
-    p = font->chartable + (c * font->height * font->bpl);
+    p = font->data + (c * font->h * font->bpl);
 
-    for(uint16_t h = y; h < y +font->height; h++, p++){
+    if(p > font->data + font->data_len)
+        return;
+
+    for(uint16_t h = y; h < y +font->h; h++, p++){
         uint8_t line = *p;
-        for(uint16_t w = x, bc = 0; w < x + font->width; w++, bc++){
+        for(uint16_t w = x, bc = 0; w < x + font->w; w++, bc++){
             if(bc == 8){
                 bc = 0;
                 line = *(++p);
@@ -51,7 +54,7 @@ static uint8_t drawChar(uint16_t x, uint16_t y, uint8_t c){
                 LCD_Pixel(w, h,BLACK);
         }
     }
-    return font->width + font->spacing;
+    return font->w + font->spacing;
 }
 
 
@@ -78,8 +81,15 @@ void TEXT_Init(void){
     LCD_ClrArea(0, 0, LCD_W, LCD_H);
     LCD_Update();
 
-    test(&font_default);
+    test(&defaultFont);
+    DelayMs(1000);
     test(&font_seven_seg);
+    DelayMs(1000);
+    test(&defaultBoldFont);
+    DelayMs(1000);
+    test(&lcdFont);
+    DelayMs(1000);
+    test(&pixelDustFont);
     
 }
    
