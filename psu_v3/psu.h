@@ -7,6 +7,8 @@ extern "C" {
 #endif
 
 #include "board.h"
+#include "layout_ui.h"
+#include "text.h"
 #include <console.h>
 #include "cmdhelp.h"
 #include "cmdadc.h"

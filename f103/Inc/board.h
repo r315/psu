@@ -11,11 +11,11 @@ extern "C" {
 #include "stm32f1xx.h"
 #include "i2c.h"
 
-#include "seven_seg.h"
+#include "ssd1306.h"
 #include "adc_psuv3.h"
 #include "pwm_psuv3.h"
 
-#define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 10)
+#define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 100)
 
 
 /**
@@ -37,7 +37,7 @@ extern "C" {
 
 #define GetTicks HAL_GetTick
 
-inline uint32_t ElapsedTicks(uint32_t start_ticks){ 
+static inline uint32_t ElapsedTicks(uint32_t start_ticks){ 
     uint32_t current = GetTicks(); 
     return (current > start_ticks) ? current - start_ticks : 0xFFFFFFFF - start_ticks + current;
 }

@@ -72,4 +72,9 @@ void LCD_Update(void);
 void LCD_ClrArea(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 void LCD_SetFrame(uint16_t c, uint16_t p, uint8_t *data);
 
+void LCD_Init(void);
+void LCD_Pixel(int16_t x, int16_t y, uint16_t color);
+
+uint8_t *LCD_GetPixels(void);
+
 #endif

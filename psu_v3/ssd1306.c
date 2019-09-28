@@ -10,6 +10,10 @@ typedef struct _Frame{
 
 static Frame frame;
 
+uint8_t *LCD_GetPixels(void){
+  return frame.data;
+}
+
 void ssd1306_waitPowerUp(void){
 uint8_t data[2];
  	data[0] = 0x00;   // Co = 0, D/C = 0

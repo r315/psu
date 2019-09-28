@@ -8,6 +8,8 @@ extern "C" {
 
 #include <console.h>
 
+//dfu-util -a 0 -s 0x08001000 -D ../build/psu_v3.bin -R
+
 #define ENABLE_DFU_MAGIC *(((uint64_t*)&_estack) - 1) = 0xDEADBEEFCC00FFEEULL
 #define DISABLE_DFU_MAGIC *(((uint64_t*)&_estack) - 1) = 0x0UL
 

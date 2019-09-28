@@ -16,7 +16,8 @@ public:
     void init(void *params) { console = static_cast<Console*>(params); }
     CmdPwr () : ConsoleCommand("pwroff") { }
     char execute(void *ptr){
-            SPOWER_OFF;                
+            SPOWER_OFF;            
+            return CMD_OK;
     }
     void help(void){}
 }; 

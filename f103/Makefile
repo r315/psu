@@ -30,8 +30,12 @@ OPT = -Og
 #######################################
 # source path
 
-APP_SRC_DIR :=../psu_v3
+APP_SRC_DIR :=$(CURDIR)/../psu_v3
+ifeq ($(shell uname -s), Linux)
+REPOSITORY = $(HOME)/STM32Cube/Repository/STM32Cube_FW_F1_V1.6.1/
+else
 REPOSITORY :=C:/Users/hmr/STM32Cube/Repository/STM32Cube_FW_F1_V1.6.1/
+endif
 
 SOURCES_PATH =  \
 Src \
@@ -43,6 +47,7 @@ $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/ \
 $(LIBEMB_PATH)/button \
 $(LIBEMB_PATH)/misc \
 $(LIBEMB_PATH)/console \
+$(LIBEMB_PATH)/display \
 $(APP_SRC_DIR) \
 
 # firmware library path
@@ -69,8 +74,10 @@ Src/tim.c \
 Src/system_stm32f1xx.c \
 Src/stm32f1xx_hal_msp.c \
 Src/vcom.c \
+$(APP_SRC_DIR)/text.c \
+$(APP_SRC_DIR)/font.c \
+$(LIBEMB_PATH)/display/fonts.c \
 $(APP_SRC_DIR)/ssd1306.c \
-$(APP_SRC_DIR)/seven_seg.c \
 $(APP_SRC_DIR)/adc_psuv3.c \
 $(APP_SRC_DIR)/pwm_psuv3.c \
 $(LIBEMB_PATH)/button/button.c \
@@ -214,8 +221,11 @@ $(TARGET).cfg:
 program: $(BUILD_DIR)/$(TARGET).elf $(TARGET).cfg
 	openocd -f $(TARGET).cfg -c "program $(BUILD_DIR)/$(TARGET).bin 0x08001000 verify reset exit"
 
+upload: $(BUILD_DIR)/$(TARGET).bin
+	dfu-util -a 0 -s 0x08001000 -D $< -R
+
 test:
-#@echo $(SOURCES_PATH)
+	@echo $(CURDIR)
 	@echo ""; $(foreach d, $(VPATH), echo $(d);)
 #@echo $(C_SOURCES)
 #######################################
@@ -268,6 +278,6 @@ clean:
 #######################################
 # dependencies
 #######################################
--include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)
+#-include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)
 
 # *** EOF ***
