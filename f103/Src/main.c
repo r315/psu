@@ -10,7 +10,7 @@
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
-  * Copyright (c) 2018 STMicroelectronics International N.V. 
+  * Copyright (c) 2019 STMicroelectronics International N.V. 
   * All rights reserved.
   *
   * Redistribution and use in source and binary forms, with or without 
@@ -58,15 +58,13 @@
 /* USER CODE BEGIN Includes */
 #include "board.h"
 #include "usbd_cdc_if.h"
-//#include "console.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-//Console console;
-void psu(void);
+extern uint32_t g_pfnVectors;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -74,6 +72,7 @@ void SystemClock_Config(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+void psu(void);
 
 /* USER CODE END PFP */
 
@@ -86,7 +85,6 @@ void SystemClock_Config(void);
   *
   * @retval None
   */
-extern uint32_t g_pfnVectors;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -97,7 +95,7 @@ int main(void)
   
   /* Vector Table Relocation to startup vector table  */
   SCB->VTOR = (uint32_t)(&g_pfnVectors) & 0xFFFF;
-  //console.init();
+
 
   /* USER CODE END 1 */
 
@@ -120,11 +118,11 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C2_Init();
+  MX_USB_DEVICE_Init();
   MX_ADC1_Init();
   MX_TIM4_Init();
-  /* USER CODE BEGIN 2 */  
+  /* USER CODE BEGIN 2 */
   reenumerate_usb();
-  MX_USB_DEVICE_Init();  
   /* USER CODE END 2 */
 
   /* Infinite loop */
