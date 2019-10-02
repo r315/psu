@@ -8,8 +8,8 @@ extern "C" {
 
 #include "board.h"
 
-#define VOLTAGE_DRO_POS 0,0 
-#define CURRENT_DRO_POS 64,0 
+#define VOLTAGE_DRO_POS 0,12
+#define CURRENT_DRO_POS 69,12 
 
 #ifdef __cplusplus
 }

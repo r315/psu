@@ -1,6 +1,6 @@
 
 #include "psu.h"
-#include "tim.h"
+
 
 /**
  * HW modules configuration
@@ -17,7 +17,7 @@ class VoltageDro : public ConsoleCommand{
     double v = 0;
 public:
     char execute(void *ptr){
-        SEVEN_Double(1,1,v);
+        //SEVEN_Double(1,1,v);
         v += 0.5;
         return CMD_OK;
     }
@@ -26,39 +26,14 @@ public:
     VoltageDro(void) : ConsoleCommand("vdro") {}
 };
 
-enum Mode{
-    PSU,
-    LOAD
-};
-
-enum State{
-    RUN
-};
-
-class Instrument{
-    uint32_t ticks;
-public:
-    double vout;
-    Mode mode;
-    State state;
-
-    uint32_t isTimed(void){
-        if(ticks == 0)
-            return YES;
-
-        return !(--ticks);
-    } 
-
-};
-
-static Instrument sup;
-volatile int done = 0;
-
 void UpdateResult(uint16_t *adcres){
-    SEVEN_Double(1,1, (3.3 * adcres[2]) / 4096);
-    SEVEN_Double(65,1, (3.3 * adcres[3]) / 4096);
+static double c = 99.1;
+    //SEVEN_Double(1,1, (3.3 * adcres[2]) / 4096);
+    //SEVEN_Double(65,1, (3.3 * adcres[3]) / 4096);
+    TEXT_dro(VOLTAGE_DRO_POS, c,1);
+    c += 0.1;
+    if(c == 100.0) c = 0;
     LCD_Update();
-    done += 1;
 }
 
 void handleButtons(void){
@@ -66,20 +41,45 @@ void handleButtons(void){
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         switch(BUTTON_GetValue()){
             case BUTTON_LEFT:
-                sup.vout += 0.01;
+                
                 break;
 
             case BUTTON_RIGHT: 
-                sup.vout -= 0.01;
+                
                 break;
         }
-        SEVEN_Double(1,1,sup.vout);
+        //SEVEN_Double(1,1,sup.vout);
         LCD_Update();
     }
 }
 
+
+extern const uint8_t icon_psu[];
+extern const uint8_t icon_load[];
+extern const uint8_t icon_out[];
+void redrawDisplay(){
+
+    LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
+    //TEXT_setFont(&defaultBoldFont);
+    //TEXT_setFont(&lcdFont);
+    TEXT_setFont(&pixelDustFont);
+    //TEXT_setFont(&defaultFont);
+    TEXT_print(0,0, "88.8W");
+    TEXT_setFont(&font_seven_seg);
+    TEXT_dro(VOLTAGE_DRO_POS, 88.8, 1);
+    TEXT_dro(CURRENT_DRO_POS, 8.88,2);
+
+    TEXT_drawGfx(70,0, (uint8_t*)&icon_psu[0]);
+    TEXT_drawGfx(90,0, (uint8_t*)&icon_load[0]);
+    TEXT_drawGfx(110,0, (uint8_t*)&icon_out[0]);
+    LCD_Update();
+
+}
+
 /**
- * Called every 10ms by Timer4 interrupt
+ * Called every 10ms by Timer4 interrupt, as console
+ * may block the main thread, having a secondary loop
+ * ensures operation of lcd update and button handling
  * */
 extern "C" void psu_v3_loop(void){
     
@@ -94,7 +94,7 @@ extern "C" void psu_v3_loop(void){
     HAL_GPIO_TogglePin(GPIOA, DBG_Pin);
 }
 
-extern "C" void psu(void){
+void tskConsole(void *ptr){
 VoltageDro vdro;
 Console console;
 ConsoleHelp help;
@@ -102,20 +102,7 @@ CmdAdc adc1;
 CmdPwm pwm;
 CmdDfu dfu;
 CmdPwr pwr;
-
-uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
-
-
-    HAL_TIM_Base_Start_IT(&htim4); // start loop
-
-    TEXT_Init();
-
-    ADC_Init(100);
-    ADC_SetCallBack(UpdateResult);
-
-    PWM_Init(pwm_start_values);
     
-
     vcom.init();    
     console.init(&vcom, "PSU >");
     console.addCommand(&help);
@@ -127,8 +114,32 @@ uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
     console.addCommand(&pwr); 
 
     while(1){
-        console.process();       
+        console.process();
     }
+}
+
+extern "C" void psu(void){
+
+
+    TEXT_Init();
+    redrawDisplay();
+
+    //PWM_Init((uint16_t*)pwm_start_values);
+
+    //ADC_Init(ADC_INTERVAL);
+    //ADC_SetCallBack(UpdateResult);
+
+    //setInterval(psu_v3_loop,APP_INTERVAL);
+
+    //xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
+
+    //vTaskStartScheduler();
+
+    //tskConsole(NULL);
+    
+    while(1){
+        //vTaskDelay(100);
+    } 
 }
 
 

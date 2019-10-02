@@ -1,6 +1,11 @@
 
 #include "board.h"
 
+void setInterval(void(*cb)(), uint32_t ms){
+    // start loop, timer is configures on startup
+    // and call is made on interupt handler
+    HAL_TIM_Base_Start_IT(&htim4);
+}
 
 void PWM_Init(uint16_t *initial){
 
