@@ -41,10 +41,12 @@ $(APP_SRC_DIR)/FreeRTOS \
 
 
 ifeq ($(shell uname -s), Linux)
-REPOSITORY = $(HOME)/STM32Cube/Repository/STM32Cube_FW_F1_V1.8.0/
+FW :=STM32Cube_FW_F1_V1.8.0/
 else
-REPOSITORY :=C:/Users/hmr/STM32Cube/Repository/STM32Cube_FW_F1_V1.6.1/
+FW :=STM32Cube_FW_F1_V1.6.1/
 endif
+
+REPOSITORY :=$(HOME)/STM32Cube/Repository/$(FW)
 
 SOURCES_PATH =  \
 Src \
