@@ -42,11 +42,12 @@ $(APP_SRC_DIR)/FreeRTOS \
 
 ifeq ($(shell uname -s), Linux)
 FW :=STM32Cube_FW_F1_V1.8.0/
+REPOSITORY :=$(HOME)/STM32Cube/Repository/$(FW)
 else
 FW :=STM32Cube_FW_F1_V1.6.1/
+REPOSITORY :=C:/Users/hmr/STM32Cube/Repository/$(FW)
 endif
 
-REPOSITORY :=$(HOME)/STM32Cube/Repository/$(FW)
 
 SOURCES_PATH =  \
 Src \
@@ -213,7 +214,7 @@ endif
 
 
 # Generate dependency information
-CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
+#CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst))
 
 
 #######################################
@@ -266,11 +267,11 @@ VPATH +=$(SOURCES_PATH)
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 	@echo "Compiling  " $<
-	@$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	@$(CC) -c $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/%.obj: %.cpp Makefile | $(BUILD_DIR)
 	@echo "Compiling  " $<
-	@$(CPP) -c $(CFLAGS)  -fno-exceptions -fno-unwind-tables -fno-rtti -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
+	@$(CPP) -c $(CFLAGS)  -fno-exceptions -fno-unwind-tables -fno-rtti $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	@echo "Assembling " $<
