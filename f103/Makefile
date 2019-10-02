@@ -203,7 +203,7 @@ $(addprefix -I, $(FREERTOS_DIR)) \
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections #-nostdlib #-lgcc
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -nostdlib -lgcc
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -211,7 +211,7 @@ endif
 
 
 # Generate dependency information
-#CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
+CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
 
 
 #######################################

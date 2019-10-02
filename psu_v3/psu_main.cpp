@@ -135,7 +135,7 @@ extern "C" void psu(void){
 
     //vTaskStartScheduler();
 
-    //tskConsole(NULL);
+    tskConsole(NULL);
     
     while(1){
         //vTaskDelay(100);
