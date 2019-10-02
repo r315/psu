@@ -2,7 +2,6 @@
 #include "ssd1306.h"
 #include "board.h"
 
-
 typedef struct _Frame{
   uint8_t control;
   uint8_t data[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8];
@@ -152,10 +151,13 @@ void LCD_Update(void) {
   //HAL_I2C_Master_Transmit(&hi2c2, SSD1306_I2C_ADDRESS << 1, (uint8_t*)&frame, sizeof(frame), 500);  
 }
 
-void LCD_ClrArea(uint16_t x, uint16_t y, uint16_t w, uint16_t h){
+void LCD_Fill(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color){
   for(uint16_t i = y; i < y + h; i++){
     for(uint16_t j = x; j < x + w; j++){
-      frame.data[j + (i/8)*SSD1306_LCDWIDTH] &= ~(1 << (i&7));
+      if(color)
+        frame.data[j + (i/8)*SSD1306_LCDWIDTH] |= (1 << (i&7));
+      else
+        frame.data[j + (i/8)*SSD1306_LCDWIDTH] &= ~(1 << (i&7));
     }    
   }
 }

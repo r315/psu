@@ -31,8 +31,17 @@ OPT = -Og
 # source path
 
 APP_SRC_DIR :=$(CURDIR)/../psu_v3
+FREERTOS_DIR := \
+$(APP_SRC_DIR)/FreeRTOS/portable/GCC/ARM_CM3 \
+$(APP_SRC_DIR)/FreeRTOS/portable/MemMang \
+$(APP_SRC_DIR)/FreeRTOS/include \
+$(APP_SRC_DIR)/FreeRTOS \
+
+
+
+
 ifeq ($(shell uname -s), Linux)
-REPOSITORY = $(HOME)/STM32Cube/Repository/STM32Cube_FW_F1_V1.6.1/
+REPOSITORY = $(HOME)/STM32Cube/Repository/STM32Cube_FW_F1_V1.8.0/
 else
 REPOSITORY :=C:/Users/hmr/STM32Cube/Repository/STM32Cube_FW_F1_V1.6.1/
 endif
@@ -49,6 +58,7 @@ $(LIBEMB_PATH)/misc \
 $(LIBEMB_PATH)/console \
 $(LIBEMB_PATH)/display \
 $(APP_SRC_DIR) \
+$(FREERTOS_DIR) \
 
 # firmware library path
 PERIFLIB_PATH = 
@@ -79,7 +89,7 @@ $(APP_SRC_DIR)/psu_font.c \
 $(LIBEMB_PATH)/display/font.c \
 $(APP_SRC_DIR)/ssd1306.c \
 $(APP_SRC_DIR)/adc_psuv3.c \
-$(APP_SRC_DIR)/pwm_psuv3.c \
+$(APP_SRC_DIR)/board.c \
 $(LIBEMB_PATH)/button/button.c \
 $(LIBEMB_PATH)/misc/strfunc.c \
 $(LIBEMB_PATH)/misc/fifo.c \
@@ -105,6 +115,15 @@ $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \
+
+#$(APP_SRC_DIR)/FreeRTOS/portable/GCC/ARM_CM3/port.c \
+$(APP_SRC_DIR)/FreeRTOS/portable/MemMang/heap_2.c \
+$(APP_SRC_DIR)/FreeRTOS/croutine.c \
+$(APP_SRC_DIR)/FreeRTOS/list.c \
+$(APP_SRC_DIR)/FreeRTOS/queue.c \
+$(APP_SRC_DIR)/FreeRTOS/tasks.c \
+$(APP_SRC_DIR)/FreeRTOS/timers.c \
+
 
 CPP_SOURCES = \
 $(APP_SRC_DIR)/psu_main.cpp \
@@ -148,7 +167,7 @@ CPU = -mcpu=cortex-m3
 # NONE for Cortex-M0/M0+/M3
 
 # float-abi
-
+FLOAT-ABI = -u_printf_float
 
 # mcu
 MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
@@ -178,12 +197,13 @@ C_INCLUDES =  \
 -I$(REPOSITORY)Drivers/CMSIS/Device/ST/STM32F1xx/Include \
 -I$(REPOSITORY)Drivers/CMSIS/Include \
 -I$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc\
+$(addprefix -I, $(FREERTOS_DIR)) \
 
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -nostdlib -lgcc
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections #-nostdlib #-lgcc
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -259,6 +279,7 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) #Makefile
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 	@echo "--- Size ---"
 	$(SZ) -A -x $@
+	$(SZ) -B $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
