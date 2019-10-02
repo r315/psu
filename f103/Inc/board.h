@@ -54,7 +54,7 @@ static inline void reenumerate_usb(void){
     USB->CNTR |= USB_CNTR_PDWN;
     GPIOA->CRH = (GPIOA->CRH & ~(0x0F << 16)) | (2 << 16);
     GPIOA->ODR &= ~GPIO_PIN_12;
-    HAL_Delay(500);
+    //HAL_Delay(500);
 }
 
 #define LCD_W SSD1306_LCDWIDTH

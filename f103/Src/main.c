@@ -95,8 +95,7 @@ int main(void)
   
   /* Vector Table Relocation to startup vector table  */
   SCB->VTOR = (uint32_t)(&g_pfnVectors) & 0xFFFF;
-
-
+  reenumerate_usb();
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -105,7 +104,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -122,7 +120,7 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  reenumerate_usb();
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */
