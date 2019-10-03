@@ -40,16 +40,12 @@ FW :=STM32Cube_FW_F1_V1.6.1/
 REPOSITORY :=C:/Users/hmr/STM32Cube/Repository/$(FW)
 endif
 
-FREERTOS_DIR := \
-$(REPOSITORY)/FreeRTOS/portable/GCC/ARM_CM3 \
-$(REPOSITORY)/FreeRTOS/portable/MemMang \
-$(REPOSITORY)/FreeRTOS/include \
-$(REPOSITORY)/FreeRTOS \
-
+FREERTOS_DIR :=$(REPOSITORY)Middlewares/Third_Party/FreeRTOS/Source
 
 SOURCES_PATH =  \
 Src \
 startup \
+$(APP_SRC_DIR) \
 $(REPOSITORY)Drivers/CMSIS \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/ \
@@ -58,8 +54,10 @@ $(LIBEMB_PATH)/button \
 $(LIBEMB_PATH)/misc \
 $(LIBEMB_PATH)/console \
 $(LIBEMB_PATH)/display \
-$(APP_SRC_DIR) \
 $(FREERTOS_DIR) \
+$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
+$(FREERTOS_DIR)/portable/MemMang \
+$(FREERTOS_DIR)/CMSIS_RTOS \
 
 # firmware library path
 PERIFLIB_PATH = 
@@ -80,13 +78,14 @@ Src/stm32f1xx_it.c \
 Src/usbd_cdc_if.c \
 Src/system_stm32f1xx.c \
 Src/stm32f1xx_hal_msp.c \
+Src/stm32f1xx_hal_timebase_tim.c \
 Src/vcom.c \
 $(APP_SRC_DIR)/text.c \
 $(APP_SRC_DIR)/psu_font.c \
-$(LIBEMB_PATH)/display/font.c \
 $(APP_SRC_DIR)/ssd1306.c \
 $(APP_SRC_DIR)/adc_psuv3.c \
 $(APP_SRC_DIR)/board.c \
+$(LIBEMB_PATH)/display/font.c \
 $(LIBEMB_PATH)/button/button.c \
 $(LIBEMB_PATH)/misc/strfunc.c \
 $(LIBEMB_PATH)/misc/fifo.c \
@@ -112,14 +111,14 @@ $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \
-
-#$(APP_SRC_DIR)/FreeRTOS/portable/GCC/ARM_CM3/port.c \
-$(APP_SRC_DIR)/FreeRTOS/portable/MemMang/heap_2.c \
-$(APP_SRC_DIR)/FreeRTOS/croutine.c \
-$(APP_SRC_DIR)/FreeRTOS/list.c \
-$(APP_SRC_DIR)/FreeRTOS/queue.c \
-$(APP_SRC_DIR)/FreeRTOS/tasks.c \
-$(APP_SRC_DIR)/FreeRTOS/timers.c \
+$(FREERTOS_DIR)/portable/GCC/ARM_CM3/port.c \
+$(FREERTOS_DIR)/portable/MemMang/heap_2.c \
+$(FREERTOS_DIR)/croutine.c \
+$(FREERTOS_DIR)/list.c \
+$(FREERTOS_DIR)/queue.c \
+$(FREERTOS_DIR)/tasks.c \
+$(FREERTOS_DIR)/timers.c \
+$(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
 
 
 CPP_SOURCES = \
@@ -193,8 +192,10 @@ C_INCLUDES =  \
 -I$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Inc \
 -I$(REPOSITORY)Drivers/CMSIS/Device/ST/STM32F1xx/Include \
 -I$(REPOSITORY)Drivers/CMSIS/Include \
--I$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc\
-$(addprefix -I, $(FREERTOS_DIR)) \
+-I$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
+-I$(FREERTOS_DIR)/include \
+-I$(FREERTOS_DIR)/CMSIS_RTOS \
+-I$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
 
 
 # compile gcc flags

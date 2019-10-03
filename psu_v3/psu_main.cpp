@@ -48,8 +48,6 @@ void handleButtons(void){
                 
                 break;
         }
-        //SEVEN_Double(1,1,sup.vout);
-        LCD_Update();
     }
 }
 
@@ -67,7 +65,7 @@ void redrawDisplay(){
     TEXT_print(0,0, "88.8W");
     TEXT_setFont(&font_seven_seg);
     TEXT_dro(VOLTAGE_DRO_POS, 88.8, 1);
-    TEXT_dro(CURRENT_DRO_POS, 8.88,2);
+    TEXT_dro(CURRENT_DRO_POS, 8.88, 2);
 
     TEXT_drawGfx(70,0, (uint8_t*)&icon_psu[0]);
     TEXT_drawGfx(90,0, (uint8_t*)&icon_load[0]);
@@ -81,8 +79,8 @@ void redrawDisplay(){
  * may block the main thread, having a secondary loop
  * ensures operation of lcd update and button handling
  * */
-extern "C" void psu_v3_loop(void){
-    
+void tskPsu(void *ptr){
+ double c = 0.1;   
     handleButtons();
      
     /*    switch(sup.mode){
@@ -90,8 +88,15 @@ extern "C" void psu_v3_loop(void){
             case LOAD: break;
         }
     LCD_Update();*/
+    while(1){
+        HAL_GPIO_TogglePin(GPIOA, DBG_Pin);
+        TEXT_dro(VOLTAGE_DRO_POS, c, 1);
+        c += 0.1;
+        if(c == 100.0) c = 0;
+        LCD_Update();
+        vTaskDelay(500);
 
-    HAL_GPIO_TogglePin(GPIOA, DBG_Pin);
+    }
 }
 
 void tskConsole(void *ptr){
@@ -120,7 +125,6 @@ CmdPwr pwr;
 
 extern "C" void psu(void){
 
-
     TEXT_Init();
     redrawDisplay();
 
@@ -131,15 +135,8 @@ extern "C" void psu(void){
 
     //setInterval(psu_v3_loop,APP_INTERVAL);
 
-    //xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
-
-    //vTaskStartScheduler();
-
-    tskConsole(NULL);
-    
-    while(1){
-        //vTaskDelay(100);
-    } 
+    xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
+    xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL );
 }
 
 

@@ -73,7 +73,7 @@ void LCD_Fill(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 void LCD_SetFrame(uint16_t c, uint16_t p, uint8_t *data);
 
 void LCD_Init(void);
-void LCD_Pixel(int16_t x, int16_t y, uint16_t color);
+void LCD_Pixel(uint16_t x, uint16_t y, uint16_t color);
 
 uint8_t *LCD_GetPixels(void);
 

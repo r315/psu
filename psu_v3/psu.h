@@ -15,6 +15,8 @@ extern "C" {
 #include "cmdpwm.h"
 #include "cmddfu.h"
 #include "cmdpwr.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 #define ADC_INTERVAL 100
 #define APP_INTERVAL 10

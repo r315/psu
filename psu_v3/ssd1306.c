@@ -100,8 +100,8 @@ void LCD_Init(void){
 }
 
 
-void LCD_Pixel(int16_t x, int16_t y, uint16_t color) {
-  if ((x < 0) || (x >= LCD_GetWidth()) || (y < 0) || (y >= LCD_GetHeight()))
+void LCD_Pixel(uint16_t x, uint16_t y, uint16_t color) {
+  if (x >= SSD1306_LCDWIDTH || y >= SSD1306_LCDHEIGHT)
     return;
 /*
   // check rotation, move pixel around if necessary

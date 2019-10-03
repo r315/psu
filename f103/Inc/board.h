@@ -34,14 +34,12 @@ extern "C" {
     while(1);
 
 #define GetTicks HAL_GetTick
+#define DelayMs(d) HAL_Delay(d)
 
 static inline uint32_t ElapsedTicks(uint32_t start_ticks){ 
     uint32_t current = GetTicks(); 
     return (current > start_ticks) ? current - start_ticks : 0xFFFFFFFF - start_ticks + current;
 }
-
-#define DelayMs(d) HAL_Delay(d)
-
 
 /** 
  * Global variables
