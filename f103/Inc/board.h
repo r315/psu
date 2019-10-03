@@ -7,11 +7,9 @@ extern "C" {
 
 #include <button.h>
 
-#include "stm32f1xx_hal.h"
+//#include "stm32f1xx_hal.h"
+#include "main.h"
 #include "stm32f1xx.h"
-#include "i2c.h"
-#include "tim.h"
-
 #include "ssd1306.h"
 #include "adc_psuv3.h"
 
@@ -44,6 +42,16 @@ static inline uint32_t ElapsedTicks(uint32_t start_ticks){
 
 #define DelayMs(d) HAL_Delay(d)
 
+
+/** 
+ * Global variables
+ * */
+extern I2C_HandleTypeDef hi2c2;
+extern TIM_HandleTypeDef htim4;
+
+/**
+ * Function prototypes
+ * */
 void setInterval(void(*cb)(), uint32_t ms);
 
 /*

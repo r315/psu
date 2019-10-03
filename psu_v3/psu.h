@@ -19,16 +19,7 @@ extern "C" {
 #define ADC_INTERVAL 100
 #define APP_INTERVAL 10
 
-enum Mode_t{PSU, LOAD};
-
-typedef struct _device_t{
-    //Mode_t mode;
-    
-}device_t;
-
 static const uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
-
-static device_t device;
 
 #ifdef __cplusplus
 }

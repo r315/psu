@@ -31,14 +31,6 @@ OPT = -Og
 # source path
 
 APP_SRC_DIR :=$(CURDIR)/../psu_v3
-FREERTOS_DIR := \
-$(APP_SRC_DIR)/FreeRTOS/portable/GCC/ARM_CM3 \
-$(APP_SRC_DIR)/FreeRTOS/portable/MemMang \
-$(APP_SRC_DIR)/FreeRTOS/include \
-$(APP_SRC_DIR)/FreeRTOS \
-
-
-
 
 ifeq ($(shell uname -s), Linux)
 FW :=STM32Cube_FW_F1_V1.8.0/
@@ -47,6 +39,12 @@ else
 FW :=STM32Cube_FW_F1_V1.6.1/
 REPOSITORY :=C:/Users/hmr/STM32Cube/Repository/$(FW)
 endif
+
+FREERTOS_DIR := \
+$(REPOSITORY)/FreeRTOS/portable/GCC/ARM_CM3 \
+$(REPOSITORY)/FreeRTOS/portable/MemMang \
+$(REPOSITORY)/FreeRTOS/include \
+$(REPOSITORY)/FreeRTOS \
 
 
 SOURCES_PATH =  \
@@ -79,11 +77,7 @@ Src/usbd_desc.c \
 Src/usbd_conf.c \
 Src/usb_device.c \
 Src/stm32f1xx_it.c \
-Src/i2c.c \
-Src/gpio.c \
 Src/usbd_cdc_if.c \
-Src/adc.c \
-Src/tim.c \
 Src/system_stm32f1xx.c \
 Src/stm32f1xx_hal_msp.c \
 Src/vcom.c \
