@@ -13,7 +13,7 @@
 ######################################
 # target
 ######################################
-TARGET = psu_v3
+TARGET = app_psu
 
 
 ######################################
@@ -30,7 +30,7 @@ OPT = -Og
 #######################################
 # source path
 
-APP_SRC_DIR :=$(CURDIR)/../psu_v3
+APP_SRC_DIR :=$(CURDIR)/App
 
 ifeq ($(shell uname -s), Linux)
 FW :=STM32Cube_FW_F1_V1.8.0/
