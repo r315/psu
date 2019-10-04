@@ -14,6 +14,7 @@ extern "C" {
 #include "adc_psuv3.h"
 
 #define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 100)
+#define I2C_WriteDMA(_A, _D, _S) HAL_I2C_Master_Transmit_DMA(&hi2c2, _A << 1, _D, _S)
 
 
 /**

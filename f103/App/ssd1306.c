@@ -147,7 +147,7 @@ void LCD_Update(void) {
   ssd1306_command(3); // Page end address
   
   frame.control = 0x40;
-  I2C_Write(SSD1306_I2C_ADDRESS, (uint8_t*)&frame, sizeof(frame));
+  I2C_WriteDMA(SSD1306_I2C_ADDRESS, (uint8_t*)&frame, sizeof(frame));
   //HAL_I2C_Master_Transmit(&hi2c2, SSD1306_I2C_ADDRESS << 1, (uint8_t*)&frame, sizeof(frame), 500);  
 }
 
