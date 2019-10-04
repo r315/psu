@@ -57,10 +57,12 @@ void setInterval(void(*cb)(), uint32_t ms);
 * (need at least 2.5us to trigger usb disconnect)
 */
 static inline void reenumerate_usb(void){
-    USB->CNTR |= USB_CNTR_PDWN;
+    USB->CNTR = USB_CNTR_PDWN;
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
     GPIOA->CRH = (GPIOA->CRH & ~(0x0F << 16)) | (2 << 16);
-    GPIOA->ODR &= ~GPIO_PIN_12;
-    //HAL_Delay(500);
+    GPIOA->BRR |= GPIO_PIN_12;
+    //for (unsigned int i = 0; i < 100000; i++)
+	//	__asm__("nop");
 }
 
 #define LCD_W SSD1306_LCDWIDTH
