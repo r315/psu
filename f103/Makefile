@@ -110,7 +110,7 @@ $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \
 $(FREERTOS_DIR)/portable/GCC/ARM_CM3/port.c \
-$(FREERTOS_DIR)/portable/MemMang/heap_2.c \
+$(FREERTOS_DIR)/portable/MemMang/heap_4.c \
 $(FREERTOS_DIR)/croutine.c \
 $(FREERTOS_DIR)/list.c \
 $(FREERTOS_DIR)/queue.c \

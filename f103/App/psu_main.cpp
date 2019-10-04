@@ -81,7 +81,11 @@ void redrawDisplay(){
  * */
 void tskPsu(void *ptr){
  double c = 0.1;   
-    handleButtons();
+    
+    TEXT_Init();
+    redrawDisplay();
+
+    //handleButtons();
      
     /*    switch(sup.mode){
             case PSU: break;
@@ -94,8 +98,7 @@ void tskPsu(void *ptr){
         c += 0.1;
         if(c == 100.0) c = 0;
         LCD_Update();
-        vTaskDelay(500);
-
+        vTaskDelay(8);
     }
 }
 
@@ -123,10 +126,7 @@ CmdPwr pwr;
     }
 }
 
-extern "C" void psu(void){
-
-    TEXT_Init();
-    redrawDisplay();
+extern "C" void psu(void){  
 
     //PWM_Init((uint16_t*)pwm_start_values);
 
@@ -135,7 +135,7 @@ extern "C" void psu(void){
 
     //setInterval(psu_v3_loop,APP_INTERVAL);
 
-    xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL );
+    xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL );
 }
 
