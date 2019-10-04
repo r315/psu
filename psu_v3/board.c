@@ -1,5 +1,10 @@
 
 #include "board.h"
+#include "FreeRTOS.h"
+#include "queue.h"
+#include "task.h"
+#include "usbd_cdc_if.h"
+#include <stdout.h>
 
 void setInterval(void(*cb)(), uint32_t ms){
     // start loop, timer is configures on startup
@@ -52,3 +57,69 @@ uint16_t PWM_Get(uint8_t ch){
     uint32_t *ccr = (uint32_t*)&TIM3->CCR1;     
     return ccr[ch&3];
 }
+
+/**
+ * virtual com port stuff
+ * */
+
+#define VC_QUEUE_LENGTH 10
+#define VC_QUEUE_ITEM_SIZE 1
+
+static QueueHandle_t chars_queue;
+
+static void vc_init(void){
+    chars_queue = xQueueCreate( VC_QUEUE_LENGTH, VC_QUEUE_ITEM_SIZE );
+    configASSERT( chars_queue != NULL );
+}
+
+// called from cdc interface
+void vc_put(uint8_t *c){
+    if(chars_queue != NULL)
+        xQueueSendFromISR(chars_queue, c, 0);
+}
+
+static uint8_t vc_getCharNonBlocking(char *c){
+    if(chars_queue == NULL)
+        return 0;
+    return xQueueReceive(chars_queue, c, 0) == pdPASS;
+}
+
+static char vc_getchar(void){
+    char c;
+    xQueueReceive(chars_queue, &c, portMAX_DELAY);
+    return c;
+}
+
+uint8_t vc_kbhit(void){
+    return VC_QUEUE_LENGTH - uxQueueSpacesAvailable(chars_queue);
+}
+
+static void putAndRetry(uint8_t *data, uint16_t len){
+uint32_t retries = 1000;
+	while(retries--){
+		if(	CDC_Transmit_FS(data, len) == USBD_OK)
+			break;
+	}
+}
+
+static void vc_putchar(char c){
+	putAndRetry((uint8_t*)&c, 1);
+}
+
+static void vc_puts(const char *s){
+uint16_t len = 0;
+	
+	while( *((const char*)(s + len)) != '\0'){
+		len++;	
+	}
+	putAndRetry((uint8_t*)s, len);
+}
+
+StdOut vcom = {
+    .init = vc_init,
+    .xgetchar = vc_getchar,
+    .xputchar = vc_putchar,
+    .xputs = vc_puts,
+    .getCharNonBlocking = vc_getCharNonBlocking,
+    .kbhit = vc_kbhit
+};

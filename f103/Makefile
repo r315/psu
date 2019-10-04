@@ -79,7 +79,6 @@ Src/usbd_cdc_if.c \
 Src/system_stm32f1xx.c \
 Src/stm32f1xx_hal_msp.c \
 Src/stm32f1xx_hal_timebase_tim.c \
-Src/vcom.c \
 $(APP_SRC_DIR)/text.c \
 $(APP_SRC_DIR)/psu_font.c \
 $(APP_SRC_DIR)/ssd1306.c \
@@ -88,7 +87,6 @@ $(APP_SRC_DIR)/board.c \
 $(LIBEMB_PATH)/display/font.c \
 $(LIBEMB_PATH)/button/button.c \
 $(LIBEMB_PATH)/misc/strfunc.c \
-$(LIBEMB_PATH)/misc/fifo.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \

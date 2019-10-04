@@ -135,7 +135,7 @@ extern "C" void psu(void){
 
     //setInterval(psu_v3_loop,APP_INTERVAL);
 
-    xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
+    xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL );
 }
 
