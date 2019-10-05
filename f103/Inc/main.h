@@ -66,14 +66,14 @@ void Error_Handler(void);
 #define ILOAD_GPIO_Port GPIOA
 #define VLOAD_Pin GPIO_PIN_3
 #define VLOAD_GPIO_Port GPIOA
+#define DBG_Pin GPIO_PIN_4
+#define DBG_GPIO_Port GPIOA
 #define T2_Pin GPIO_PIN_13
 #define T2_GPIO_Port GPIOB
 #define TT_Pin GPIO_PIN_14
 #define TT_GPIO_Port GPIOB
 #define T1_Pin GPIO_PIN_15
 #define T1_GPIO_Port GPIOB
-#define DBG_Pin GPIO_PIN_15
-#define DBG_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
