@@ -123,3 +123,59 @@ StdOut vcom = {
     .getCharNonBlocking = vc_getCharNonBlocking,
     .kbhit = vc_kbhit
 };
+
+/**
+ * I2C striped down DMA
+ * */
+void i2cCfgDMA(uint8_t *src, uint16_t size){
+    // Configure DMA1 CH4 to handle i2c transmission
+    RCC->AHBENR |= RCC_AHBENR_DMA1EN;
+    DMA1_Channel4->CNDTR = size;
+    DMA1_Channel4->CPAR = (uint32_t)&I2C2->DR;
+    DMA1_Channel4->CMAR = (uint32_t)src;
+    DMA1_Channel4->CCR =    DMA_CCR_EN   | 
+                            DMA_CCR_TCIE | // Transfer complete interrupt
+                            DMA_CCR_DIR  | // Read From memory
+                            DMA_CCR_CIRC |
+                            DMA_CCR_MINC;  // Increment memory address
+    
+    
+    // Configure I2C2 transfer
+    RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;    
+    I2C2->CCR = 45;           // Freq 400Khz
+    I2C2->CR1 = I2C_CR1_PE | I2C_CR1_ACK;
+    I2C2->CR2 = 0x24;
+    I2C2->CR2 |= I2C_CR2_DMAEN;
+    HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0); // Highest priority
+    HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+} 
+
+
+void i2cSendDMA(uint8_t address, uint8_t *data, uint16_t size){
+uint32_t n;
+
+    while(I2C2->SR2 & I2C_SR2_BUSY);    
+
+    I2C2->CR1 |= I2C_CR1_START;
+
+    n = 1000;
+    while(!(I2C2->SR1 & I2C_SR1_SB)){
+        if(--n == 0)
+            return;
+    }    
+    
+    I2C2->CR2 |= I2C_CR2_DMAEN;
+    I2C2->DR = address;
+    while(!(I2C2->SR1 & I2C_SR1_ADDR)){        
+        if(--n == 0)            
+            return;
+
+        if(I2C2->SR1 & I2C_SR1_AF){
+            I2C2->SR1 &= ~(I2C_SR1_AF);
+            I2C2->CR1 |= I2C_CR1_STOP;  
+            return;      
+        }
+    }
+    n = I2C2->SR2; // Dummy read
+    while(I2C2->SR2 & I2C_SR2_BUSY);   
+}

@@ -165,9 +165,12 @@ void DebugMon_Handler(void)
   * @brief This function handles DMA1 channel4 global interrupt.
   */
 void DMA1_Channel4_IRQHandler(void){
-    DMA1->IFCR = DMA_IFCR_CGIF4;  
+
+  if(DMA1->ISR & DMA_ISR_TCIF4){
     I2C2->CR1 |= I2C_CR1_STOP;
-    I2C2->CR2 &= ~I2C_CR2_DMAEN;  
+    I2C2->CR2 &= ~I2C_CR2_DMAEN;
+  }
+  DMA1->IFCR = DMA_IFCR_CGIF4;  
 }
 
 /**

@@ -55,7 +55,8 @@ void LCD_StopScroll(void){
 
 
 void LCD_Init(void){
-
+  i2cCfgDMA((uint8_t*)&frame, sizeof(Frame));
+  
   ssd1306_waitPowerUp();
 
   ssd1306_command(SSD1306_SETMULTIPLEX);                  // 0xA8
@@ -96,7 +97,7 @@ void LCD_Init(void){
   //ssd1306_command(SSD1306_SETPRECHARGE);                  // 0xd9
   //ssd1306_command(0xF1);
   //ssd1306_command(SSD1306_SETVCOMDETECT);                 // 0xDB
-  //ssd1306_command(0x40);
+  //ssd1306_command(0x40);  
 }
 
 

@@ -63,7 +63,7 @@ $(FREERTOS_DIR)/CMSIS_RTOS \
 PERIFLIB_PATH = 
 
 # Build path
-BUILD_DIR :=../build
+BUILD_DIR :=build
 
 ######################################
 # source
@@ -235,7 +235,8 @@ $(TARGET).cfg:
 
 #use winusb driver
 program: $(BUILD_DIR)/$(TARGET).elf $(TARGET).cfg
-	openocd -f $(TARGET).cfg -c "program $(BUILD_DIR)/$(TARGET).bin 0x08001000 verify reset exit"
+	openocd -f $(TARGET).cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+#openocd -f $(TARGET).cfg -c "program $(BUILD_DIR)/$(TARGET).bin 0x08001000 verify reset exit"
 
 upload: $(BUILD_DIR)/$(TARGET).bin
 	dfu-util -a 0 -s 0x08001000 -D $< -R
