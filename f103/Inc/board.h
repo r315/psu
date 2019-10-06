@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include <button.h>
-
+#include <stdout.h>
 //#include "stm32f1xx_hal.h"
 #include "main.h"
 #include "stm32f1xx.h"
@@ -20,14 +20,19 @@ extern "C" {
 /**
  * HW symbols for button handling
  * */
-#define BUTTON_LEFT  	(1<<15)
-#define BUTTON_RIGHT 	(1<<13)
-#define BUTTON_CENTER	(1<<14)
-#define BUTTON_A 		  BUTTON_CENTER
+#define BUTTON_UP       (1<<0)
+#define BUTTON_DOWN     (1<<1)
+#define BUTTON_LEFT  	(1<<2)
+#define BUTTON_RIGHT 	(1<<3)
+#define BUTTON_SET  	(1<<4)
+#define BUTTON_MODE     (1<<5)
+#define BUTTON_OUT      (1<<6)
+#define BUTTON_MEM      (1<<7)
 
-#define BUTTON_Capture() (~GPIOB->IDR & BUTTON_MASK)
-#define BUTTON_MASK (BUTTON_LEFT | BUTTON_RIGHT | BUTTON_A)
-#define BUTTON_Cfg()
+#define BUTTON_HW_INIT
+#define BUTTON_HW_READ (~GPIOB->IDR & BUTTON_MASK)
+#define BUTTON_MASK (BUTTON_LEFT | BUTTON_RIGHT | BUTTON_UP   | BUTTON_DOWN |\
+                     BUTTON_SET  | BUTTON_OUT   | BUTTON_MODE | BUTTON_MEM)
 
 #define SPOWER_OFF \
     GPIOA->CRL = (GPIOA->CRH & ~(0x0F << 8)) | (2 << 8); \
@@ -47,6 +52,7 @@ static inline uint32_t ElapsedTicks(uint32_t start_ticks){
  * */
 extern I2C_HandleTypeDef hi2c2;
 extern TIM_HandleTypeDef htim4;
+extern StdOut vcom;
 
 /**
  * Function prototypes

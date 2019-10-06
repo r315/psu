@@ -11,7 +11,7 @@
  * TIM3   PWM signals
  * */
 
-extern StdOut vcom;
+
 
 class VoltageDro : public ConsoleCommand{
     double v = 0;
@@ -36,18 +36,11 @@ static double c = 99.1;
     LCD_Update();
 }
 
-void handleButtons(void){
+void handleButtons(Input *inp){
     BUTTON_Read();
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
-        switch(BUTTON_GetValue()){
-            case BUTTON_LEFT:
-                
-                break;
-
-            case BUTTON_RIGHT: 
-                
-                break;
-        }
+        inp->last_value = inp->value;
+        inp->value = BUTTON_GetValue();        
     }
 }
 
