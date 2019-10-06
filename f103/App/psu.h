@@ -22,6 +22,25 @@ extern "C" {
 #define APP_INTERVAL 10
 
 static const uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
+enum Mode {PSU, LOAD};
+
+typedef struct _Input{
+    uint8_t value;
+    uint8_t last_value;
+}Input;
+
+class Screen{
+
+public: 
+    void process(Input inp);
+};
+
+
+typedef struct _State{
+    Input input;
+    Mode mode;
+    Screen screen;
+}State;
 
 #ifdef __cplusplus
 }

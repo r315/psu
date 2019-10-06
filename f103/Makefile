@@ -82,7 +82,6 @@ Src/stm32f1xx_hal_timebase_tim.c \
 $(APP_SRC_DIR)/text.c \
 $(APP_SRC_DIR)/psu_font.c \
 $(APP_SRC_DIR)/ssd1306.c \
-$(APP_SRC_DIR)/adc_psuv3.c \
 $(APP_SRC_DIR)/board.c \
 $(LIBEMB_PATH)/display/font.c \
 $(LIBEMB_PATH)/button/button.c \
@@ -122,9 +121,9 @@ $(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
 CPP_SOURCES = \
 $(APP_SRC_DIR)/psu_main.cpp \
 $(LIBEMB_PATH)/console/console.cpp \
-$(APP_SRC_DIR)/cmdadc.cpp \
-$(APP_SRC_DIR)/cmdpwm.cpp \
-$(APP_SRC_DIR)/cmddfu.cpp \
+$(APP_SRC_DIR)/console/cmdadc.cpp \
+$(APP_SRC_DIR)/console/cmdpwm.cpp \
+$(APP_SRC_DIR)/console/cmddfu.cpp \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -184,6 +183,7 @@ C_INCLUDES =  \
 -IInc \
 -ISrc \
 -I$(APP_SRC_DIR) \
+-I$(APP_SRC_DIR)/console \
 -I"$(LIBEMB_PATH)"/include \
 -I$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Inc \
 -I$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
