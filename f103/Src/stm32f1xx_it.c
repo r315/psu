@@ -59,7 +59,6 @@
 
 /* External variables --------------------------------------------------------*/
 extern PCD_HandleTypeDef hpcd_USB_FS;
-extern DMA_HandleTypeDef hdma_i2c2_tx;
 extern TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN EV */
@@ -165,15 +164,10 @@ void DebugMon_Handler(void)
 /**
   * @brief This function handles DMA1 channel4 global interrupt.
   */
-void DMA1_Channel4_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA1_Channel4_IRQn 0 */
-
-  /* USER CODE END DMA1_Channel4_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_i2c2_tx);
-  /* USER CODE BEGIN DMA1_Channel4_IRQn 1 */
-
-  /* USER CODE END DMA1_Channel4_IRQn 1 */
+void DMA1_Channel4_IRQHandler(void){
+    DMA1->IFCR = DMA_IFCR_CGIF4;  
+    I2C2->CR1 |= I2C_CR1_STOP;
+    I2C2->CR2 &= ~I2C_CR2_DMAEN;  
 }
 
 /**

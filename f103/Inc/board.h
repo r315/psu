@@ -14,7 +14,8 @@ extern "C" {
 #include "adc_psuv3.h"
 
 #define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 100)
-#define I2C_WriteDMA(_A, _D, _S) HAL_I2C_Master_Transmit_DMA(&hi2c2, _A << 1, _D, _S)
+//#define I2C_WriteDMA(_A, _D, _S) HAL_I2C_Master_Transmit_DMA(&hi2c2, _A << 1, _D, _S)
+#define I2C_WriteDMA(_A, _D, _S) i2cSendDMA(_A << 1, _D, _S)
 
 
 /**
@@ -52,7 +53,7 @@ extern TIM_HandleTypeDef htim4;
  * Function prototypes
  * */
 void setInterval(void(*cb)(), uint32_t ms);
-
+void i2cSendDMA(uint8_t address, uint8_t *data, uint16_t size);
 /*
 * Vile hack to reenumerate, physically _drag_ d+ low.
 * (need at least 2.5us to trigger usb disconnect)

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define SSD1306_I2C_ADDRESS   			0x3C
+#define SSD1306_I2C_ADDRESS   			0x3C // 8-bit address
 
 #define SSD1306_LCDWIDTH                128
 #define SSD1306_LCDHEIGHT               32
