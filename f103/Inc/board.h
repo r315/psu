@@ -13,6 +13,7 @@ extern "C" {
 #include "ssd1306.h"
 #include "adc_psuv3.h"
 
+#define USE_I2C_DMA
 #define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 100)
 #define I2C_WriteDMA(_A, _D, _S) i2cSendDMA(_A << 1, _D, _S)
 

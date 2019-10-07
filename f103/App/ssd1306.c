@@ -55,8 +55,9 @@ void LCD_StopScroll(void){
 
 
 void LCD_Init(void){
+#if defined(USE_I2C_DMA)  
   i2cCfgDMA((uint8_t*)&frame, sizeof(Frame));
-  
+#endif  
   ssd1306_waitPowerUp();
 
   ssd1306_command(SSD1306_SETMULTIPLEX);                  // 0xA8
@@ -148,7 +149,11 @@ void LCD_Update(void) {
   ssd1306_command(3); // Page end address
   
   frame.control = 0x40;
+#if defined(USE_I2C_DMA)  
   I2C_WriteDMA(SSD1306_I2C_ADDRESS, (uint8_t*)&frame, sizeof(frame));
+#else
+  I2C_Write(SSD1306_I2C_ADDRESS, (uint8_t*)&frame, sizeof(frame));
+#endif
   //HAL_I2C_Master_Transmit(&hi2c2, SSD1306_I2C_ADDRESS << 1, (uint8_t*)&frame, sizeof(frame), 500);  
 }
 
