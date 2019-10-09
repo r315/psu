@@ -11,8 +11,8 @@
  * TIM3   PWM signals
  * */
 
-static Psu cpsu;
-static Load cload;
+static ModePsu cpsu;
+static ModeLoad cload;
 static Screen *screens[] = {
     &cpsu,
     &cload      
@@ -61,17 +61,9 @@ public:
 };
 
 
-void UpdateResult(uint16_t *adcres){
-static double c = 99.1;
-    //SEVEN_Double(1,1, (3.3 * adcres[2]) / 4096);
-    //SEVEN_Double(65,1, (3.3 * adcres[3]) / 4096);
-    TEXT_dro(VOLTAGE_DRO_POS, c,1);
-    c += 0.1;
-    if(c == 100.0) c = 0;
-    LCD_Update();
-}
 
-void Psu::redraw(void){
+
+void ModePsu::redraw(void){
     LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
     //TEXT_setFont(&defaultBoldFont);
     //TEXT_setFont(&lcdFont);
@@ -79,19 +71,47 @@ void Psu::redraw(void){
     //TEXT_setFont(&defaultFont);
     TEXT_print(0,0, "88.8W");
     TEXT_setFont(&font_seven_seg);
-    TEXT_dro(VOLTAGE_DRO_POS, 88.8, 1);
-    TEXT_dro(CURRENT_DRO_POS, 8.88, 2);
+    TEXT_dro(VOLTAGE_DRO_POS, 0.00, 1);
+    TEXT_dro(CURRENT_DRO_POS, 0.00, 2);
     TEXT_drawGfx(PSU_ICON_POS, (uint8_t*)&icon_psu[0]);
 }
 
-void Psu::process(void){
-    static double c = 0.1;
-    TEXT_dro(VOLTAGE_DRO_POS, c, 1);
-    c += 0.1;
-    if(c == 100.0) c = 0;  
+void ModePsu::modeSet(){
+    if(mode_set == 0){
+        mode_set = 1;
+        increment = 1.0;
+    }else if(mode_set == 1){
+        mode_set = 0; 
+        increment = 0;            
+    }
 }
 
-void Load::redraw(void){
+void ModePsu::process(void){
+    static double c = 0.1;
+
+    if(BUTTON_GetEvents() == BUTTON_PRESSED){
+        if(mode_set){
+            switch(psu_state.input.value){                
+                case BUTTON_UP: set_value += increment; break;
+                case BUTTON_DOWN: set_value -= increment; break;
+                case BUTTON_LEFT: increment *= 10.0; break;
+                case BUTTON_RIGHT: increment /= 10.0; break;
+            }       
+            count = 0;
+        }
+    }
+
+    if(mode_set && count & 8)
+        LCD_Fill(VOLTAGE_DRO_POS, 64, 20, BLACK);
+    else
+        TEXT_dro(VOLTAGE_DRO_POS, set_value, 1);
+
+    count++;
+    //c += 0.1;
+    //if(c == 100.0) c = 0;  
+
+}
+void ModeLoad::redraw(void){
     LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
     TEXT_drawGfx(LOAD_ICON_POS, (uint8_t*)&icon_load[0]);
 }
@@ -132,18 +152,16 @@ void toggleOutput(void){
     setOutput(!psu_state.output_en);
 }
 
-void checkButtons(Input *inp){
+void checkButtons(){
     BUTTON_Read();
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
-        inp->last_value = inp->value;
-        inp->value = BUTTON_GetValue();
+        psu_state.input.last_value = psu_state.input.value;
+        psu_state.input.value = BUTTON_GetValue();
 
-        if(inp->value & BUTTON_MODE){
-            cycleMode();
-        }
-
-        if(inp->value & BUTTON_MODE){
-            toggleOutput();
+        switch(psu_state.input.value){
+            case BUTTON_MODE: cycleMode(); break;
+            case BUTTON_OUT: toggleOutput(); break;
+            case BUTTON_SET: psu_state.screen->modeSet(); break;
         }
     }
 }
@@ -160,6 +178,7 @@ void tskPsu(void *ptr){
     setMode(0);
 
     while(1){
+        checkButtons();
         HAL_GPIO_TogglePin(GPIOA, DBG_Pin);
         (psu_state.screen)->process();
         HAL_GPIO_TogglePin(GPIOA, DBG_Pin);

@@ -39,20 +39,28 @@ public:
     Screen() {}
     virtual void redraw(){}
     virtual void process(){}
+    virtual void modeSet(){}
 };
 
-class Psu: public Screen{
+class ModePsu: public Screen{
+    double increment;
+    double set_value;
+    uint8_t mode_set;
+    uint8_t count;
+    
 public:
-    Psu() : Screen() {}	
+    ModePsu() : Screen() {}	
     void process();
     void redraw();
+    void modeSet();
 };
 
-class Load: public Screen{
+class ModeLoad: public Screen{
 public:
-    Load() : Screen(){}	
+    ModeLoad() : Screen(){}	
     void process(){}
     void redraw();
+    void modeSet(){}
 };
 
 typedef struct _Input{
@@ -61,7 +69,7 @@ typedef struct _Input{
 }Input;
 
 typedef struct _State{
-    Input input;
+    Input input; 
     uint8_t mode_select;
     uint8_t output_en;
     Screen *screen;
