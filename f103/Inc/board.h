@@ -12,8 +12,10 @@ extern "C" {
 #include "stm32f1xx.h"
 #include "ssd1306.h"
 #include "adc_psuv3.h"
+#include "pcf8574.h"
 
 #define USE_I2C_DMA
+#define I2C_Read(_A, _D, _S) HAL_I2C_Master_Receive(&hi2c2, _A << 1, _D, _S, 100)
 #define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 100)
 #define I2C_WriteDMA(_A, _D, _S) i2cSendDMA(_A << 1, _D, _S)
 
@@ -21,17 +23,17 @@ extern "C" {
 /**
  * HW symbols for button handling
  * */
-#define BUTTON_UP       (1<<0)
-#define BUTTON_DOWN     (1<<1)
-#define BUTTON_LEFT  	(1<<2)
-#define BUTTON_RIGHT 	(1<<3)
-#define BUTTON_SET  	(1<<4)
+#define BUTTON_UP       (1<<1)
+#define BUTTON_DOWN     (1<<4)
+#define BUTTON_LEFT  	(1<<3)
+#define BUTTON_RIGHT 	(1<<2)
+#define BUTTON_SET  	(1<<0)
 #define BUTTON_MODE     (1<<5)
 #define BUTTON_OUT      (1<<6)
 #define BUTTON_MEM      (1<<7)
 
 #define BUTTON_HW_INIT
-#define BUTTON_HW_READ (~GPIOB->IDR & BUTTON_MASK)
+#define BUTTON_HW_READ ~EXPANDER_Read()
 #define BUTTON_MASK (BUTTON_LEFT | BUTTON_RIGHT | BUTTON_UP   | BUTTON_DOWN |\
                      BUTTON_SET  | BUTTON_OUT   | BUTTON_MODE | BUTTON_MEM)
 

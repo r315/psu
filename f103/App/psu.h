@@ -14,6 +14,7 @@ extern "C" {
 #include "cmdpwm.h"
 #include "cmddfu.h"
 #include "cmdpwr.h"
+#include "cmdio.h"
 #include "FreeRTOS.h"
 #include "task.h"
 

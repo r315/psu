@@ -177,6 +177,7 @@ CmdPwm pwm;
 CmdDfu dfu;
 CmdPwr pwr;
 CmdOut out;
+CmdIo io;
     
     vcom.init();    
     console.init(&vcom, "PSU >");
@@ -188,6 +189,7 @@ CmdOut out;
     console.addCommand(&dfu);
     console.addCommand(&pwr); 
     console.addCommand(&out); 
+    console.addCommand(&io); 
 
     while(1){
         console.process();

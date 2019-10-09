@@ -46,6 +46,7 @@ SOURCES_PATH =  \
 Src \
 startup \
 $(APP_SRC_DIR) \
+$(APP_SRC_DIR)/console \
 $(REPOSITORY)Drivers/CMSIS \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/ \
@@ -83,6 +84,7 @@ $(APP_SRC_DIR)/text.c \
 $(APP_SRC_DIR)/psu_font.c \
 $(APP_SRC_DIR)/ssd1306.c \
 $(APP_SRC_DIR)/board.c \
+$(APP_SRC_DIR)/pcf8574.c \
 $(LIBEMB_PATH)/display/font.c \
 $(LIBEMB_PATH)/button/button.c \
 $(LIBEMB_PATH)/misc/strfunc.c \
@@ -124,6 +126,7 @@ $(LIBEMB_PATH)/console/console.cpp \
 $(APP_SRC_DIR)/console/cmdadc.cpp \
 $(APP_SRC_DIR)/console/cmdpwm.cpp \
 $(APP_SRC_DIR)/console/cmddfu.cpp \
+$(APP_SRC_DIR)/console/cmdio.cpp \
 
 # ASM sources
 ASM_SOURCES =  \
