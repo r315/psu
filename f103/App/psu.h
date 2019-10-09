@@ -32,6 +32,8 @@ extern "C" {
 
 #define MAX_SCREENS sizeof(screens)/sizeof(void*)
 
+#define BLINK_TIME_MASK 8
+
 static const uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
 
 class Screen{
@@ -44,7 +46,9 @@ public:
 
 class ModePsu: public Screen{
     double increment;
-    double set_value;
+    double set_v;
+    double set_a;
+    double *set_value;
     uint8_t mode_set;
     uint8_t count;
     

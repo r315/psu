@@ -45,6 +45,7 @@ public:
 	char execute(void *ptr) {
 		uint32_t pdata;
 		if(!nextHex((char**)&ptr, &pdata)){
+            console->print("usage: out <state>\n\tstate: 0 - off, 1 - on\n");
         	return CMD_BAD_PARAM;
         }
 
@@ -53,8 +54,6 @@ public:
 		}else{
 			setOutput(0);
 		}
-
-        cycleMode();
 		
 		return CMD_OK;
 	}	
@@ -80,36 +79,51 @@ void ModePsu::modeSet(){
     if(mode_set == 0){
         mode_set = 1;
         increment = 1.0;
+        set_value = &set_v;
     }else if(mode_set == 1){
-        mode_set = 0; 
-        increment = 0;            
+        mode_set = 2; 
+        increment = 1.0;  
+        set_value = &set_a;          
+    }else{
+        mode_set = 0;
+        increment = 0;
     }
 }
 
 void ModePsu::process(void){
-    static double c = 0.1;
-
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         if(mode_set){
-            switch(psu_state.input.value){                
-                case BUTTON_UP: set_value += increment; break;
-                case BUTTON_DOWN: set_value -= increment; break;
+            count = 0;
+            switch(psu_state.input.value){
+                case BUTTON_SET: count = BLINK_TIME_MASK; break;
+                case BUTTON_UP: *set_value += increment; break;
+                case BUTTON_DOWN: *set_value -= increment; break;
                 case BUTTON_LEFT: increment *= 10.0; break;
                 case BUTTON_RIGHT: increment /= 10.0; break;
             }       
-            count = 0;
         }
     }
 
-    if(mode_set && count & 8)
-        LCD_Fill(VOLTAGE_DRO_POS, 64, 20, BLACK);
-    else
-        TEXT_dro(VOLTAGE_DRO_POS, set_value, 1);
+    if(mode_set){
+        if((++count) & BLINK_TIME_MASK){
+             if(mode_set == 1){
+                LCD_Fill(VOLTAGE_DRO_POS, 64, 20, BLACK);
+                TEXT_dro(CURRENT_DRO_POS, set_a, 2);
+            }else{
+                LCD_Fill(CURRENT_DRO_POS, 64, 20, BLACK);
+                TEXT_dro(VOLTAGE_DRO_POS, set_v, 1);
+            }
 
-    count++;
-    //c += 0.1;
-    //if(c == 100.0) c = 0;  
+        }else{
+            TEXT_dro(VOLTAGE_DRO_POS, set_v, 1);
+            TEXT_dro(CURRENT_DRO_POS, set_a, 2);
+        }
 
+       
+    }else{
+        TEXT_dro(VOLTAGE_DRO_POS, set_v, 1);
+        TEXT_dro(CURRENT_DRO_POS, set_a, 2);
+    }
 }
 void ModeLoad::redraw(void){
     LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
@@ -126,7 +140,6 @@ void setMode(uint8_t mode){
     LCD_Fill(MODE_ICONS_AREA_POS_S, MODE_ICONS_AREA_SIZE, BLACK);
     psu_state.screen = screens[mode];
     (psu_state.screen)->redraw();
-    setOutput(psu_state.output_en);
 }
 
 void cycleMode(void){
