@@ -65,15 +65,18 @@ void ModeLoad::redraw(void){
     TEXT_drawGfx(LOAD_ICON_POS, (uint8_t*)&icon_load[0]);
 }
 
-void setMode(uint8_t mode){
+void selectMode(uint8_t mode){
     
     if(mode >= MAX_MODES){
         return;
     }
 
     psu_state.mode_select = mode;
-    LCD_Fill(MODE_ICONS_AREA_POS_S, MODE_ICONS_AREA_SIZE, BLACK);    
     (modes[mode])->redraw();
+    // Mode clears screen, so must redraw output icon,
+    // only if active
+    if(psu_state.output_en)
+        setOutput(psu_state.output_en);
 }
 
 void cycleMode(void){
@@ -83,7 +86,7 @@ uint8_t mode = psu_state.mode_select + 1;
         mode = 0;
     }
     
-    setMode(mode);
+    selectMode(mode);
 }
 
 void setOutput(uint8_t en){
@@ -119,7 +122,7 @@ void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;
     TEXT_Init();
 
-    setMode(0);
+    selectMode(0);
 
     while(1){
         checkButtons();
