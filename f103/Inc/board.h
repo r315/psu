@@ -7,7 +7,6 @@ extern "C" {
 
 #include <button.h>
 #include <stdout.h>
-//#include "stm32f1xx_hal.h"
 #include "main.h"
 #include "stm32f1xx.h"
 #include "ssd1306.h"
@@ -36,6 +35,7 @@ extern "C" {
 #define BUTTON_HW_READ ~EXPANDER_Read()
 #define BUTTON_MASK (BUTTON_LEFT | BUTTON_RIGHT | BUTTON_UP   | BUTTON_DOWN |\
                      BUTTON_SET  | BUTTON_OUT   | BUTTON_MODE | BUTTON_MEM)
+#define BUTTON_VALUE (uint8_t)BUTTON_GetValue()
 
 #define SPOWER_OFF \
     GPIOA->CRL = (GPIOA->CRH & ~(0x0F << 8)) | (2 << 8); \
@@ -82,9 +82,12 @@ static inline void reenumerate_usb(void){
 /**
  * PWM
  */
-#define PWM_RESOLUTION 10UL
-#define PWM_MAX_VALUE (1<<PWM_RESOLUTION)
-#define PWM_MIN_VALUE 5
+
+#define PWM_OUT_VOLTAGE     1       // Channel that controls output voltage
+#define PWM_OUT_CURRENT     2       // Channel that controls output current
+#define PWM_RESOLUTION      10UL
+#define PWM_MAX_VALUE       (1<<PWM_RESOLUTION)
+#define PWM_MIN_VALUE       5
 
 /**
  * Initialyse PWM signal on PA7-6 and PB1-0 pins
