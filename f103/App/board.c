@@ -15,6 +15,14 @@ void setInterval(void(*cb)(), uint32_t ms){
 
 /**
  * PWM Driver
+ * 
+ * PWM1 - PA6
+ * PWM2 - PA7
+ * PWM3 - PB0
+ * PWM4 - PB1
+ * 
+ * \param initial - startup duty for each channel
+ * 
  * */
 void PWM_Init(uint16_t *initial){
 
