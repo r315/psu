@@ -7,8 +7,11 @@
 
 static font_t *font;
 
-void TEXT_setFont(font_t *fnt){
-    font = fnt;
+
+static uint16_t drawDp(uint16_t x, uint16_t y){
+    LCD_Fill(x-1,y, 4, font->h, BLACK);
+    LCD_Fill(x,y + font->h - 2, 2,2, WHITE);
+    return 3; 
 }
 
 /**
@@ -41,6 +44,13 @@ static uint8_t drawChar(uint16_t x, uint16_t y, uint8_t c){
 }
 
 /**
+ * 
+ * */
+void TEXT_setFont(font_t *fnt){
+    font = fnt;
+}
+
+/**
  * data format: w,h,data...
  * 
  */
@@ -62,24 +72,28 @@ void TEXT_drawGfx(uint16_t x, uint16_t y, uint8_t *data){
     }
 }
 
-uint16_t drawDp(uint16_t x, uint16_t y){
-    LCD_Fill(x-1,y, 4, font->h, BLACK);
-    LCD_Fill(x,y + font->h - 2, 2,2, WHITE);
-    return 3; 
-}
-
-void TEXT_dro(uint16_t x, uint16_t y, double val, uint8_t places){
-char value[20], *p;
-    if(places == 2)
+/**
+ * 
+ * */
+void TEXT_dro(uint16_t x, uint16_t y, float val, uint8_t precision, int8_t blank_place){
+char value[6], *p, i = 0;
+    if(precision == 2)
         sprintf(value,"%.2f", val);
     else
-        sprintf(value,"%.1f", val);
+        if(val < 10)
+            sprintf(value,"0%.1f", val);
+        else
+            sprintf(value,"%.1f", val);
+
     p = value;
     while(*p){
         if(*p == '.'){
             x += drawDp(x,y);
         }else{
-            x += drawChar(x,y, *p);
+            if((i++) == blank_place)
+                x += drawChar(x,y, '9' + 1); // Space for font_seven_seg
+            else
+                x += drawChar(x,y, *p);
         }
         p++;
     }
@@ -110,46 +124,13 @@ char prec;
         drawChar(x,y, '0' + int_part%10);
 }
 
-void test(void *ptr){
-uint8_t x = 0;
-    font = (font_t *)ptr;
-
-    for (int i = '0'; i < '9' + 1; i++)
-    {
-        x += drawChar(x, 0, i);
-        LCD_Update();
-        /* code */
-    }   
-}
-
 void TEXT_Init(void){
-
     
     LCD_Init();
-    LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
+    //LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
+    memset(LCD_GetPixels(), 0x55, 512);
     LCD_Update();
-return;
-    test(&defaultFont);
-    DelayMs(1000);
-    test(&font_seven_seg);
-    DelayMs(1000);
-    test(&defaultBoldFont);
-    DelayMs(1000);
-    test(&lcdFont);
-    DelayMs(1000);
-    test(&pixelDustFont);
-    
 }
-   
-
-void SEVEN_PrintAmps(double amps){
-    SEVEN_Double(0,1,amps);
-}
-
-void SEVEN_PrintVolts(double volts){
-    SEVEN_Double(65,1,volts);
-}
-
 
 void TEXT_print(uint16_t x, uint16_t y, const char* format, ...){
 char line[MAX_LINE_CHARS], *p;
@@ -163,4 +144,3 @@ va_list argptr;
         x += drawChar(x, y, *p++);
     }    
 }
-

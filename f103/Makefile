@@ -32,11 +32,10 @@ OPT = -Og
 
 APP_SRC_DIR :=$(CURDIR)/App
 
-ifeq ($(shell uname -s), Linux)
 FW :=STM32Cube_FW_F1_V1.8.0/
+ifeq ($(shell uname -s), Linux)
 REPOSITORY :=$(HOME)/STM32Cube/Repository/$(FW)
 else
-FW :=STM32Cube_FW_F1_V1.6.1/
 REPOSITORY :=C:/Users/hmr/STM32Cube/Repository/$(FW)
 endif
 
@@ -122,6 +121,7 @@ $(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
 
 CPP_SOURCES = \
 $(APP_SRC_DIR)/psu_main.cpp \
+$(APP_SRC_DIR)/modepsu.cpp \
 $(LIBEMB_PATH)/console/console.cpp \
 $(APP_SRC_DIR)/console/cmdadc.cpp \
 $(APP_SRC_DIR)/console/cmdpwm.cpp \

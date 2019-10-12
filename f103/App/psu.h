@@ -30,54 +30,61 @@ extern "C" {
 #define MODE_ICONS_AREA_POS_S       70,0
 #define MODE_ICONS_AREA_SIZE        40,8
 
-#define MAX_SCREENS sizeof(screens)/sizeof(void*)
+#define MAX_MODES sizeof(modes)/sizeof(void*)
 
-#define BLINK_TIME_MASK 8
+#define BLINK_TIME_MASK             8
+#define SET_MAX_VOLTAGE             14.0f
+#define SET_MAX_CURRENT             3.00f
+#define SET_MAX_DIGITS              3
+#define VOLTAGE_PRECISION           1
+#define CURRENT_PRECISION           2
+#define NO_BLANK                    -1
 
 static const uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
 
-class Screen{
+enum SET_MODE {SET_OFF = 0, SET_VOLTAGE, SET_CURRENT};
+
+typedef struct _State{ 
+    uint8_t mode_select;
+    uint8_t output_en;
+    void *ctx;
+}State;
+
+class Mode{
 public:
-    Screen() {}
+    Mode() {}
     virtual void redraw(){}
-    virtual void process(){}
+    virtual void process(State *st){}
     virtual void modeSet(){}
 };
 
-class ModePsu: public Screen{
-    double increment;
-    double set_v;
-    double set_a;
-    double *set_value;
+class ModePsu: public Mode{
+    float set_v;
+    float set_a;
+    float *set_value;
+    float set_max;
+    uint8_t base_place;
+    uint8_t place;
     uint8_t mode_set;
     uint8_t count;
-    
+    void (*setOutput)(float val, float max);
+    void incrementPlace(int8_t base);
 public:
-    ModePsu() : Screen() {}	
-    void process();
+    ModePsu() : Mode() {}	
+    void process(State *st);
     void redraw();
     void modeSet();
 };
 
-class ModeLoad: public Screen{
+class ModeLoad: public Mode{
 public:
-    ModeLoad() : Screen(){}	
-    void process(){}
+    ModeLoad() : Mode(){}	
+    void process(State *st){}
     void redraw();
     void modeSet(){}
 };
 
-typedef struct _Input{
-    uint8_t value;
-    uint8_t last_value;
-}Input;
 
-typedef struct _State{
-    Input input; 
-    uint8_t mode_select;
-    uint8_t output_en;
-    Screen *screen;
-}State;
 
 void toggleOutput(void);
 void setOutput(uint8_t en);
@@ -88,7 +95,7 @@ extern const uint8_t icon_out[];
 extern const uint8_t icon_psu[];
 extern const uint8_t icon_load[];
 
-State psu_state;
+extern State psu_state;
 
 #ifdef __cplusplus
 }
