@@ -56,7 +56,9 @@ void LCD_StopScroll(void){
 
 void LCD_Init(void){
 #if defined(USE_I2C_DMA)  
-  i2cCfgDMA((uint8_t*)&frame, sizeof(Frame));
+  i2cCfgDMA((uint8_t*)&frame, sizeof(Frame) + 1); /* DMA Transfer conplete is active 
+                                                    after the last byte is placed on I2C->DR, 
+                                                    not when tha last byte is sent by i2c */
 #endif  
   ssd1306_waitPowerUp();
 

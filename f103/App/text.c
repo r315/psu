@@ -125,10 +125,9 @@ char prec;
 }
 
 void TEXT_Init(void){
-    
+uint8_t data[] = "123";    
     LCD_Init();
-    //LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
-    memset(LCD_GetPixels(), 0x55, 512);
+    LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
     LCD_Update();
 }
 

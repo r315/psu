@@ -138,19 +138,21 @@ StdOut vcom = {
 
 /**
  * I2C DMA driver
+ * 
+ * This driver was implemented in a way that reduce the most setup steps much as possible,
+ * for that the dma is configured once and then all transfers start by the I2C
  * */
 void i2cCfgDMA(uint8_t *src, uint16_t size){
     // Configure DMA1 CH4 to handle i2c transmission
-    RCC->AHBENR |= RCC_AHBENR_DMA1EN;
-    DMA1_Channel4->CNDTR = size;
-    DMA1_Channel4->CPAR = (uint32_t)&I2C2->DR;
-    DMA1_Channel4->CMAR = (uint32_t)src;
-    DMA1_Channel4->CCR =    DMA_CCR_EN   | 
-                            DMA_CCR_TCIE | // Transfer complete interrupt
+    RCC->AHBENR |= RCC_AHBENR_DMA1EN;    
+    DMA1_Channel4->CCR =    DMA_CCR_TCIE | // Transfer complete interrupt
                             DMA_CCR_DIR  | // Read From memory
                             DMA_CCR_CIRC |
                             DMA_CCR_MINC;  // Increment memory address
-    
+    DMA1_Channel4->CNDTR = size;
+    DMA1_Channel4->CPAR = (uint32_t)&I2C2->DR;
+    DMA1_Channel4->CMAR = (uint32_t)src;
+    DMA1_Channel4->CCR |= DMA_CCR_EN;
     
     // Configure I2C2 transfer
     RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;    
@@ -162,23 +164,26 @@ void i2cCfgDMA(uint8_t *src, uint16_t size){
     HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 } 
 
-
+/**
+ * Due to the implementation of the driver, the parameters
+ * data and size are ignored
+ * */
 void i2cSendDMA(uint8_t address, uint8_t *data, uint16_t size){
 uint32_t n;
 
-    while(I2C2->SR2 & I2C_SR2_BUSY);    
+    while(I2C2->SR2 & I2C_SR2_BUSY); // wait for any transfer to end
 
-    I2C2->CR1 |= I2C_CR1_START;
+    I2C2->CR1 |= I2C_CR1_START;     // Send start condition
 
     n = 1000;
-    while(!(I2C2->SR1 & I2C_SR1_SB)){
+    while(!(I2C2->SR1 & I2C_SR1_SB)){ // wait for master mode
         if(--n == 0)
             return;
     }    
     
-    I2C2->CR2 |= I2C_CR2_DMAEN;
-    I2C2->DR = address;
-    while(!(I2C2->SR1 & I2C_SR1_ADDR)){        
+    I2C2->CR2 |= I2C_CR2_DMAEN;         // enable DMA
+    I2C2->DR = address;                 
+    while(!(I2C2->SR1 & I2C_SR1_ADDR)){ // wait for slave acknowledge       
         if(--n == 0)            
             return;
 
@@ -188,8 +193,8 @@ uint32_t n;
             return;      
         }
     }
-    n = I2C2->SR2; // Dummy read
-    while(I2C2->SR2 & I2C_SR2_BUSY);   
+    n = I2C2->SR2; // Dummy read for crearing flags
+    //while(I2C2->SR2 & I2C_SR2_BUSY);   
 }
 
 /**
