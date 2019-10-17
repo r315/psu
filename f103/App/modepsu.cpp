@@ -47,19 +47,23 @@ void ModePsu::process(State *st){
                 case BUTTON_RIGHT: changePlace(1); break;
             }       
         }
-    }    
+    }
 
-        if(mode_set != SET_OFF && (++count) & BLINK_TIME_MASK){
-             if(mode_set == SET_VOLTAGE){
-                TEXT_dro(VOLTAGE_DRO_POS, set_v, VOLTAGE_PRECISION, place);
-                TEXT_dro(CURRENT_DRO_POS, set_a, CURRENT_PRECISION, NO_BLANK);
-            }else{
-                TEXT_dro(VOLTAGE_DRO_POS, set_v, VOLTAGE_PRECISION, NO_BLANK);
-                TEXT_dro(CURRENT_DRO_POS, set_a, CURRENT_PRECISION, place);
-            }            
+    if(mode_set == SET_OFF){
+        TEXT_dro(VOLTAGE_DRO_POS, st->psu_out_v, VOLTAGE_PRECISION, NO_BLANK);
+        TEXT_dro(CURRENT_DRO_POS, st->psu_out_a, CURRENT_PRECISION, NO_BLANK);
+    }
+    else if((++count) & BLINK_TIME_MASK){
+        if(mode_set == SET_VOLTAGE){
+            TEXT_dro(VOLTAGE_DRO_POS, set_v, VOLTAGE_PRECISION, place);
+            TEXT_dro(CURRENT_DRO_POS, set_a, CURRENT_PRECISION, NO_BLANK);
         }else{
             TEXT_dro(VOLTAGE_DRO_POS, set_v, VOLTAGE_PRECISION, NO_BLANK);
-            TEXT_dro(CURRENT_DRO_POS, set_a, CURRENT_PRECISION, NO_BLANK);
-        }
+            TEXT_dro(CURRENT_DRO_POS, set_a, CURRENT_PRECISION, place);
+        }            
+    }else{
+        TEXT_dro(VOLTAGE_DRO_POS, set_v, VOLTAGE_PRECISION, NO_BLANK);
+        TEXT_dro(CURRENT_DRO_POS, set_a, CURRENT_PRECISION, NO_BLANK);
+    }
     
 }

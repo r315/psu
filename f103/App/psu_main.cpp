@@ -59,11 +59,6 @@ public:
 	}	
 };
 
-void ModeLoad::redraw(void){
-    LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
-    TEXT_drawGfx(LOAD_ICON_POS, (uint8_t*)&icon_load[0]);
-}
-
 void selectMode(uint8_t mode){
     
     if(mode >= MAX_MODES){
@@ -122,6 +117,10 @@ static TickType_t xLastWakeTime;
     TEXT_Init();
 
     selectMode(0);
+    psu_state.psu_out_v = 1;
+    psu_state.psu_out_a = 1;
+    psu_state.load_in_v = 2;
+    psu_state.load_in_a = 2;
 
     while(1){
         checkButtons();

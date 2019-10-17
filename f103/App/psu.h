@@ -47,6 +47,10 @@ enum SET_MODE {SET_OFF = 0, SET_VOLTAGE, SET_CURRENT};
 typedef struct _State{ 
     uint8_t mode_select;
     uint8_t output_en;
+    uint16_t psu_out_v;
+    uint16_t psu_out_a;
+    uint16_t load_in_v;
+    uint16_t load_in_a;    
     void *ctx;
 }State;
 
@@ -83,9 +87,9 @@ public:
 class ModeLoad: public Mode{
 public:
     ModeLoad() : Mode(){}	
-    void process(State *st){}
+    void process(State *st);
     void redraw();
-    void modeSet(){}
+    void modeSet();
 };
 
 
