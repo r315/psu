@@ -51,6 +51,18 @@ typedef struct _State{
 }State;
 
 class Mode{
+
+protected:
+    float *set_value;
+    float set_max;
+    uint8_t place;
+    int8_t base_place;
+    uint8_t mode_set;
+    uint8_t count;
+    uint16_t mapPwm(float x, float in_max);
+    void changePlace(int8_t sel);
+    void incrementPlace(int8_t base);
+    void (*setOutput)(float val, float max);
 public:
     Mode() {}
     virtual void redraw(){}
@@ -60,15 +72,7 @@ public:
 
 class ModePsu: public Mode{
     float set_v;
-    float set_a;
-    float *set_value;
-    float set_max;
-    uint8_t base_place;
-    uint8_t place;
-    uint8_t mode_set;
-    uint8_t count;
-    void (*setOutput)(float val, float max);
-    void incrementPlace(int8_t base);
+    float set_a;        
 public:
     ModePsu() : Mode() {}	
     void process(State *st);
@@ -90,6 +94,8 @@ void toggleOutput(void);
 void setOutput(uint8_t en);
 void setMode(uint8_t mode);
 void cycleMode(void);
+void setOutputVoltage(float val, float max);
+void setOutputCurrent(float val, float max);
 
 extern const uint8_t icon_out[];
 extern const uint8_t icon_psu[];

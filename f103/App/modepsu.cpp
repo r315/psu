@@ -2,36 +2,6 @@
 #include <math.h>
 
 
-static uint16_t mapPwm(float x, float in_max){
-  return (x * (PWM_MAX_VALUE - PWM_MIN_VALUE) / in_max) + PWM_MIN_VALUE;
-}
-
-static void setOutputVoltage(float val, float max){
-    PWM_Set(PWM_OUT_VOLTAGE, mapPwm(val, max));
-}
-
-static void setOutputCurrent(float val, float max){
-    PWM_Set(PWM_OUT_CURRENT, mapPwm(val, max));
-}
-
-static void changePlace(uint8_t *cur, int8_t sel){
-uint8_t c = *cur + sel;
-    if(c < SET_MAX_DIGITS)
-        *cur = c;
-}
-
-
-void ModePsu::incrementPlace(int8_t base){
-float c = (float)base;
-uint8_t d = place;
-    while(d--){ c = c / 10; }
-    c = *set_value + c;
-    if(c >=0 && c < set_max){
-        *set_value = c;
-        setOutput(c, set_max);
-    }
-}
-
 void ModePsu::redraw(void){
     LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
     //TEXT_setFont(&defaultBoldFont);
@@ -73,8 +43,8 @@ void ModePsu::process(State *st){
                 case BUTTON_SET: count = BLINK_TIME_MASK; break;
                 case BUTTON_UP: incrementPlace(base_place); break;
                 case BUTTON_DOWN: incrementPlace(-base_place); break;
-                case BUTTON_LEFT: changePlace(&place, -1); break;
-                case BUTTON_RIGHT: changePlace(&place, 1); break;
+                case BUTTON_LEFT: changePlace(-1); break;
+                case BUTTON_RIGHT: changePlace(1); break;
             }       
         }
     }    

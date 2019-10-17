@@ -24,8 +24,7 @@ class VoltageDro : public ConsoleCommand{
     double v = 0;
 public:
     char execute(void *ptr){
-        //SEVEN_Double(1,1,v);
-        v += 0.5;
+        cycleMode();
         return CMD_OK;
     }
     void help(void){}
@@ -71,7 +70,7 @@ void selectMode(uint8_t mode){
         return;
     }
 
-    psu_state.mode_select = mode;
+    psu_state.mode_select = mode;    
     (modes[mode])->redraw();
     // Mode clears screen, so must redraw output icon,
     // only if active

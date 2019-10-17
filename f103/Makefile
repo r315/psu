@@ -121,12 +121,14 @@ $(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
 
 CPP_SOURCES = \
 $(APP_SRC_DIR)/psu_main.cpp \
+$(APP_SRC_DIR)/mode.cpp \
 $(APP_SRC_DIR)/modepsu.cpp \
 $(LIBEMB_PATH)/console/console.cpp \
 $(APP_SRC_DIR)/console/cmdadc.cpp \
 $(APP_SRC_DIR)/console/cmdpwm.cpp \
 $(APP_SRC_DIR)/console/cmddfu.cpp \
 $(APP_SRC_DIR)/console/cmdio.cpp \
+$(LIBEMB_PATH)/console/console.cpp \
 
 # ASM sources
 ASM_SOURCES =  \
