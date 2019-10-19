@@ -201,13 +201,30 @@ uint32_t n;
  * ADC Driver
  * */
 
+#define ADC_TRIGGER_CLOCK 500000UL
+#define ADC_CR1_DUALMOD_FAST_INTERLEAVED     (7 << 16)
+#define ADC_CR1_DUALMOD_SIMULTANEOUS         (1 << 16)
+#define ADC_SAMPLES 4
+#define ADC_SQR1_L_(len)                     (len << 20)
+#define ADC_SQR3_SQ1_(ch)                    (ch << 0)
+#define ADC_SQR3_SQ2_(ch)                    (ch << 5)
+#define ADC_SQR3_SQ3_(ch)                    (ch << 10)
+#define ADC_SQR3_SQ4_(ch)                    (ch << 15)
+#define ADC_SMPR2_SMP0_(cy)                    (cy << 0)
+#define ADC_SMPR2_SMP1_(cy)                    (cy << 3)
+#define ADC_SMPR2_SMP2_(cy)                    (cy << 6)
+#define ADC_SMPR2_SMP3_(cy)                    (cy << 9)
+
 static void (*eotcb)(uint16_t*);
 static uint16_t adcres[ADC_SAMPLES];
 
 /* ***********************************************************
- * ADC is triggered by TIM3 TRGO and performs dual 
- * simultaneous convertion. it converts 4 channels and transfers 
- * the result to memory using DMA 
+ * ADC is triggered by TIM2 TRGO and performs dual 
+ * simultaneous convertion on regular simultaneous mode. 
+ * It performs the conversion of 4 channels and transfers 
+ * the result to memory using DMA
+ * At the end of convertion, optionaly a callback function 
+ * may be invoked
  * 
  * \param ms    Time between convertions
  ************************************************************ */
@@ -218,10 +235,10 @@ void ADC_Init(uint16_t ms){
     RCC->AHBENR |= RCC_AHBENR_DMA1EN;           // Enable DMA1
 
     DMA1_Channel1->CPAR = (uint32_t)&ADC1->DR;  // Source address ADC1 Data Register
-    DMA1_Channel1->CMAR = (uint32_t)adcres;        // Destination address memory
-    DMA1_Channel1->CNDTR = ADC_SAMPLES;
+    DMA1_Channel1->CMAR = (uint32_t)adcres;     // Destination address memory
+    DMA1_Channel1->CNDTR = 2; //ADC_SAMPLES;
     DMA1_Channel1->CCR =    DMA_CCR_PL |        // Highest priority
-                            DMA_CCR_MSIZE_0 |   // 16bit Dst size
+                            DMA_CCR_MSIZE_1 |   // 32bit Dst size
                             DMA_CCR_PSIZE_1 |   // 32bit src size
                             DMA_CCR_MINC |      // increment memory pointer after transference
                             DMA_CCR_CIRC |      // Circular mode
@@ -258,14 +275,17 @@ void ADC_Init(uint16_t ms){
             ADC_CR2_EXTSEL_1 |              // 0b011 Select TIM2_CC2 Event
             ADC_CR2_EXTSEL_0 |              // 
             ADC_CR2_DMA;                    // Enable DMA Request
-    ADC1->CR1 = ADC_CR1_DUALMOD_SIMULTANEOUS;
 
-    ADC1->SQR1 = (1 << 20);                 // Two convertions
-    ADC1->SQR3 = (2 << 5) | (0 << 0);       // First convertion CH0, second CH2
-    ADC1->CR1 |= ADC_CR1_DISCEN |           // Convert ONE channel in discontinous mode 
-                (0 << ADC_CR1_DISCNUM_Pos);
+    ADC1->CR1 = ADC_CR1_DUALMOD_SIMULTANEOUS |
+                ADC_CR1_SCAN;               // Scan throu all channels on sequence
+
+    ADC1->SQR1 = ADC_SQR1_L_(1);            // Two channels on sequence
+    ADC1->SQR3 = ADC_SQR3_SQ1_(0) |         // First convertion CH0, second CH2 
+                 ADC_SQR3_SQ2_(2);
+
+    ADC1->SMPR2 = ADC_SMPR2_SMP0_(4) |      // CH0 and CH2 sample time, 41.5 cycles
+                  ADC_SMPR2_SMP2_(4);
                 
-
     /* Configure ADC 2 */
     RCC->APB2ENR  |= RCC_APB2ENR_ADC2EN;    // Enable Adc2
     RCC->APB2RSTR |= RCC_APB2ENR_ADC2EN;
@@ -277,16 +297,23 @@ void ADC_Init(uint16_t ms){
     		    ADC_CR2_EXTSEL_0 |
 				ADC_CR2_ADON;
 
-    ADC2->SQR1 = (1 << 20);                //        
-    ADC2->SQR3 = (3 << 5) | (1 << 0);      // first convertion CH1, second CH3 
-    ADC2->CR1 |= (0 << ADC_CR1_DISCNUM_Pos) | ADC_CR1_DISCEN;                 
+    ADC2->SQR1 = ADC_SQR1_L_(1);            // Two channels on sequence
+    ADC2->SQR3 = ADC_SQR3_SQ1_(1) |         // first convertion CH1, second CH3 
+                 ADC_SQR3_SQ2_(3);
+
+    ADC2->SMPR2 = ADC_SMPR2_SMP1_(4) |      // CH1 and CH3 sample time, 41.5 cycles
+                  ADC_SMPR2_SMP3_(4);
+
+    ADC2->CR1 = ADC_CR1_SCAN;
+
+    /* Configure GPIOA Pins */
+    GPIOA->CRL &= ~0xFFFF;                
 
     NVIC_SetPriority(DMA1_Channel1_IRQn, 0); // Highest priority
     NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
-    TIM2->CR1 |= TIM_CR1_CEN;
-
     eotcb = NULL;
+    TIM2->CR1 |= TIM_CR1_CEN;
 }
 
 
@@ -295,14 +322,18 @@ uint16_t *ADC_LastConvertion(void){
 }
 
 /**
- * DMA transfer end (all data) interrupt handler
+ * DMA transfer interrupt handler
  * */
-void DMA1_Channel1_IRQHandler(void){ 
-    DMA1->IFCR |= DMA_IFCR_CGIF1;    // Clear DMA Flags TODO: ADD DMA Error handling ?
-    DMA1_Channel1->CNDTR = ADC_SAMPLES;
-    ADC1->SR = 0;                    // Clear ADC1 Flags
-    if(eotcb != NULL)
-        eotcb(adcres);   
+void DMA1_Channel1_IRQHandler(void){
+
+    if(DMA1->ISR & DMA_ISR_TCIF1){
+        ADC1->SR = 0;                    // Clear ADC1 Flags
+        ADC2->SR = 0;
+            if(eotcb != NULL)
+        eotcb(adcres);
+    }
+
+    DMA1->IFCR = DMA_IFCR_CGIF1;    // Clear DMA Flags TODO: ADD DMA Error handling ?
 }
 
 

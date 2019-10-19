@@ -10,7 +10,6 @@ extern "C" {
 #include "main.h"
 #include "stm32f1xx.h"
 #include "ssd1306.h"
-#include "adc_psuv3.h"
 #include "pcf8574.h"
 
 #define USE_I2C_DMA
@@ -59,14 +58,18 @@ extern StdOut vcom;
 
 /**
  * Function prototypes
+ * 
+ * PB10 SCL
+ * PB11 SDA
  * */
 void setInterval(void(*cb)(), uint32_t ms);
 void i2cCfgDMA(uint8_t *src, uint16_t size);
 void i2cSendDMA(uint8_t address, uint8_t *data, uint16_t size);
-/*
+
+/**
 * Vile hack to reenumerate, physically _drag_ d+ low.
 * (need at least 2.5us to trigger usb disconnect)
-*/
+* */
 static inline void reenumerate_usb(void){
     USB->CNTR = USB_CNTR_PDWN;
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
@@ -81,6 +84,11 @@ static inline void reenumerate_usb(void){
 
 /**
  * PWM
+ * 
+ * PB0 PWM_VOUT
+ * PB1 PWM_IOUT
+ * PWM_ILOAD
+ * PWM_VLOAD
  */
 
 #define PWM_OUT_VOLTAGE     1       // Channel that controls output voltage
@@ -110,34 +118,46 @@ void PWM_Set(uint8_t, uint16_t);
 /**
  * Returns the current value for the given channel
  * \param  ch   
- * \retusn 16bit pwm value
+ * \return 16bit pwm value
  * */
 uint16_t PWM_Get(uint8_t);
 
 /**
+ * ADC
+ *
  * Analog Pins
+ * VOUT PA0
+ * IOUT PA1 
+ * VLOAD PA2
+ * ILOAD PA3
  * */
- 
- // VOUT PA0
- // IOUT PA1
- // VLOAD PA2
- // ILOAD PA3
- 
- /**
- * PWM Pins
- * */
- // PB0 PWM_VOUT
- // PB1 PWM_IOUT
- // PWM_ILOAD
- // PWM_VLOAD
- 
- /**
- * I2C
- * */
- // PB10 SCL
- // PB11 SDA
- 
- 
+
+/* ***********************************************************
+ * ADC is triggered by TIM3 TRGO and performs dual 
+ * simultaneous convertion. it converts 4 channels and transfers 
+ * the result to memory using DMA 
+ * 
+ * \param ms    Time between convertions
+ ************************************************************ */
+void ADC_Init(uint16_t);
+
+/* ***********************************************************
+ * Configure callback for end of transfer of ADC convertions
+ * 
+ * \param  cb    call back function void cb(uin16_t *adc_convertions);
+ * \return none
+ ************************************************************ */
+void ADC_SetCallBack(void (*)(uint16_t*));
+
+/* ***********************************************************
+ * Get the last performed convertions
+ * Not thread safe
+ * \param  none
+ * \return uint16_t *last_adc_convertions 
+ ************************************************************ */
+uint16_t *ADC_LastConvertion(void);
+
+
  
  
  

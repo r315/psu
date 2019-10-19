@@ -4,11 +4,12 @@
 
 /**
  * HW modules configuration
- * TIM4   program loop tick
- * TIM2   ADC Trigger
- * DMA1   ADC data transfer
- * ADC1-2 Dual configuration for simultaneous convertion
- * TIM3   PWM signals
+ * TIM4     HAL Timer
+ * TIM2     ADC Trigger
+ * DMA1-CH1 ADC data transfer
+ * DMA1-CH4 I2C data transfer
+ * ADC1-2   Dual configuration for simultaneous convertion
+ * TIM3     PWM signals
  * */
 
 State psu_state;
@@ -108,6 +109,13 @@ void checkButtons(){
 }
 
 /**
+ * ADC End of convertion callback
+ * */
+void adcEocCb(uint16_t *res){
+    psu_state.adcvalues = *((uint64_t*)res);
+}
+
+/**
  * Called every 10ms by Timer4 interrupt, as console
  * may block the main thread, having a secondary loop
  * ensures operation of lcd update and button handling
@@ -117,10 +125,7 @@ static TickType_t xLastWakeTime;
     TEXT_Init();
 
     selectMode(0);
-    psu_state.psu_out_v = 1;
-    psu_state.psu_out_a = 1;
-    psu_state.load_in_v = 2;
-    psu_state.load_in_a = 2;
+    ADC_SetCallBack(adcEocCb);   
 
     while(1){
         checkButtons();
@@ -163,11 +168,7 @@ CmdIo io;
 extern "C" void psu(void){  
 
     PWM_Init((uint16_t*)pwm_start_values);
-
-    //ADC_Init(ADC_INTERVAL);
-    //ADC_SetCallBack(UpdateResult);
-
-    //setInterval(psu_v3_loop,APP_INTERVAL);
+    ADC_Init(ADC_INTERVAL);   
 
     xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
