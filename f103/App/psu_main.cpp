@@ -129,9 +129,9 @@ static TickType_t xLastWakeTime;
 
     while(1){
         checkButtons();
-        HAL_GPIO_TogglePin(GPIOA, DBG_Pin);
+        DBG_LED_ON;
         modes[psu_state.mode_select]->process(&psu_state);
-        HAL_GPIO_TogglePin(GPIOA, DBG_Pin);
+        DBG_LED_OFF;
         LCD_Update();
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
