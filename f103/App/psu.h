@@ -33,11 +33,6 @@ extern "C" {
 #define MAX_MODES sizeof(modes)/sizeof(void*)
 
 #define BLINK_TIME_MASK             8
-#define SET_MAX_VOLTAGE             14.0f
-#define SET_MAX_CURRENT             3.00f
-#define SET_MAX_DIGITS              3
-#define VOLTAGE_PRECISION           1
-#define CURRENT_PRECISION           2
 #define NO_BLANK                    -1
 
 static const uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
