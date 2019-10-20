@@ -236,7 +236,7 @@ void ADC_Init(uint16_t ms){
 
     DMA1_Channel1->CPAR = (uint32_t)&ADC1->DR;  // Source address ADC1 Data Register
     DMA1_Channel1->CMAR = (uint32_t)adcres;     // Destination address memory
-    DMA1_Channel1->CNDTR = 2; //ADC_SAMPLES;
+    DMA1_Channel1->CNDTR =  ADC_SAMPLES/2;      // We are going to transfer 32-bit
     DMA1_Channel1->CCR =    DMA_CCR_PL |        // Highest priority
                             DMA_CCR_MSIZE_1 |   // 32bit Dst size
                             DMA_CCR_PSIZE_1 |   // 32bit src size
@@ -283,8 +283,8 @@ void ADC_Init(uint16_t ms){
     ADC1->SQR3 = ADC_SQR3_SQ1_(0) |         // First convertion CH0, second CH2 
                  ADC_SQR3_SQ2_(2);
 
-    ADC1->SMPR2 = ADC_SMPR2_SMP0_(4) |      // CH0 and CH2 sample time, 41.5 cycles
-                  ADC_SMPR2_SMP2_(4);
+    ADC1->SMPR2 = ADC_SMPR2_SMP0_(7) |      // CH0 and CH2 sample time, 239.5 cycles
+                  ADC_SMPR2_SMP2_(7);
                 
     /* Configure ADC 2 */
     RCC->APB2ENR  |= RCC_APB2ENR_ADC2EN;    // Enable Adc2
@@ -301,8 +301,8 @@ void ADC_Init(uint16_t ms){
     ADC2->SQR3 = ADC_SQR3_SQ1_(1) |         // first convertion CH1, second CH3 
                  ADC_SQR3_SQ2_(3);
 
-    ADC2->SMPR2 = ADC_SMPR2_SMP1_(4) |      // CH1 and CH3 sample time, 41.5 cycles
-                  ADC_SMPR2_SMP3_(4);
+    ADC2->SMPR2 = ADC_SMPR2_SMP1_(7) |      // CH1 and CH3 sample time, 239.5 cycles
+                  ADC_SMPR2_SMP3_(7);
 
     ADC2->CR1 = ADC_CR1_SCAN;
 
