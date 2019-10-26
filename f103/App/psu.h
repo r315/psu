@@ -23,8 +23,6 @@ extern "C" {
 #define APP_INTERVAL                10
 #define UPDATE_INTERVAL             100
 
-#define VOLTAGE_DRO_POS             0,12 // (x,y)
-#define CURRENT_DRO_POS             69,12 
 #define LOAD_ICON_POS               70,0
 #define PSU_ICON_POS                90,0
 #define OUTPUT_ICON_POS             110,0
@@ -133,6 +131,8 @@ void setOutputCurrent(float val, float max, float min);
 extern const uint8_t icon_out[];
 extern const uint8_t icon_psu[];
 extern const uint8_t icon_load[];
+extern const uint8_t dro_unit_v[];
+extern const uint8_t dro_unit_a[];
 
 #ifdef __cplusplus
 }

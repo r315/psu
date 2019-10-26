@@ -1,10 +1,13 @@
 #include "psu.h"
 #include <math.h>
-#include <stdio.h>
 
 #define VOLTAGE_PLACES              1
 #define CURRENT_PLACES              2
 
+#define VOLTAGE_DRO_POS             0,12 // (x,y)
+#define VOLTAGE_UNIT_POS            43,12
+#define CURRENT_DRO_POS             73,12 
+#define CURRENT_UNIT_POS            128-12,12
 
 float mapAdc(uint16_t adcvalue, float reference, float max){
 
@@ -22,6 +25,8 @@ void ModePsu::redraw(void){
     TEXT_dro(VOLTAGE_DRO_POS, 0, VOLTAGE_PLACES, NO_BLANK);
     TEXT_dro(CURRENT_DRO_POS, 0, CURRENT_PLACES, NO_BLANK);
     TEXT_drawGfx(PSU_ICON_POS, (uint8_t*)&icon_psu[0]);
+    TEXT_drawGfx(VOLTAGE_UNIT_POS, (uint8_t*)&dro_unit_v[0]);
+    TEXT_drawGfx(CURRENT_UNIT_POS, (uint8_t*)&dro_unit_a[0]);
 }
 
 void ModePsu::modeSet(void){
