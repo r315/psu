@@ -54,10 +54,10 @@ typedef struct _State{
     union{
         uint64_t adcvalues;
         struct {
-            uint16_t psu_out_v;
-            uint16_t psu_out_a;
-            uint16_t load_in_v;
-            uint16_t load_in_a;    
+            uint16_t adc_out_v;
+            uint16_t adc_out_i;
+            uint16_t adc_in_v;
+            uint16_t adc_in_i;    
         };
     };
     uint8_t flags;

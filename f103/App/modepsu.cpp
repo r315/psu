@@ -1,5 +1,6 @@
 #include "psu.h"
 #include <math.h>
+#include <stdio.h>
 
 #define VOLTAGE_PLACES              1
 #define CURRENT_PLACES              2
@@ -46,6 +47,8 @@ void ModePsu::modeSet(void){
 }
 
 void ModePsu::process(State *st){
+float i, v, p;
+char out[10];
 
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         if(mode_set){
@@ -64,8 +67,20 @@ void ModePsu::process(State *st){
         return;
 
     if(mode_set == SET_OFF){
-        TEXT_dro(VOLTAGE_DRO_POS, st->psu_out_v * VOLTAGE_PERCISION, VOLTAGE_PLACES, NO_BLANK);
-        TEXT_dro(CURRENT_DRO_POS, st->psu_out_a * CURRENT_PERCISION, CURRENT_PLACES, NO_BLANK);
+        TEXT_setFont(&pixelDustFont);
+        v = st->adc_out_v * VOLTAGE_PERCISION;
+        i = st->adc_out_i * CURRENT_PERCISION;
+        p = i * v;
+        
+        if(p < 10){
+            sprintf(out, "0%.1fW", p);    
+        }else{
+            sprintf(out, "%.1fW", p);
+        }
+        TEXT_print(0,0, out);
+        TEXT_setFont(&font_seven_seg);
+        TEXT_dro(VOLTAGE_DRO_POS, v, VOLTAGE_PLACES, NO_BLANK);
+        TEXT_dro(CURRENT_DRO_POS, i, CURRENT_PLACES, NO_BLANK);
     }    
     else if((++count) & BLINK_TIME_MASK){
         if(mode_set == SET_VOLTAGE){
