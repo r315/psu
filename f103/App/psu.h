@@ -81,9 +81,26 @@ protected:
     void (*setOutput)(float val, float max, float min);
 public:
     Mode() {}
+    /**
+     * Redraws the mode screen with default values
+     * called when mode is selected
+     * */
     virtual void redraw(){}
-    virtual void process(State *st){}
+    /**
+     * Enter mode configuration
+     * called when user press the set key
+     * */
     virtual void modeSet(){}
+    /**
+     * called every 100ms to process data 
+     * */
+    virtual void process(State *st){}
+    /**
+     * Shows power on a given location,
+     * font must be set before calliing it
+     * */
+    void printPower(uint16_t x, uint16_t y, float v, float i);
+    void printVoltage(uint16_t x, uint16_t y, float v);
 };
 
 class ModePsu: public Mode{

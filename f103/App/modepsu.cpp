@@ -47,8 +47,7 @@ void ModePsu::modeSet(void){
 }
 
 void ModePsu::process(State *st){
-float i, v, p;
-char out[10];
+float i, v;
 
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         if(mode_set){
@@ -67,17 +66,10 @@ char out[10];
         return;
 
     if(mode_set == SET_OFF){
-        TEXT_setFont(&pixelDustFont);
         v = st->adc_out_v * VOLTAGE_PERCISION;
         i = st->adc_out_i * CURRENT_PERCISION;
-        p = i * v;
-        
-        if(p < 10){
-            sprintf(out, "0%.1fW", p);    
-        }else{
-            sprintf(out, "%.1fW", p);
-        }
-        TEXT_print(0,0, out);
+        TEXT_setFont(&pixelDustFont);
+        printPower(0,0, v, i);
         TEXT_setFont(&font_seven_seg);
         TEXT_dro(VOLTAGE_DRO_POS, v, VOLTAGE_PLACES, NO_BLANK);
         TEXT_dro(CURRENT_DRO_POS, i, CURRENT_PLACES, NO_BLANK);

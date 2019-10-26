@@ -129,7 +129,7 @@ void TEXT_Init(void){
     LCD_Update();
 }
 
-void TEXT_print(uint16_t x, uint16_t y, char* str){    
+void TEXT_print(uint16_t x, uint16_t y, const char* str){    
     while(*str){
         x += drawChar(x, y, *str++);
     }    
