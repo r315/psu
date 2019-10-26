@@ -169,13 +169,17 @@ void i2cCfgDMA(uint8_t *src, uint16_t size){
  * data and size are ignored
  * */
 void i2cSendDMA(uint8_t address, uint8_t *data, uint16_t size){
-uint32_t n;
+uint32_t n = I2C_BUSY_RETRIES;
 
-    while(I2C2->SR2 & I2C_SR2_BUSY); // wait for any transfer to end
+    
+    while(I2C2->SR2 & I2C_SR2_BUSY){ // wait for any transfer to end
+        if(--n == 0)
+            return;
+    }
 
     I2C2->CR1 |= I2C_CR1_START;     // Send start condition
 
-    n = 1000;
+    n = I2C_BUSY_RETRIES;
     while(!(I2C2->SR1 & I2C_SR1_SB)){ // wait for master mode
         if(--n == 0)
             return;

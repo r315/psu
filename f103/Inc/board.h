@@ -80,6 +80,7 @@ extern StdOut vcom;
  * PB10 SCL
  * PB11 SDA
  * */
+#define I2C_BUSY_RETRIES 100
 void setInterval(void(*cb)(), uint32_t ms);
 void i2cCfgDMA(uint8_t *src, uint16_t size);
 void i2cSendDMA(uint8_t address, uint8_t *data, uint16_t size);

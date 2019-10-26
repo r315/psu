@@ -13,15 +13,16 @@ uint8_t *LCD_GetPixels(void){
   return frame.data;
 }
 
-void ssd1306_waitPowerUp(void){
-uint8_t data[2];
- 	data[0] = 0x00;   // Co = 0, D/C = 0
-	data[1] = SSD1306_NOP;
-    
-	//while(HAL_I2C_Master_Transmit(&hi2c2, SSD1306_I2C_ADDRESS << 1, data, 2, 100) != HAL_OK){
-  while(I2C_Write(SSD1306_I2C_ADDRESS, data, 2)){
-    HAL_Delay(200);
-  }   
+static uint8_t ssd1306_waitPowerUp(void){
+uint16_t data = (SSD1306_NOP << 8);
+uint32_t count = SSD1306_ACK_RETRIES;
+
+  while(count--){
+    DelayMs(100);
+    if(!I2C_Write(SSD1306_I2C_ADDRESS, (uint8_t*)&data, 2))
+      return 0;
+  }
+  return 1;
 }
 
 void ssd1306_command(uint8_t c) {
@@ -54,13 +55,14 @@ void LCD_StopScroll(void){
 }
 
 
-void LCD_Init(void){
+uint8_t LCD_Init(void){
 #if defined(USE_I2C_DMA)  
   i2cCfgDMA((uint8_t*)&frame, sizeof(Frame) + 1); /* DMA Transfer conplete is active 
                                                     after the last byte is placed on I2C->DR, 
                                                     not when tha last byte is sent by i2c */
 #endif  
-  ssd1306_waitPowerUp();
+  if(ssd1306_waitPowerUp())
+    return 1;
 
   ssd1306_command(SSD1306_SETMULTIPLEX);                  // 0xA8
   
@@ -101,6 +103,7 @@ void LCD_Init(void){
   //ssd1306_command(0xF1);
   //ssd1306_command(SSD1306_SETVCOMDETECT);                 // 0xDB
   //ssd1306_command(0x40);  
+  return 0;
 }
 
 
