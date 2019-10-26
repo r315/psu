@@ -15,6 +15,7 @@ extern "C" {
 #include "cmddfu.h"
 #include "cmdpwr.h"
 #include "cmdio.h"
+#include "cmdout.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -35,6 +36,7 @@ extern "C" {
 #define BLINK_TIME_MASK             8
 #define NO_BLANK                    -1
 
+#define CONSOLE_PROMPT              "PSU >"
 static const uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
 
 enum SET_MODE {SET_OFF = 0, SET_VOLTAGE, SET_CURRENT};

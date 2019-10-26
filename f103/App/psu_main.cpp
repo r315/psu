@@ -12,7 +12,7 @@
  * TIM3     PWM signals
  * */
 
-State psu_state;
+static State psu_state;
 static ModePsu cpsu;
 static ModeLoad cload;
 static Mode *modes[] = {
@@ -20,45 +20,11 @@ static Mode *modes[] = {
     &cload      
 };
 
-
-class VoltageDro : public ConsoleCommand{
-    double v = 0;
-public:
-    char execute(void *ptr){
-        cycleMode();
-        return CMD_OK;
-    }
-    void help(void){}
-
-    VoltageDro(void) : ConsoleCommand("vdro") {}
 };
 
 
-class CmdOut : public ConsoleCommand {
-	Console *console;
-public:
-    CmdOut() : ConsoleCommand("out") {}	
-	void init(void *params) { console = static_cast<Console*>(params); }
 
-	void help(void) {
-	}
 
-	char execute(void *ptr) {
-		uint32_t pdata;
-		if(!nextHex((char**)&ptr, &pdata)){
-            console->print("usage: out <state>\n\tstate: 0 - off, 1 - on\n");
-        	return CMD_BAD_PARAM;
-        }
-
-		if(pdata == 1){
-			setOutput(1);
-		}else{
-			setOutput(0);
-		}
-		
-		return CMD_OK;
-	}	
-};
 
 void selectMode(uint8_t mode){
     
@@ -138,9 +104,8 @@ static TickType_t xLastWakeTime;
 }
 
 void tskConsole(void *ptr){
-VoltageDro vdro;
 Console console;
-ConsoleHelp help;
+CmdHelp help;
 CmdAdc adc1;
 CmdPwm pwm;
 CmdDfu dfu;
@@ -149,10 +114,8 @@ CmdOut out;
 CmdIo io;
     
     vcom.init();    
-    console.init(&vcom, "PSU >");
+    console.init(&vcom, CONSOLE_PROMPT);
     console.addCommand(&help);
-
-    console.addCommand(&vdro);
     console.addCommand(&adc1);
     console.addCommand(&pwm);
     console.addCommand(&dfu);

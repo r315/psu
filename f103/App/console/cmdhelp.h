@@ -8,10 +8,10 @@ extern "C" {
 
 #include "console.h"
 
-class ConsoleHelp : public ConsoleCommand {
+class CmdHelp : public ConsoleCommand {
 	Console *console;
 public:
-    ConsoleHelp() : ConsoleCommand("help") {}	
+    CmdHelp() : ConsoleCommand("help") {}	
 	void init(void *params) { console = static_cast<Console*>(params); }
 
 	void help(void) {
