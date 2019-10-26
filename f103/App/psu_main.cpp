@@ -41,6 +41,11 @@ void setOutputCurrent(float val, float max, float min){
     mapAndSetPwm(val, max, min, PWM_CH_CURRENT);
 }
 
+void setInputLoad(float val, float max, float min){
+    mapAndSetPwm(val, max, min, PWM_CH_LOAD);
+}
+
+
 void setOutputEnable(uint8_t en){
     psu_state.output_en = en;
     if(psu_state.output_en){

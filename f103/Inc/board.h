@@ -120,6 +120,7 @@ static inline void reenumerate_usb(void){
 
 #define PWM_CH_VOLTAGE     (4-1)       // Channel that controls output voltage
 #define PWM_CH_CURRENT     (2-1)       // Channel that controls output current
+#define PWM_CH_LOAD        (3-1)
 #define PWM_RESOLUTION      10UL
 #define PWM_MAX_VALUE       (1<<PWM_RESOLUTION)
 #define PWM_MIN_VALUE       5
