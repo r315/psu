@@ -14,4 +14,12 @@ char CmdOut::execute(void *ptr) {
     }
     
     return CMD_OK;
+}
+
+
+char CmdMode::execute(void *ptr) {    
+
+    cycleMode();
+    
+    return CMD_OK;
 }	

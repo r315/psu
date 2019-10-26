@@ -18,6 +18,17 @@ public:
 	char execute(void *ptr);
 };
 
+class CmdMode : public ConsoleCommand {
+	Console *console;
+public:
+    CmdMode() : ConsoleCommand("mode") {}	
+	void init(void *params) { console = static_cast<Console*>(params); }
+
+	void help(void) { }
+	char execute(void *ptr);
+};
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -133,6 +133,7 @@ CmdDfu dfu;
 CmdPwr pwr;
 CmdOut out;
 CmdIo io;
+CmdMode mode;
     
     vcom.init();    
     console.init(&vcom, CONSOLE_PROMPT);
@@ -143,6 +144,7 @@ CmdIo io;
     console.addCommand(&pwr); 
     console.addCommand(&out); 
     console.addCommand(&io); 
+    console.addCommand(&mode); 
 
     while(1){
         console.process();
