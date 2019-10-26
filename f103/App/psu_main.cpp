@@ -21,6 +21,11 @@ static Mode *modes[] = {
     &cload      
 };
 
+static calibration_t default_cal_data[PWM_NUM_CH] = { 
+    {0, 4096, 0 },
+    {0, 4096, 0 },
+    {0, 4096, 0 },    
+    {0, 1012, 1012},
 };
 
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
@@ -140,9 +145,16 @@ CmdIo io;
 }
 
 extern "C" void psu(void){  
+uint16_t pwm_start_values[PWM_NUM_CH];
 
-    PWM_Init((uint16_t*)pwm_start_values);
+    memcpy(psu_state.cal_data, default_cal_data, sizeof(calibration_t));
+    for(int i = 0; i < PWM_NUM_CH ; i++)
+    {
+        pwm_start_values[i] = psu_state.cal_data[i].start;
+    }
+    PWM_Init(pwm_start_values);
     ADC_Init(ADC_INTERVAL);   
+    LED_INIT;
     psu_state.flags = LCD_Init();
 
     xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );

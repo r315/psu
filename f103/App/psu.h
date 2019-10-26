@@ -41,6 +41,12 @@ extern "C" {
 
 enum SET_MODE {SET_OFF = 0, SET_VOLTAGE, SET_CURRENT};
 
+typedef struct _calibration_t{
+    uint16_t max;
+    uint16_t min;
+    uint16_t start;
+}calibration_t;
+
 typedef struct _State{ 
     uint8_t mode_select;
     uint8_t output_en;
@@ -54,6 +60,7 @@ typedef struct _State{
         };
     };
     uint8_t flags;
+    calibration_t cal_data[PWM_NUM_CH];
     void *ctx;
 }State;
 
