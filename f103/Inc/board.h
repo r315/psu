@@ -41,9 +41,23 @@ extern "C" {
     GPIOA->ODR &= ~GPIO_PIN_2; \
     while(1);
 
-#define DBG_LED_TOGGLE HAL_GPIO_TogglePin(GPIOA, DBG_Pin)
-#define DBG_LED_ON HAL_GPIO_WritePin(GPIOA, DBG_Pin, GPIO_PIN_SET)
-#define DBG_LED_OFF HAL_GPIO_WritePin(GPIOA, DBG_Pin, GPIO_PIN_RESET)
+
+#if 1
+#define LED_PORT    GPIOB
+#define LED_PIN     GPIO_PIN_3
+#define LED_INIT    GPIOB->CRL = (GPIOB->CRL & ~(15<<12)) | (2<<12) // assume swd is already enabled
+#define LED_SET     GPIO_PIN_RESET
+#define LED_RESET   GPIO_PIN_SET
+#else// GPIO
+#define LED_PORT    GPIOA
+#define LED_PIN     GPIO_PIN_4
+#define LED_INIT
+#endif
+
+#define DBG_LED_TOGGLE HAL_GPIO_TogglePin(LED_PORT, LED_PIN)
+#define DBG_LED_ON HAL_GPIO_WritePin(LED_PORT, LED_PIN, LED_SET)
+#define DBG_LED_OFF HAL_GPIO_WritePin(LED_PORT, LED_PIN, LED_RESET)
+
 
 #define GetTicks HAL_GetTick
 #define DelayMs(d) HAL_Delay(d)
