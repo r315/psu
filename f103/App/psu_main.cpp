@@ -13,6 +13,7 @@
  * */
 
 static State psu_state;
+
 static ModePsu cpsu;
 static ModeLoad cload;
 static Mode *modes[] = {
@@ -22,9 +23,27 @@ static Mode *modes[] = {
 
 };
 
+static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
+uint16_t pwm_value = (x - in_min) * (psu_state.cal_data[ch].max - psu_state.cal_data[ch].min) / (in_max - in_min) + psu_state.cal_data[ch].min;
+    PWM_Set(PWM_CH_VOLTAGE, pwm_value);
+}
 
+void setOutputVoltage(float val, float max, float min){
+    mapAndSetPwm(val, max, min, PWM_CH_VOLTAGE);
+}
 
+void setOutputCurrent(float val, float max, float min){
+    mapAndSetPwm(val, max, min, PWM_CH_CURRENT);
+}
 
+void setOutputEnable(uint8_t en){
+    psu_state.output_en = en;
+    if(psu_state.output_en){
+        TEXT_drawGfx(OUTPUT_ICON_POS, (uint8_t*)&icon_out[0]);
+    }else{
+        LCD_Fill(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);
+    }
+}
 
 void selectMode(uint8_t mode){
     
@@ -37,7 +56,7 @@ void selectMode(uint8_t mode){
     // Mode clears screen, so must redraw output icon,
     // only if active
     if(psu_state.output_en)
-        setOutput(psu_state.output_en);
+        setOutputEnable(psu_state.output_en);
 }
 
 void cycleMode(void){
@@ -50,17 +69,8 @@ uint8_t mode = psu_state.mode_select + 1;
     selectMode(mode);
 }
 
-void setOutput(uint8_t en){
-    psu_state.output_en = en;
-    if(psu_state.output_en){
-        TEXT_drawGfx(OUTPUT_ICON_POS, (uint8_t*)&icon_out[0]);
-    }else{
-        LCD_Fill(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);
-    }
-}
-
 void toggleOutput(void){
-    setOutput(!psu_state.output_en);
+    setOutputEnable(!psu_state.output_en);
 }
 
 void checkButtons(){

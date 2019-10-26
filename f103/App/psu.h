@@ -61,6 +61,7 @@ class Mode{
 protected:
     float *set_value;
     float set_max;
+    float set_min;
     uint8_t place;
     int8_t base_place;
     uint8_t mode_set;
@@ -68,7 +69,7 @@ protected:
     uint16_t mapPwm(float x, float in_max);
     void changePlace(int8_t sel);
     void incrementPlace(int8_t base);
-    void (*setOutput)(float val, float max);
+    void (*setOutput)(float val, float max, float min);
 public:
     Mode() {}
     virtual void redraw(){}
@@ -97,17 +98,15 @@ public:
 
 
 void toggleOutput(void);
-void setOutput(uint8_t en);
+void setOutputEnable(uint8_t en);
 void setMode(uint8_t mode);
 void cycleMode(void);
-void setOutputVoltage(float val, float max);
-void setOutputCurrent(float val, float max);
+void setOutputVoltage(float val, float max, float min);
+void setOutputCurrent(float val, float max, float min);
 
 extern const uint8_t icon_out[];
 extern const uint8_t icon_psu[];
 extern const uint8_t icon_load[];
-
-extern State psu_state;
 
 #ifdef __cplusplus
 }

@@ -1,13 +1,8 @@
 #include "psu.h"
 #include <math.h>
 
-#define VOLTAGE_PERCISION           0.005f
-#define CURRENT_PERCISION           0.0008f
 #define VOLTAGE_PLACES              1
 #define CURRENT_PLACES              2
-#define SET_MAX_VOLTAGE             14.0f
-#define SET_MAX_CURRENT             3.00f
-#define SET_MAX_DIGITS              3
 
 
 float mapAdc(uint16_t adcvalue, float reference, float max){
@@ -32,14 +27,16 @@ void ModePsu::modeSet(void){
     if(mode_set == SET_OFF){
         mode_set = SET_VOLTAGE;
         set_value = &set_v;
-        set_max = SET_MAX_VOLTAGE;
+        set_max = MAX_VOLTAGE;
+        set_min = MIN_VOLTAGE;
         place = 1;
         base_place = 10;
         setOutput = setOutputVoltage;
     }else if(mode_set == SET_VOLTAGE){
         mode_set = SET_CURRENT; 
-        set_max = SET_MAX_CURRENT;
-        set_value = &set_a;
+        set_max = MAX_CURRENT;
+        set_min = MIN_CURRENT;
+        set_value = &set_i;
         place = 1;
         base_place = 1;
         setOutput = setOutputCurrent;

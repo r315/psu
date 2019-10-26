@@ -12,11 +12,19 @@ extern "C" {
 #include "ssd1306.h"
 #include "pcf8574.h"
 
+#define VOLTAGE_PERCISION           0.005f
+#define CURRENT_PERCISION           0.0008f
+#define MAX_VOLTAGE                 14.0f
+#define MIN_VOLTAGE                 1.2f
+#define MAX_CURRENT                 3.00f
+#define MIN_CURRENT                 0.00f
+#define MAX_LOAD                    3.00f
+#define MIN_LOAD                    0.00f
+
 #define USE_I2C_DMA
 #define I2C_Read(_A, _D, _S) HAL_I2C_Master_Receive(&hi2c2, _A << 1, _D, _S, 100)
 #define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 100)
 #define I2C_WriteDMA(_A, _D, _S) i2cSendDMA(_A << 1, _D, _S)
-
 
 /**
  * HW symbols for button handling
@@ -110,11 +118,12 @@ static inline void reenumerate_usb(void){
  * PWM_VLOAD
  */
 
-#define PWM_OUT_VOLTAGE     1       // Channel that controls output voltage
-#define PWM_OUT_CURRENT     2       // Channel that controls output current
+#define PWM_CH_VOLTAGE     (4-1)       // Channel that controls output voltage
+#define PWM_CH_CURRENT     (2-1)       // Channel that controls output current
 #define PWM_RESOLUTION      10UL
 #define PWM_MAX_VALUE       (1<<PWM_RESOLUTION)
 #define PWM_MIN_VALUE       5
+#define PWM_NUM_CH          4          // Number of channels
 
 /**
  * Initialyse PWM signal on PA7-6 and PB1-0 pins
