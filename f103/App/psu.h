@@ -19,11 +19,11 @@ extern "C" {
 #include "FreeRTOS.h"
 #include "task.h"
 
-#define ADC_INTERVAL 100
-#define APP_INTERVAL 10
-#define UPDATE_INTERVAL 100
+#define ADC_INTERVAL                100 //ms
+#define APP_INTERVAL                10
+#define UPDATE_INTERVAL             100
 
-#define VOLTAGE_DRO_POS             0,12
+#define VOLTAGE_DRO_POS             0,12 // (x,y)
 #define CURRENT_DRO_POS             69,12 
 #define LOAD_ICON_POS               70,0
 #define PSU_ICON_POS                90,0
@@ -32,6 +32,7 @@ extern "C" {
 #define MODE_ICONS_AREA_SIZE        40,8
 
 #define MAX_MODES sizeof(modes)/sizeof(void*)
+#define SET_MAX_DIGITS              3 // Digits in each DRO
 
 #define BLINK_TIME_MASK             8
 #define NO_BLANK                    -1
@@ -87,7 +88,7 @@ public:
 
 class ModePsu: public Mode{
     float set_v;
-    float set_a;        
+    float set_i;        
 public:
     ModePsu() : Mode() {}	
     void process(State *st);

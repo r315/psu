@@ -70,14 +70,14 @@ void ModePsu::process(State *st){
     else if((++count) & BLINK_TIME_MASK){
         if(mode_set == SET_VOLTAGE){
             TEXT_dro(VOLTAGE_DRO_POS, set_v, VOLTAGE_PLACES, place);
-            TEXT_dro(CURRENT_DRO_POS, set_a, CURRENT_PLACES, NO_BLANK);
+            TEXT_dro(CURRENT_DRO_POS, set_i, CURRENT_PLACES, NO_BLANK);
         }else{
             TEXT_dro(VOLTAGE_DRO_POS, set_v, VOLTAGE_PLACES, NO_BLANK);
-            TEXT_dro(CURRENT_DRO_POS, set_a, CURRENT_PLACES, place);
+            TEXT_dro(CURRENT_DRO_POS, set_i, CURRENT_PLACES, place);
         }            
     }else{
         TEXT_dro(VOLTAGE_DRO_POS, set_v, VOLTAGE_PLACES, NO_BLANK);
-        TEXT_dro(CURRENT_DRO_POS, set_a, CURRENT_PLACES, NO_BLANK);
+        TEXT_dro(CURRENT_DRO_POS, set_i, CURRENT_PLACES, NO_BLANK);
     }
     
 }
