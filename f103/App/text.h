@@ -19,7 +19,7 @@ void SEVEN_PrintAmps(double amps);
 void SEVEN_PrintVolts(double volts);
 
 
-void TEXT_print(uint16_t, uint16_t, const char*, ...);
+void TEXT_print(uint16_t, uint16_t, char*);
 void TEXT_Init(void);
 void TEXT_setFont(font_t *font);
 void TEXT_dro(uint16_t x, uint16_t y, float val, uint8_t precision, int8_t blank_place);

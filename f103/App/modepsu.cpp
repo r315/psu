@@ -16,7 +16,7 @@ void ModePsu::redraw(void){
     //TEXT_setFont(&lcdFont);
     TEXT_setFont(&pixelDustFont);
     //TEXT_setFont(&defaultFont);
-    TEXT_print(0,0, "88.8W");
+    TEXT_print(0,0, "00.0W");
     TEXT_setFont(&font_seven_seg);
     TEXT_dro(VOLTAGE_DRO_POS, 0, VOLTAGE_PLACES, NO_BLANK);
     TEXT_dro(CURRENT_DRO_POS, 0, CURRENT_PLACES, NO_BLANK);

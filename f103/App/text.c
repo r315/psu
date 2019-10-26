@@ -129,15 +129,8 @@ void TEXT_Init(void){
     LCD_Update();
 }
 
-void TEXT_print(uint16_t x, uint16_t y, const char* format, ...){
-char line[MAX_LINE_CHARS], *p;
-va_list argptr;
-    va_start(argptr, format);
-    sprintf(line, format, argptr);    
-    va_end(argptr);
-
-    p = line;
-    while(*p){
-        x += drawChar(x, y, *p++);
+void TEXT_print(uint16_t x, uint16_t y, char* str){    
+    while(*str){
+        x += drawChar(x, y, *str++);
     }    
 }
