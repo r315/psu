@@ -28,12 +28,16 @@ uint32_t channel;
     while( (c = console->xgetchar()) != 'q'){
         switch(c){
             case '+':
-                if(curValue < PWM_MAX_VALUE)
+                if(curValue < PWM_MAX_VALUE){
                     PWM_Set(channel, ++curValue);
+                    console->print("\r%u", curValue);
+                }
                 break;
             case '-':
-                if(curValue > PWM_MIN_VALUE)
+                if(curValue > PWM_MIN_VALUE){
                     PWM_Set(channel, --curValue);
+                    console->print("\r%u", curValue);
+                }
                 break;
             case 's':
 
