@@ -125,7 +125,6 @@ char prec;
 }
 
 void TEXT_Init(void){
-    LCD_Init();
     LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
     LCD_Update();
 }

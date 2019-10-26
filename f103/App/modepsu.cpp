@@ -60,6 +60,9 @@ void ModePsu::process(State *st){
         }
     }
 
+    if(st->flags & STATE_FLAG_DISPLAY)
+        return;
+
     if(mode_set == SET_OFF){
         TEXT_dro(VOLTAGE_DRO_POS, st->psu_out_v * VOLTAGE_PERCISION, VOLTAGE_PLACES, NO_BLANK);
         TEXT_dro(CURRENT_DRO_POS, st->psu_out_a * CURRENT_PERCISION, CURRENT_PLACES, NO_BLANK);

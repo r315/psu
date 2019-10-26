@@ -108,6 +108,7 @@ static TickType_t xLastWakeTime;
         DBG_LED_ON;
         modes[psu_state.mode_select]->process(&psu_state);
         DBG_LED_OFF;
+        if(!psu_state.flags & STATE_FLAG_DISPLAY) 
         LCD_Update();
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
@@ -142,6 +143,7 @@ extern "C" void psu(void){
 
     PWM_Init((uint16_t*)pwm_start_values);
     ADC_Init(ADC_INTERVAL);   
+    psu_state.flags = LCD_Init();
 
     xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );

@@ -37,7 +37,7 @@ extern "C" {
 #define NO_BLANK                    -1
 
 #define CONSOLE_PROMPT              "PSU >"
-static const uint16_t pwm_start_values [] = { 0x80, 0x180, 0x280, 0x380};
+#define STATE_FLAG_DISPLAY          1   // LCD Init flag
 
 enum SET_MODE {SET_OFF = 0, SET_VOLTAGE, SET_CURRENT};
 
@@ -53,6 +53,7 @@ typedef struct _State{
             uint16_t load_in_a;    
         };
     };
+    uint8_t flags;
     void *ctx;
 }State;
 
