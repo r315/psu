@@ -9,9 +9,9 @@
 #define CURRENT_DRO_POS             73,12 
 #define CURRENT_UNIT_POS            128-12,12
 
-float mapAdc(uint16_t adcvalue, float reference, float max){
-
-return (adcvalue * (reference / max));
+void ModePsu::startValues(float v_last, float i_last) {
+    set_v = v_last;
+    set_i = i_last;
 }
 
 void ModePsu::redraw(void){
@@ -70,7 +70,7 @@ float i, v;
     if(st->flags & STATE_FLAG_DISPLAY)
         return;
 
-    if(mode_set == SET_OFF){
+    if(mode_set == SET_OFF){        
         v = st->adc_out_v * VOLTAGE_PERCISION;
         i = st->adc_out_i * CURRENT_PERCISION;
         TEXT_setFont(&pixelDustFont);

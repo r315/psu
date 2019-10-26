@@ -16,9 +16,12 @@ static State psu_state;
 
 static ModePsu cpsu;
 static ModeLoad cload;
+static ModeCharger ccharger;
+
 static Mode *modes[] = {
     &cpsu,
-    &cload      
+    &cload,
+    &ccharger      
 };
 
 static calibration_t default_cal_data[PWM_NUM_CH] = { 

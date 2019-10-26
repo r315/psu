@@ -119,6 +119,14 @@ public:
     void modeSet();
 };
 
+class ModeCharger: public Mode{
+public:
+    ModeCharger() : Mode(){}	
+    void process(State *st);
+    void redraw();
+    void modeSet();
+};
+
 
 
 void toggleOutput(void);
