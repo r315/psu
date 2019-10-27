@@ -105,6 +105,7 @@ public:
      * */
     void printPower(uint16_t x, uint16_t y, float v, float i);
     void printVoltage(uint16_t x, uint16_t y, float v);
+    void printCurrent(uint16_t x, uint16_t y, float i);
 };
 
 class ModePsu: public Mode{

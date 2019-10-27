@@ -42,3 +42,9 @@ char out[10];
     TEXT_print(x,y, out);    
 }
 
+void Mode::printCurrent(uint16_t x, uint16_t y, float i){
+char out[10];    
+    sprintf(out, "%.2fA", i);    
+    TEXT_print(x,y, out);    
+}
+
