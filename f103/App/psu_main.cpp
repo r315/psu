@@ -64,7 +64,7 @@ void selectMode(uint8_t mode){
         return;
     }
 
-    psu_state.mode_select = mode;    
+    psu_state.mode = mode;    
     (modes[mode])->redraw();
     // Mode clears screen, so must redraw output icon,
     // only if active
@@ -73,7 +73,7 @@ void selectMode(uint8_t mode){
 }
 
 void cycleMode(void){
-uint8_t mode = psu_state.mode_select + 1;
+uint8_t mode = psu_state.mode + 1;
     
     if(mode == MAX_MODES ){
         mode = 0;
@@ -92,7 +92,7 @@ void checkButtons(){
         switch(BUTTON_VALUE){
             case BUTTON_MODE: cycleMode(); break;
             case BUTTON_OUT: toggleOutput(); break;
-            case BUTTON_SET: modes[psu_state.mode_select]->modeSet(); break;
+            case BUTTON_SET: modes[psu_state.mode]->modeSet(); break;
         }
     }
 }
@@ -113,13 +113,13 @@ void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;
     TEXT_Init();
 
-    selectMode(0);
+    selectMode(psu_state.mode);
     ADC_SetCallBack(adcEocCb);   
 
     while(1){
         checkButtons();
         DBG_LED_ON;
-        modes[psu_state.mode_select]->process(&psu_state);
+        modes[psu_state.mode]->process(&psu_state);
         DBG_LED_OFF;
         if(!psu_state.flags & STATE_FLAG_DISPLAY) 
         LCD_Update();
@@ -157,7 +157,8 @@ CmdMode mode;
 extern "C" void psu(void){  
 uint16_t pwm_start_values[PWM_NUM_CH];
 
-    memcpy(psu_state.cal_data, default_cal_data, sizeof(calibration_t));
+    memcpy(psu_state.cal_data, default_cal_data, sizeof(calibration_t) * PWM_NUM_CH);    
+
     for(int i = 0; i < PWM_NUM_CH ; i++)
     {
         pwm_start_values[i] = psu_state.cal_data[i].start;

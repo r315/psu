@@ -41,13 +41,13 @@ extern "C" {
 enum SET_MODE {SET_OFF = 0, SET_VOLTAGE, SET_CURRENT};
 
 typedef struct _calibration_t{
-    uint16_t max;
     uint16_t min;
+    uint16_t max;
     uint16_t start;
 }calibration_t;
 
 typedef struct _State{ 
-    uint8_t mode_select;
+    uint8_t mode;
     uint8_t output_en;
     union{
         uint64_t adcvalues;
@@ -139,6 +139,7 @@ void setOutputCurrent(float val, float max, float min);
 extern const uint8_t icon_out[];
 extern const uint8_t icon_psu[];
 extern const uint8_t icon_load[];
+extern const uint8_t icon_chr[];
 extern const uint8_t dro_unit_v[];
 extern const uint8_t dro_unit_a[];
 
