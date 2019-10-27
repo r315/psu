@@ -120,11 +120,8 @@ $(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
 
 
 CPP_SOURCES = \
+$(wildcard $(APP_SRC_DIR)/*.cpp) \
 $(wildcard $(APP_SRC_DIR)/console/*.cpp) \
-$(APP_SRC_DIR)/psu_main.cpp \
-$(APP_SRC_DIR)/mode.cpp \
-$(APP_SRC_DIR)/modepsu.cpp \
-$(APP_SRC_DIR)/modeload.cpp \
 $(LIBEMB_PATH)/console/console.cpp \
 
 # ASM sources
