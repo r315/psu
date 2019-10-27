@@ -223,7 +223,7 @@ uint32_t n = I2C_BUSY_RETRIES;
 #define ADC_CH_IN(ch)                        (0xf << (ch*4))
 
 static void (*eotcb)(uint16_t*);
-static uint16_t adcres[ADC_NUM_CH * 2];
+static uint32_t adcres[ADC_SEQ_LEN];
 
 /* ***********************************************************
  * ADC is triggered by TIM2 TRGO and performs dual 
@@ -243,7 +243,7 @@ void ADC_Init(uint16_t ms){
 
     DMA1_Channel1->CPAR = (uint32_t)&ADC1->DR;  // Source address ADC1 Data Register
     DMA1_Channel1->CMAR = (uint32_t)adcres;     // Destination address memory
-    DMA1_Channel1->CNDTR =  ADC_NUM_CH;         // We are going to transfer 32-bit, 2 convertions at once (V,I)
+    DMA1_Channel1->CNDTR =  ADC_SEQ_LEN;        // We are going to transfer 32-bit, 2 convertions at once (V,I)
     DMA1_Channel1->CCR =    DMA_CCR_PL |        // Highest priority
                             DMA_CCR_MSIZE_1 |   // 32bit Dst size
                             DMA_CCR_PSIZE_1 |   // 32bit src size
@@ -286,7 +286,7 @@ void ADC_Init(uint16_t ms){
     ADC1->CR1 = ADC_CR1_DUALMOD_SIMULTANEOUS |
                 ADC_CR1_SCAN;               // Scan through all channels on sequence
 
-    ADC1->SQR1 = ADC_SQR1_L_(ADC_NUM_CH - 1);            // number of channels on sequence
+    ADC1->SQR1 = ADC_SQR1_L_(ADC_SEQ_LEN - 1);            // number of channels on sequence
     ADC1->SQR3 = ADC_SQR3_SQ1_(ADC_CH_VOLTAGE1) |  // First convertion OUT voltage, second load voltage
                  ADC_SQR3_SQ2_(ADC_CH_VOLTAGE2) |
                  ADC_SQR3_SQ3_(ADC_CH_VOLTAGE3) |
@@ -310,7 +310,7 @@ void ADC_Init(uint16_t ms){
     		    ADC_CR2_EXTSEL_0 |
 				ADC_CR2_ADON;
 
-    ADC2->SQR1 = ADC_SQR1_L_(ADC_NUM_CH - 1);            // number of channels on sequence
+    ADC2->SQR1 = ADC_SQR1_L_(ADC_SEQ_LEN - 1);           // number of channels on sequence
     ADC2->SQR3 = ADC_SQR3_SQ1_(ADC_CH_CURRENT) |         // first convertion CH1, second CH3 
                  ADC_SQR3_SQ2_(ADC_CH_CURRENT) |
                  ADC_SQR3_SQ3_(ADC_CH_CURRENT) |

@@ -101,7 +101,11 @@ void checkButtons(){
  * ADC End of convertion callback
  * */
 void adcEocCb(uint16_t *res){
-    psu_state.adcvalues = *((uint64_t*)res);
+uint32_t *src = (uint32_t*)res;
+    for (uint32_t i = 0; i < ADC_SEQ_LEN; i++, src++)
+    {
+        psu_state.adcvalues[i] = *src;
+    }
 }
 
 /**

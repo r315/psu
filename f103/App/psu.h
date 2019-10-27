@@ -50,12 +50,18 @@ typedef struct _State{
     uint8_t mode;
     uint8_t output_en;
     union{
-        uint64_t adcvalues;
+        uint32_t adcvalues[ADC_SEQ_LEN];
         struct {
-            uint16_t adc_out_v;
-            uint16_t adc_out_i;
-            uint16_t adc_in_v;
-            uint16_t adc_in_i;    
+            uint16_t adc_v1;
+            uint16_t adc_i1;
+            uint16_t adc_v2;
+            uint16_t adc_i2;
+            uint16_t adc_v3;
+            uint16_t adc_i3;
+            uint16_t adc_v4;
+            uint16_t adc_i4;
+            uint16_t adc_vl;
+            uint16_t adc_il;    
         };
     };
     uint8_t flags;

@@ -154,14 +154,13 @@ uint16_t PWM_Get(uint8_t);
 /**
  * ADC
  *
- * Analog Pins
- * VOUT PA0
- * IOUT PA1 
- * VLOAD PA2
- * ILOAD PA3
+ * Convertions channel sequence:
+ *       1st 2nd 3rd 4th 5th 
+ * ADC1:  0   1   2   3   5    V
+ * ADC2:  4   4   4   4   6    I
  * */
-#define ADC_NUM_CH          5
-#define ADC_CH_VOLTAGE1     0
+#define ADC_SEQ_LEN         5
+#define ADC_CH_VOLTAGE1     0 // PA6-PA0
 #define ADC_CH_VOLTAGE2     1
 #define ADC_CH_VOLTAGE3     2
 #define ADC_CH_VOLTAGE4     3
