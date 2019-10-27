@@ -16,8 +16,8 @@ void setInterval(void(*cb)(), uint32_t ms){
 /**
  * PWM Driver
  * 
- * PWM1 - PA6
- * PWM2 - PA7
+ * PWM1 - PB4
+ * PWM2 - PB5
  * PWM3 - PB0
  * PWM4 - PB1
  * 
@@ -45,10 +45,11 @@ void PWM_Init(uint16_t *initial){
     
     TIM3->CR1 |= TIM_CR1_CEN;     // Start pwm before enable outputs
 
-    GPIOA->CRL &= ~(0xFF << 24);
-    GPIOA->CRL |= (0xAA << 24);   // PA7-6 AFO-PP
-    GPIOB->CRL &= ~(0xFF << 0);
-    GPIOB->CRL |= (0xAA << 0);    // PB1-0 AFO-PP
+    /* Configure PWM pins */
+    GPIOB->CRL &= ~(0xFF00FF << 0); // PB5-PB4, PB1-PB0
+    GPIOB->CRL |= (0xAA00AA << 0);
+    // remap PB5-PB5
+    AFIO->MAPR |= (2 << 10);    
 }
 
 /**
@@ -207,20 +208,22 @@ uint32_t n = I2C_BUSY_RETRIES;
 
 #define ADC_TRIGGER_CLOCK 500000UL
 #define ADC_CR1_DUALMOD_FAST_INTERLEAVED     (7 << 16)
-#define ADC_CR1_DUALMOD_SIMULTANEOUS         (1 << 16)
-#define ADC_SAMPLES 4
-#define ADC_SQR1_L_(len)                     (len << 20)
+#define ADC_CR1_DUALMOD_SIMULTANEOUS         (6 << 16)
+#define ADC_SQR1_L_(len)                     ((len) << 20)
 #define ADC_SQR3_SQ1_(ch)                    (ch << 0)
 #define ADC_SQR3_SQ2_(ch)                    (ch << 5)
 #define ADC_SQR3_SQ3_(ch)                    (ch << 10)
 #define ADC_SQR3_SQ4_(ch)                    (ch << 15)
-#define ADC_SMPR2_SMP0_(cy)                    (cy << 0)
-#define ADC_SMPR2_SMP1_(cy)                    (cy << 3)
-#define ADC_SMPR2_SMP2_(cy)                    (cy << 6)
-#define ADC_SMPR2_SMP3_(cy)                    (cy << 9)
+#define ADC_SQR3_SQ5_(ch)                    (ch << 20)
+#define ADC_SMPR2_SMP0_(cy)                  (cy << 0)
+#define ADC_SMPR2_SMP1_(cy)                  (cy << 3)
+#define ADC_SMPR2_SMP2_(cy)                  (cy << 6)
+#define ADC_SMPR2_SMP3_(cy)                  (cy << 9)
+#define ADC_SMPR2_(ch, cy)                   (cy << (ch * 3))
+#define ADC_CH_IN(ch)                        (0xf << (ch*4))
 
 static void (*eotcb)(uint16_t*);
-static uint16_t adcres[ADC_SAMPLES];
+static uint16_t adcres[ADC_NUM_CH * 2];
 
 /* ***********************************************************
  * ADC is triggered by TIM2 TRGO and performs dual 
@@ -240,7 +243,7 @@ void ADC_Init(uint16_t ms){
 
     DMA1_Channel1->CPAR = (uint32_t)&ADC1->DR;  // Source address ADC1 Data Register
     DMA1_Channel1->CMAR = (uint32_t)adcres;     // Destination address memory
-    DMA1_Channel1->CNDTR =  ADC_SAMPLES/2;      // We are going to transfer 32-bit
+    DMA1_Channel1->CNDTR =  ADC_NUM_CH;         // We are going to transfer 32-bit, 2 convertions at once (V,I)
     DMA1_Channel1->CCR =    DMA_CCR_PL |        // Highest priority
                             DMA_CCR_MSIZE_1 |   // 32bit Dst size
                             DMA_CCR_PSIZE_1 |   // 32bit src size
@@ -267,7 +270,7 @@ void ADC_Init(uint16_t ms){
     GPIOA->CRL |= (0x0A << 24);  // Output 2MHz, Alternative function push-pull
 #endif
 
-    /* Configure ADC 1 */
+    /* Configure ADC 1 voltage measurements*/
     RCC->APB2ENR  |= RCC_APB2ENR_ADC1EN;     // Enable Adc1
     RCC->APB2RSTR |= RCC_APB2ENR_ADC1EN;
     RCC->APB2RSTR &= ~RCC_APB2ENR_ADC1EN;
@@ -281,16 +284,22 @@ void ADC_Init(uint16_t ms){
             ADC_CR2_DMA;                    // Enable DMA Request
 
     ADC1->CR1 = ADC_CR1_DUALMOD_SIMULTANEOUS |
-                ADC_CR1_SCAN;               // Scan throu all channels on sequence
+                ADC_CR1_SCAN;               // Scan through all channels on sequence
 
-    ADC1->SQR1 = ADC_SQR1_L_(1);            // Two channels on sequence
-    ADC1->SQR3 = ADC_SQR3_SQ1_(0) |         // First convertion CH0, second CH2 
-                 ADC_SQR3_SQ2_(2);
+    ADC1->SQR1 = ADC_SQR1_L_(ADC_NUM_CH - 1);            // number of channels on sequence
+    ADC1->SQR3 = ADC_SQR3_SQ1_(ADC_CH_VOLTAGE1) |  // First convertion OUT voltage, second load voltage
+                 ADC_SQR3_SQ2_(ADC_CH_VOLTAGE2) |
+                 ADC_SQR3_SQ3_(ADC_CH_VOLTAGE3) |
+                 ADC_SQR3_SQ4_(ADC_CH_VOLTAGE4) |
+                 ADC_SQR3_SQ5_(ADC_CH_V_LOAD);
 
-    ADC1->SMPR2 = ADC_SMPR2_SMP0_(7) |      // CH0 and CH2 sample time, 239.5 cycles
-                  ADC_SMPR2_SMP2_(7);
+    ADC1->SMPR2 = ADC_SMPR2_(ADC_CH_VOLTAGE1, 7) |      // set sample time to 239.5 cycles
+                  ADC_SMPR2_(ADC_CH_VOLTAGE2, 7) | 
+                  ADC_SMPR2_(ADC_CH_VOLTAGE3, 7) | 
+                  ADC_SMPR2_(ADC_CH_VOLTAGE4, 7) | 
+                  ADC_SMPR2_(ADC_CH_V_LOAD, 7);
                 
-    /* Configure ADC 2 */
+    /* Configure ADC 2 current measuments*/
     RCC->APB2ENR  |= RCC_APB2ENR_ADC2EN;    // Enable Adc2
     RCC->APB2RSTR |= RCC_APB2ENR_ADC2EN;
     RCC->APB2RSTR &= ~RCC_APB2ENR_ADC2EN;
@@ -301,22 +310,28 @@ void ADC_Init(uint16_t ms){
     		    ADC_CR2_EXTSEL_0 |
 				ADC_CR2_ADON;
 
-    ADC2->SQR1 = ADC_SQR1_L_(1);            // Two channels on sequence
-    ADC2->SQR3 = ADC_SQR3_SQ1_(1) |         // first convertion CH1, second CH3 
-                 ADC_SQR3_SQ2_(3);
+    ADC2->SQR1 = ADC_SQR1_L_(ADC_NUM_CH - 1);            // number of channels on sequence
+    ADC2->SQR3 = ADC_SQR3_SQ1_(ADC_CH_CURRENT) |         // first convertion CH1, second CH3 
+                 ADC_SQR3_SQ2_(ADC_CH_CURRENT) |
+                 ADC_SQR3_SQ3_(ADC_CH_CURRENT) |
+                 ADC_SQR3_SQ4_(ADC_CH_CURRENT) |
+                 ADC_SQR3_SQ5_(ADC_CH_I_LOAD);
 
-    ADC2->SMPR2 = ADC_SMPR2_SMP1_(7) |      // CH1 and CH3 sample time, 239.5 cycles
-                  ADC_SMPR2_SMP3_(7);
+    ADC2->SMPR2 = ADC_SMPR2_(ADC_CH_CURRENT, 7) |      // CH1 and CH3 sample time, 239.5 cycles                  
+                  ADC_SMPR2_(ADC_CH_I_LOAD, 7);
 
     ADC2->CR1 = ADC_CR1_SCAN;
 
-    /* Configure GPIOA Pins */
-    GPIOA->CRL &= ~0xFFFF;                
+    /* Configure Analog Pins */
+    GPIOA->CRL &= ~(ADC_CH_IN(ADC_CH_VOLTAGE1) |
+                  ADC_CH_IN(ADC_CH_CURRENT) |
+                  ADC_CH_IN(ADC_CH_V_LOAD) |
+                  ADC_CH_IN(ADC_CH_I_LOAD));
 
     NVIC_SetPriority(DMA1_Channel1_IRQn, 0); // Highest priority
     NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
-    eotcb = NULL;
+    eotcb = NULL;                           // No callback configures
     TIM2->CR1 |= TIM_CR1_CEN;
 }
 

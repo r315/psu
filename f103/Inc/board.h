@@ -12,7 +12,7 @@ extern "C" {
 #include "ssd1306.h"
 #include "pcf8574.h"
 
-#define VOLTAGE_PERCISION           0.005f
+#define VOLTAGE_PERCISION           0.005f  //MAX_VOLTAGE / 2^ADC_RESOLUTION
 #define CURRENT_PERCISION           0.0008f
 #define MAX_VOLTAGE                 14.0f
 #define MIN_VOLTAGE                 1.2f
@@ -112,13 +112,13 @@ static inline void reenumerate_usb(void){
 /**
  * PWM
  * 
- * PB0 PWM_VOUT
- * PB1 PWM_IOUT
- * PWM_ILOAD
- * PWM_VLOAD
+ * PB4 PWM1 -> V set
+ * PB5 PWM2 -> I set
+ * PB0 PWM3 -> I load
+ * PB1 PWM4 -> NA
  */
 
-#define PWM_CH_VOLTAGE     (4-1)       // Channel that controls output voltage
+#define PWM_CH_VOLTAGE     (1-1)       // Channel that controls output voltage
 #define PWM_CH_CURRENT     (2-1)       // Channel that controls output current
 #define PWM_CH_LOAD        (3-1)
 #define PWM_RESOLUTION      10UL
@@ -160,6 +160,15 @@ uint16_t PWM_Get(uint8_t);
  * VLOAD PA2
  * ILOAD PA3
  * */
+#define ADC_NUM_CH          5
+#define ADC_CH_VOLTAGE1     0
+#define ADC_CH_VOLTAGE2     1
+#define ADC_CH_VOLTAGE3     2
+#define ADC_CH_VOLTAGE4     3
+#define ADC_CH_CURRENT      4
+#define ADC_CH_V_LOAD       5
+#define ADC_CH_I_LOAD       6
+
 
 /* ***********************************************************
  * ADC is triggered by TIM3 TRGO and performs dual 
