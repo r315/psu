@@ -6,7 +6,7 @@ battery capacity test.
 Specs
 
 Power supply <br>
-Output: 1.3V - 17V<br>
+Output: 1.3V - 20V<br>
 Output Current: 0A - 3A<br>
 Voltage adjustment steps: 100mV<br>
 Current adjustment steps: 10mA<br>
