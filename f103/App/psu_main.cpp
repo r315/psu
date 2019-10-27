@@ -167,6 +167,9 @@ uint16_t pwm_start_values[PWM_NUM_CH];
     {
         pwm_start_values[i] = psu_state.cal_data[i].start;
     }
+
+    cpsu.startValues(MIN_VOLTAGE, MIN_CURRENT );
+
     PWM_Init(pwm_start_values);
     ADC_Init(ADC_INTERVAL);   
     LED_INIT;

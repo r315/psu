@@ -38,7 +38,7 @@ extern "C" {
 #define CONSOLE_PROMPT              "PSU >"
 #define STATE_FLAG_DISPLAY          1   // LCD Init flag
 
-enum SET_MODE {SET_OFF = 0, SET_VOLTAGE, SET_CURRENT};
+enum SET_MODE {SET_OFF = 0, SET_M1, SET_M2};
 
 typedef struct _calibration_t{
     uint16_t min;
@@ -116,6 +116,7 @@ public:
     void process(State *st);
     void redraw();
     void modeSet();
+    void startValues(float v_last, float i_last);
 };
 
 class ModeLoad: public Mode{
@@ -127,6 +128,7 @@ public:
 };
 
 class ModeCharger: public Mode{
+    uint8_t bt_size;
 public:
     ModeCharger() : Mode(){}	
     void process(State *st);

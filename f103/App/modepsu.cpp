@@ -31,15 +31,15 @@ void ModePsu::redraw(void){
 
 void ModePsu::modeSet(void){
     if(mode_set == SET_OFF){
-        mode_set = SET_VOLTAGE;
+        mode_set = SET_M1;
         set_value = &set_v;
         set_max = MAX_VOLTAGE;
         set_min = MIN_VOLTAGE;
         place = 1;
         base_place = 10;
         setOutput = setOutputVoltage;
-    }else if(mode_set == SET_VOLTAGE){
-        mode_set = SET_CURRENT; 
+    }else if(mode_set == SET_M1){
+        mode_set = SET_M2; 
         set_max = MAX_CURRENT;
         set_min = MIN_CURRENT;
         set_value = &set_i;
@@ -71,8 +71,8 @@ float i, v;
         return;
 
     if(mode_set == SET_OFF){        
-        v = st->adc_out_v * VOLTAGE_PERCISION;
-        i = st->adc_out_i * CURRENT_PERCISION;
+        v = st->adc_v1 * VOLTAGE_PERCISION;
+        i = st->adc_i1 * CURRENT_PERCISION;
         TEXT_setFont(&pixelDustFont);
         printPower(0,0, v, i);
         TEXT_setFont(&font_seven_seg);
@@ -80,7 +80,7 @@ float i, v;
         TEXT_dro(CURRENT_DRO_POS, i, CURRENT_PLACES, NO_BLANK);
     }    
     else if((++count) & BLINK_TIME_MASK){
-        if(mode_set == SET_VOLTAGE){
+        if(mode_set == SET_M1){
             TEXT_dro(VOLTAGE_DRO_POS, set_v, VOLTAGE_PLACES, place);
             TEXT_dro(CURRENT_DRO_POS, set_i, CURRENT_PLACES, NO_BLANK);
         }else{
