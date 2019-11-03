@@ -172,6 +172,8 @@ uint16_t pwm_start_values[PWM_NUM_CH];
 
     PWM_Init(pwm_start_values);
     ADC_Init(ADC_INTERVAL);   
+    EXPANDER_Init();
+    RTC_Init();
     LED_INIT;
     psu_state.flags = LCD_Init();
 
