@@ -7,10 +7,10 @@ console->print("\t+/-, duty\n");
 //console->print("\ts, stop\n");
 console->print("\tq, quit\n");
 console->print("\tPins\n"
-                "\t\tPA6 PWM1\n"
-                "\t\tPA7 PWM2\n"
-                "\t\tPB0 PWM3\n"
-                "\t\tPB1 PWM4\n");
+                "\t\tPB4 PWM1 -> vset\n"
+                "\t\tPB5 PWM2 -> iset\n"
+                "\t\tPB0 PWM3 -> iload\n"
+                "\t\tPB1 PWM4 -> NA\n");
 }
 
 char CmdPwm::execute(void *ptr){
