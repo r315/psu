@@ -44,6 +44,7 @@ extern "C" {
                      BUTTON_SET  | BUTTON_OUT   | BUTTON_MODE | BUTTON_MEM)
 #define BUTTON_VALUE (uint8_t)BUTTON_GetValue()
 
+// TODO: Properly disable all peripherals (clock pwr) and then power off
 #define SPOWER_OFF \
     GPIOA->CRL = (GPIOA->CRH & ~(0x0F << 8)) | (2 << 8); \
     GPIOA->ODR &= ~GPIO_PIN_2; \
@@ -195,8 +196,12 @@ void ADC_SetCallBack(void (*)(uint16_t*));
 uint16_t *ADC_LastConvertion(void);
 
 
+/** ***********************************************************
+ *
+ * RTC Init
+ */ 
  
- 
+ void RTC_Init(void);
  
 #ifdef __cplusplus
 }

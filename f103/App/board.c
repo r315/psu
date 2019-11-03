@@ -359,3 +359,32 @@ void DMA1_Channel1_IRQHandler(void){
 void ADC_SetCallBack(void (*cb)(uint16_t*)){
     eotcb = cb;
 }
+
+/**
+ * RTC
+ * 
+ */
+#define RTC_ONE_SECOND_PRESCALER        0x7FFF
+#define RTC_TIMEOUT                     1000
+void RTC_Init(void){
+uint32_t cnt;
+
+    PWR->CR |= PWR_CR_DBP;                           // Disable write protection on Backup domain control register
+
+    RCC->BDCR |= RCC_BDCR_LSEON;                     // Enable external 32.768khz oscillator
+
+    cnt = RTC_TIMEOUT;
+    while(!(RCC->BDCR & RCC_BDCR_LSERDY)){           // wait for oscillator to be ready
+        if(--cnt == 0) return;
+    }
+
+    RCC->BDCR |= RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_0; // Select and enable clock to RTC
+
+    PWR->CR &= ~PWR_CR_DBP;                          // Enable write protection on Backup domain control register
+
+    RTC->CRL |= RTC_CRL_CNF;                         // Enter  configuration
+
+    RTC->PRLL = RTC_ONE_SECOND_PRESCALER;
+
+    RTC->CRL &= ~RTC_CRL_CNF;                        // Exit configuration
+}
