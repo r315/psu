@@ -11,6 +11,8 @@
 
 enum BAT_TYPE {BT1S = 0, BT2S, BT3S, BT4S};
 const char bat_type[] = {"1S 2S 3S 4S"};
+const float pack_voltages [] = {4.2, 8.4, 12.6, 16.8};
+float pack_v_min, pack_v_max;
 
 void changeBtSize(uint8_t *dst, int8_t a){
     uint8_t n = *dst + a;
@@ -18,6 +20,7 @@ void changeBtSize(uint8_t *dst, int8_t a){
         return;
     }
     *dst = n;
+    setOutputVoltage(pack_voltages[n], pack_v_max, pack_v_min);
 }
 
 void ModeCharger::redraw(void){
@@ -41,8 +44,7 @@ void ModeCharger::modeSet(){
     }  
 }
 
-void ModeCharger::process(State *st){
-    
+void ModeCharger::process(State *st){    
 
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         if(mode_set){
@@ -74,7 +76,5 @@ void ModeCharger::process(State *st){
         }else{            
             TEXT_print(BT_SIZE_POS, bat_type + bt_size * 3);
         }
-    }
-    
-    
+    }    
 }

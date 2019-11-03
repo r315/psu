@@ -53,17 +53,43 @@ void ModeLoad::redraw(void){
 
     for (uint8_t i = 0; i < LOAD_GRAPH_W; i++)
     {
-        plotPoint(i, 50);
-    }
-    
+        plotPoint(i, i/10);
+    }    
 }
 
 void ModeLoad::modeSet(){
-
-    
+    if(mode_set == SET_OFF){
+        mode_set = SET_M1;
+    }else {
+        mode_set = SET_OFF;
+    }
 }
 
 void ModeLoad::process(State *st){
+    if(BUTTON_GetEvents() == BUTTON_PRESSED){
+        if(mode_set){
+            count = 0;
+            switch(BUTTON_VALUE){
+                case BUTTON_SET: count = BLINK_TIME_MASK; break;
+                case BUTTON_UP:  break;
+                case BUTTON_DOWN: break;
+                case BUTTON_LEFT:  break;
+                case BUTTON_RIGHT:  break;
+            }       
+        }
+    }
 
+    if(mode_set == SET_OFF){
+        uint16_t *p = &st->adc_v1, i;
+        //TEXT_setFont(&pixelDustFont);        
+        //printCurrent(I_POS, st->adc_i1 * CURRENT_PERCISION);
+    }else if(mode_set == SET_M1){
+        //TEXT_setFont(&pixelDustFont);
+        if((++count) & BLINK_TIME_MASK){
+            TEXT_print(LOAD_CURRENT_POS,"  ");
+        }else{            
+            TEXT_print(LOAD_CURRENT_POS, "0.50A");
+        }
+    }    
     
 }
