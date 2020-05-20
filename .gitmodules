@@ -1,3 +1,3 @@
-[submodule "f103/stm32-dfu-bootloader"]
-	path = f103/stm32-dfu-bootloader
+[submodule "lib/stm32-dfu-bootloader"]
+	path = lib/stm32-dfu-bootloader
 	url = https://github.com/r315/stm32-dfu-bootloader.git
