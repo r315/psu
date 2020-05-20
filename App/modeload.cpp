@@ -80,7 +80,7 @@ void ModeLoad::process(State *st){
     }
 
     if(mode_set == SET_OFF){
-        uint16_t *p = &st->adc_v1, i;
+        //uint16_t *p = &st->adc_v1, i;
         //TEXT_setFont(&pixelDustFont);        
         //printCurrent(I_POS, st->adc_i1 * CURRENT_PERCISION);
     }else if(mode_set == SET_M1){

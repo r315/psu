@@ -181,12 +181,14 @@ C_INCLUDES =  \
 
 
 # compile gcc flags
-ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -nostdlib -lgcc
+CFLAGS =$(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -nostdlib -std=c99
+CPPFLAGS =$(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -gdwarf-2
+CFLAGS +=-g -gdwarf-2
+CPPFLAGS +=-g -gdwarf-2
 endif
 
 
@@ -198,8 +200,8 @@ endif
 # LDFLAGS
 #######################################
 # link script
-#LDSCRIPT = startup/STM32F103C8Tx_FLASH.ld
-LDSCRIPT =startup/f103c8tx_dfu.ld
+LDSCRIPT = startup/STM32F103C8Tx_FLASH.ld
+#LDSCRIPT =startup/f103c8tx_dfu.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 
@@ -241,7 +243,7 @@ OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SOURCES:.cpp=.obj)))
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 #vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
-VPATH +=$(SOURCES_PATH)
+VPATH +=$(dir $(C_SOURCES)) $(dir $(CPP_SOURCES)) $(dir $(ASM_SOURCES))
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 	@echo "Compiling  " $<
@@ -249,7 +251,7 @@ $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 
 $(BUILD_DIR)/%.obj: %.cpp Makefile | $(BUILD_DIR)
 	@echo "Compiling  " $<
-	@$(CPP) -c $(CFLAGS)  -fno-exceptions -fno-unwind-tables -fno-rtti $< -o $@
+	@$(CPP) -c $(CPPFLAGS)  -fno-exceptions -fno-unwind-tables -fno-rtti $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	@echo "Assembling " $<
@@ -281,5 +283,5 @@ clean:
 # dependencies
 #######################################
 #-include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)
-
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 # *** EOF ***

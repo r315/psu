@@ -236,6 +236,7 @@ uint32_t n = I2C_BUSY_RETRIES;
 #define ADC_CH_IN(ch)                        (0xf << (ch*4))
 
 static void (*eotcb)(uint16_t*);
+// Each index holds two conversion results
 static uint32_t adcres[ADC_SEQ_LEN];
 
 /* ***********************************************************
@@ -350,7 +351,7 @@ void ADC_Init(uint16_t ms){
 
 
 uint16_t *ADC_LastConvertion(void){
-    return adcres;
+    return (uint16_t*)adcres;
 }
 
 /**
@@ -362,7 +363,7 @@ void DMA1_Channel1_IRQHandler(void){
         ADC1->SR = 0;                    // Clear ADC1 Flags
         ADC2->SR = 0;
             if(eotcb != NULL)
-        eotcb(adcres);
+        eotcb((uint16_t*)adcres);
     }
 
     DMA1->IFCR = DMA_IFCR_CGIF1;    // Clear DMA Flags TODO: ADD DMA Error handling ?

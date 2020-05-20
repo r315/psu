@@ -31,11 +31,11 @@ extern "C" {
 /**
  * HW symbols for button handling
  * */
-#define BUTTON_UP       (1<<1)
-#define BUTTON_DOWN     (1<<4)
-#define BUTTON_LEFT  	(1<<3)
-#define BUTTON_RIGHT 	(1<<2)
-#define BUTTON_SET  	(1<<0)
+#define BUTTON_UP       (1<<0)
+#define BUTTON_DOWN     (1<<1)
+#define BUTTON_LEFT  	(1<<2)
+#define BUTTON_RIGHT 	(1<<3)
+#define BUTTON_SET  	(1<<4)
 #define BUTTON_MODE     (1<<5)
 #define BUTTON_OUT      (1<<6)
 #define BUTTON_MEM      (1<<7)

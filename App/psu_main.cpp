@@ -148,7 +148,7 @@ CmdMode mode;
     console.addCommand(&dfu);
     console.addCommand(&pwr); 
     console.addCommand(&out); 
-    console.addCommand(&io); 
+    console.addCommand(&io);
     console.addCommand(&mode); 
 
     while(1){
