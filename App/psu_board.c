@@ -6,17 +6,19 @@
 #include "usbd_cdc_if.h"
 #include <stdout.h>
 
+static I2C_HandleTypeDef hi2c2;
 
 void BOARD_Init(void){
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN;
     
-    EXPANDER_Init();
-    RTC_Init();
     LED_INIT;
-
     SPI_Init();
+    I2C_Init();
+    RTC_Init();
+
     LCD_Init();
     LCD_Rotation(LCD_REVERSE_LANDSCAPE);
+    EXPANDER_Init();
 }
 
 void setInterval(void(*cb)(), uint32_t ms){
@@ -149,71 +151,6 @@ StdOut vcom = {
     .getCharNonBlocking = vc_getCharNonBlocking,
     .kbhit = vc_kbhit
 };
-
-/**
- * I2C DMA driver
- * 
- * This driver was implemented in a way that reduce the most setup steps much as possible,
- * for that the dma is configured once and then all transfers start by the I2C
- * */
-void i2cCfgDMA(uint8_t *src, uint16_t size){
-    // Configure DMA1 CH4 to handle i2c transmission
-    RCC->AHBENR |= RCC_AHBENR_DMA1EN;    
-    DMA1_Channel4->CCR =    DMA_CCR_TCIE | // Transfer complete interrupt
-                            DMA_CCR_DIR  | // Read From memory
-                            DMA_CCR_CIRC |
-                            DMA_CCR_MINC;  // Increment memory address
-    DMA1_Channel4->CNDTR = size;
-    DMA1_Channel4->CPAR = (uint32_t)&I2C2->DR;
-    DMA1_Channel4->CMAR = (uint32_t)src;
-    DMA1_Channel4->CCR |= DMA_CCR_EN;
-    
-    // Configure I2C2 transfer
-    RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;    
-    I2C2->CCR = 45;           // Freq 400Khz
-    I2C2->CR1 = I2C_CR1_PE | I2C_CR1_ACK;
-    I2C2->CR2 = 0x24;
-    I2C2->CR2 |= I2C_CR2_DMAEN;
-    HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0); // Highest priority
-    HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
-} 
-
-/**
- * Due to the implementation of the driver, the parameters
- * data and size are ignored
- * */
-void i2cSendDMA(uint8_t address, uint8_t *data, uint16_t size){
-uint32_t n = I2C_BUSY_RETRIES;
-
-    
-    while(I2C2->SR2 & I2C_SR2_BUSY){ // wait for any transfer to end
-        if(--n == 0)
-            return;
-    }
-
-    I2C2->CR1 |= I2C_CR1_START;     // Send start condition
-
-    n = I2C_BUSY_RETRIES;
-    while(!(I2C2->SR1 & I2C_SR1_SB)){ // wait for master mode
-        if(--n == 0)
-            return;
-    }    
-    
-    I2C2->CR2 |= I2C_CR2_DMAEN;         // enable DMA
-    I2C2->DR = address;                 
-    while(!(I2C2->SR1 & I2C_SR1_ADDR)){ // wait for slave acknowledge       
-        if(--n == 0)            
-            return;
-
-        if(I2C2->SR1 & I2C_SR1_AF){
-            I2C2->SR1 &= ~(I2C_SR1_AF);
-            I2C2->CR1 |= I2C_CR1_STOP;  
-            return;      
-        }
-    }
-    n = I2C2->SR2; // Dummy read for crearing flags
-    //while(I2C2->SR2 & I2C_SR2_BUSY);   
-}
 
 /**
  * ADC Driver
@@ -473,11 +410,18 @@ void SPI_Read(uint8_t *dst, uint32_t len){
 
 }
 
+/**
+ * @brief Sends a block of data through the spi bus using dma
+ * block. Due to dma limitation, data is transffered in 64k blocks when len grater
+ * than 0x10000.
+ * 
+ * @param src : pointer to data to be sent
+ * @param len : size of data, if bit 32 is set then src[0] will be transffered len times
+ * */
 void SPI_WriteDMA(uint16_t *src, uint32_t len){
 
     // Configure Spi for 16bit DMA
     SPI2->CR1 &= ~SPI_CR1_SPE;
-    //SPI2->CR2 |= SPI_CR2_TXDMAEN;
     SPI2->CR1 |= SPI_CR1_DFF | SPI_CR1_SPE;
 
     if(len & 0x80000000){
@@ -488,13 +432,16 @@ void SPI_WriteDMA(uint16_t *src, uint32_t len){
 
     spi2handle.count = len;    
     spi2handle.dma->CMAR = (uint32_t)src;
-    spi2handle.dma->CNDTR = (spi2handle.count > 0x10000) ? 0xFFFF : spi2handle.count;  // transfer blocks of 64k
+    spi2handle.dma->CNDTR = (spi2handle.count > 0x10000) ? 0xFFFF : spi2handle.count;
     
     spi2handle.dma->CCR |= DMA_CCR_EN;
 
     while(spi2handle.count);
 }
 
+/**
+ * DMA handler for spi transfers
+ * */
 void DMA1_Channel5_IRQHandler(void){
 
     if(DMA1->ISR & DMA_ISR_TCIF5){
@@ -507,7 +454,6 @@ void DMA1_Channel5_IRQHandler(void){
         }else{
             /* Restore 8bit Spi */
 	        SPI2->CR1 &= ~(SPI_CR1_SPE | SPI_CR1_DFF);
-	        //SPI2->CR2 &= ~SPI_CR2_TXDMAEN;
 	        SPI2->CR1 |= SPI_CR1_SPE;
             // wait for the last byte to be transmitted
             while(SPI2->SR & SPI_SR_BSY){
@@ -520,4 +466,55 @@ void DMA1_Channel5_IRQHandler(void){
         }
     }
     DMA1->IFCR = DMA_IFCR_CGIF5;
+}
+
+/**
+* @brief I2C MSP Initialization
+* This function configures the hardware resources used in this example
+* PB10     ------> I2C2_SCL
+* PB11     ------> I2C2_SDA 
+* @param hi2c: I2C handle pointer
+* @retval None
+*/
+void I2C_Init(void){
+
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    //gpioInit(GPIOB, 10, GPO_10MHZ | GPO_AF | GPO_OD);
+    //gpioInit(GPIOB, 11, GPO_10MHZ | GPO_AF | GPO_OD);
+    GPIOB->BSRR = (1<<11) | (1<<10);
+    GPIOB->CRH = (GPIOB->CRH & ~(15 << 8)) | (0xFF << 8);
+    __HAL_RCC_I2C2_CLK_ENABLE();
+    HAL_NVIC_SetPriority(I2C2_EV_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(I2C2_EV_IRQn);
+    HAL_NVIC_SetPriority(I2C2_ER_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(I2C2_ER_IRQn);
+
+    hi2c2.Instance = I2C2;
+    hi2c2.Init.ClockSpeed = 100000;
+    hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
+    hi2c2.Init.OwnAddress1 = 0;
+    hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    hi2c2.Init.OwnAddress2 = 0;
+    hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+    hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+    if(HAL_I2C_Init(&hi2c2) != HAL_OK) {
+        Error_Handler(__FILE__, __LINE__);
+    }
+}
+
+void I2C_Write(uint8_t addr, uint8_t *data, uint32_t size){
+    HAL_I2C_Master_Transmit(&hi2c2, addr << 1, data, size, 100);
+}
+
+void I2C_Read(uint8_t addr, uint8_t *data, uint32_t size){
+    HAL_I2C_Master_Receive(&hi2c2, addr << 1, data, size, 100);
+}
+
+/**
+ * */
+void Error_Handler(const char *file, int line){
+    while(1){
+
+    }
 }

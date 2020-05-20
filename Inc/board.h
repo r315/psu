@@ -23,11 +23,6 @@ extern "C" {
 #define MAX_LOAD                    3.00f
 #define MIN_LOAD                    0.00f
 
-#define USE_I2C_DMA
-#define I2C_Read(_A, _D, _S) HAL_I2C_Master_Receive(&hi2c2, _A << 1, _D, _S, 100)
-#define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 100)
-#define I2C_WriteDMA(_A, _D, _S) i2cSendDMA(_A << 1, _D, _S)
-
 /**
  * HW symbols for button handling
  * */
@@ -121,7 +116,6 @@ void SPI_WriteDMA(uint16_t *dst, uint32_t len);
 /** 
  * Global variables
  * */
-extern I2C_HandleTypeDef hi2c2;
 extern TIM_HandleTypeDef htim4;
 extern StdOut vcom;
 
@@ -131,10 +125,13 @@ extern StdOut vcom;
  * PB10 SCL
  * PB11 SDA
  * */
-#define I2C_BUSY_RETRIES 100
-void setInterval(void(*cb)(), uint32_t ms);
-void i2cCfgDMA(uint8_t *src, uint16_t size);
-void i2cSendDMA(uint8_t address, uint8_t *data, uint16_t size);
+void I2C_Init(void);
+//#define I2C_Read(_A, _D, _S) HAL_I2C_Master_Receive(&hi2c2, _A << 1, _D, _S, 100)
+//#define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 100)
+//#define I2C_WriteDMA(_A, _D, _S) i2cSendDMA(_A << 1, _D, _S)
+void I2C_Write(uint8_t addr, uint8_t *data, uint32_t size);
+void I2C_Read(uint8_t addr, uint8_t *dst, uint32_t size);
+
 
 /**
 * Vile hack to reenumerate, physically _drag_ d+ low.
@@ -247,6 +244,10 @@ uint16_t *ADC_LastConvertion(void);
  */ 
  
  void RTC_Init(void);
+
+
+
+ void Error_Handler(const char *file, int line);
  
 #ifdef __cplusplus
 }

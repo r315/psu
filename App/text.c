@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-
+#define MAX_TILE_SIZE   (16*16)
 static font_t *font;
-static uint16_t tile[64];
+static uint16_t tile[MAX_TILE_SIZE];
 
 static uint16_t drawDp(uint16_t x, uint16_t y){
     LCD_FillRect(x-1,y, 4, font->h, BLACK);
@@ -24,8 +24,14 @@ static uint8_t drawChar(uint16_t x, uint16_t y, uint8_t c){
     c -= font->offset;
     pd = font->data + (c * font->h * font->bpl);
 
+    // Check out of bound character
     if(pd > font->data + font->data_len)
         return 0;
+
+    //Check if character fits temporary buffer
+    if(font->w * font->h > MAX_TILE_SIZE){
+        return 0;
+    }
 
     uint16_t *pt = tile;
 

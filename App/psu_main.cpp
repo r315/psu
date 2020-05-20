@@ -156,7 +156,7 @@ CmdMode mode;
     }
 }
 
-extern "C" void psu(void){  
+extern "C" void app_setup(void){  
 uint16_t pwm_start_values[PWM_NUM_CH];
 
     memcpy(psu_state.cal_data, default_cal_data, sizeof(calibration_t) * PWM_NUM_CH);    
