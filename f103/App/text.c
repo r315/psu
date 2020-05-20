@@ -6,11 +6,11 @@
 
 
 static font_t *font;
-
+static uint16_t tile[64];
 
 static uint16_t drawDp(uint16_t x, uint16_t y){
-    LCD_Fill(x-1,y, 4, font->h, BLACK);
-    LCD_Fill(x,y + font->h - 2, 2,2, WHITE);
+    LCD_FillRect(x-1,y, 4, font->h, BLACK);
+    LCD_FillRect(x,y + font->h - 2, 2,2, WHITE);
     return 3; 
 }
 
@@ -19,27 +19,31 @@ static uint16_t drawDp(uint16_t x, uint16_t y){
  * the font table must be 1bpp
  */
 static uint8_t drawChar(uint16_t x, uint16_t y, uint8_t c){
-    const uint8_t *p;
+    const uint8_t *pd;
     
     c -= font->offset;
-    p = font->data + (c * font->h * font->bpl);
+    pd = font->data + (c * font->h * font->bpl);
 
-    if(p > font->data + font->data_len)
+    if(pd > font->data + font->data_len)
         return 0;
 
-    for(uint16_t h = y; h < y +font->h; h++, p++){
-        uint8_t line = *p;
-        for(uint16_t w = x, bc = 0; w < x + font->w; w++, bc++){
+    uint16_t *pt = tile;
+
+    for(uint16_t h = y; h < y +font->h; h++, pd++){
+        uint8_t line = *pd;
+        for(uint16_t w = x, bc = 0; w < x + font->w; w++, bc++, pt++){
             if(bc == 8){
                 bc = 0;
-                line = *(++p);
+                line = *(++pd);
             }
             if(line & (0x80>>bc))
-                LCD_Pixel(w, h,WHITE);
+                *pt = WHITE;
             else
-                LCD_Pixel(w, h,BLACK);
+                *pt = BLACK;
         }
     }
+    LCD_Window(x, y, font->w, font->h);
+    LCD_Write(tile, font->w * font->h);
     return font->w + font->spacing;
 }
 
@@ -125,8 +129,7 @@ char prec;
 }
 
 void TEXT_Init(void){
-    LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
-    LCD_Update();
+    LCD_FillRect(0, 0, LCD_W, LCD_H, BLACK);
 }
 
 void TEXT_print(uint16_t x, uint16_t y, const char* str){    

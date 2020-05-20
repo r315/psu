@@ -54,7 +54,7 @@ void setOutputEnable(uint8_t en){
     if(psu_state.output_en){
         TEXT_drawGfx(OUTPUT_ICON_POS, (uint8_t*)&icon_out[0]);
     }else{
-        LCD_Fill(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);
+        LCD_FillRect(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);
     }
 }
 
@@ -122,11 +122,9 @@ static TickType_t xLastWakeTime;
 
     while(1){
         checkButtons();
-        DBG_LED_ON;
+        DBG_PIN_HIGH;
         modes[psu_state.mode]->process(&psu_state);
-        DBG_LED_OFF;
-        if(!psu_state.flags & STATE_FLAG_DISPLAY) 
-        LCD_Update();
+        DBG_PIN_LOW;        
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
 }
@@ -170,12 +168,12 @@ uint16_t pwm_start_values[PWM_NUM_CH];
 
     cpsu.startValues(MIN_VOLTAGE, MIN_CURRENT );
 
+    BOARD_Init();
+
     PWM_Init(pwm_start_values);
-    ADC_Init(ADC_INTERVAL);   
-    EXPANDER_Init();
-    RTC_Init();
-    LED_INIT;
-    psu_state.flags = LCD_Init();
+    ADC_Init(ADC_INTERVAL);
+
+    psu_state.mode = 0;
 
     xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );

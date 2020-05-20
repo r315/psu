@@ -41,24 +41,6 @@ endif
 
 FREERTOS_DIR :=$(REPOSITORY)Middlewares/Third_Party/FreeRTOS/Source
 
-SOURCES_PATH =  \
-Src \
-startup \
-$(APP_SRC_DIR) \
-$(APP_SRC_DIR)/console \
-$(REPOSITORY)Drivers/CMSIS \
-$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src \
-$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/ \
-$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/ \
-$(LIBEMB_PATH)/button \
-$(LIBEMB_PATH)/misc \
-$(LIBEMB_PATH)/console \
-$(LIBEMB_PATH)/display \
-$(FREERTOS_DIR) \
-$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
-$(FREERTOS_DIR)/portable/MemMang \
-$(FREERTOS_DIR)/CMSIS_RTOS \
-
 # firmware library path
 PERIFLIB_PATH = 
 
@@ -81,12 +63,13 @@ Src/stm32f1xx_hal_msp.c \
 Src/stm32f1xx_hal_timebase_tim.c \
 $(APP_SRC_DIR)/text.c \
 $(APP_SRC_DIR)/psu_font.c \
-$(APP_SRC_DIR)/ssd1306.c \
-$(APP_SRC_DIR)/board.c \
+$(APP_SRC_DIR)/psu_board.c \
 $(APP_SRC_DIR)/pcf8574.c \
 $(LIBEMB_PATH)/display/font.c \
 $(LIBEMB_PATH)/button/button.c \
 $(LIBEMB_PATH)/misc/strfunc.c \
+$(LIBEMB_PATH)/drv/tft/st7735.c \
+$(LIBEMB_PATH)/display/lcd.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \

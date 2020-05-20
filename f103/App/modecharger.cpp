@@ -24,7 +24,7 @@ void changeBtSize(uint8_t *dst, int8_t a){
 }
 
 void ModeCharger::redraw(void){
-    LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
+    LCD_FillRect(0, 0, LCD_W, LCD_H, BLACK);
     TEXT_drawGfx(90,0, (uint8_t*)&icon_chr[0]);
     TEXT_setFont(&pixelDustFont);
     TEXT_print(V1_POS,"V1:");

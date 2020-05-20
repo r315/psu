@@ -15,7 +15,7 @@ void ModePsu::startValues(float v_last, float i_last) {
 }
 
 void ModePsu::redraw(void){
-    LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
+    LCD_FillRect(0, 0, LCD_W, LCD_H, BLACK);
     //TEXT_setFont(&defaultBoldFont);
     //TEXT_setFont(&lcdFont);
     TEXT_setFont(&pixelDustFont);

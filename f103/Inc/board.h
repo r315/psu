@@ -9,8 +9,10 @@ extern "C" {
 #include <stdout.h>
 #include "main.h"
 #include "stm32f1xx.h"
-#include "ssd1306.h"
 #include "pcf8574.h"
+#include "lcd.h"
+#include "st7735.h"
+
 
 #define VOLTAGE_PERCISION           0.005f  //MAX_VOLTAGE / 2^ADC_RESOLUTION
 #define CURRENT_PERCISION           0.0008f
@@ -55,8 +57,6 @@ extern "C" {
 #define LED_PORT    GPIOB
 #define LED_PIN     GPIO_PIN_3
 #define LED_INIT    GPIOB->CRL = (GPIOB->CRL & ~(15<<12)) | (2<<12) // assume swd is already enabled
-#define LED_SET     GPIO_PIN_RESET
-#define LED_RESET   GPIO_PIN_SET
 #else// GPIO
 #define LED_PORT    GPIOA
 #define LED_PIN     GPIO_PIN_4
@@ -64,9 +64,10 @@ extern "C" {
 #endif
 
 #define DBG_LED_TOGGLE HAL_GPIO_TogglePin(LED_PORT, LED_PIN)
-#define DBG_LED_ON HAL_GPIO_WritePin(LED_PORT, LED_PIN, LED_SET)
-#define DBG_LED_OFF HAL_GPIO_WritePin(LED_PORT, LED_PIN, LED_RESET)
-
+#define DBG_LED_OFF HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET)
+#define DBG_LED_ON HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_RESET)
+#define DBG_PIN_HIGH DBG_LED_OFF
+#define DBG_PIN_LOW DBG_LED_ON
 
 #define GetTicks HAL_GetTick
 #define DelayMs(d) HAL_Delay(d)
@@ -75,6 +76,47 @@ static inline uint32_t ElapsedTicks(uint32_t start_ticks){
     uint32_t current = GetTicks(); 
     return (current > start_ticks) ? current - start_ticks : 0xFFFFFFFF - start_ticks + current;
 }
+
+
+#define SPI_BLOCK_DMA
+
+#define TFT_W 80
+#define TFT_H 160  // 162 on GRAM
+
+#define TFT_OFFSET_SOURCE	26
+#define TFT_OFFSET_GATE		1
+#define TFT_BGR_FILTER
+
+#define LCD_CD_Pin          GPIO_PIN_14
+#define LCD_CD_GPIO_Port    GPIOB
+#define LCD_BKL_Pin         GPIO_PIN_4
+#define LCD_BKL_GPIO_Port   GPIOB
+#define LCD_RST_Pin         GPIO_PIN_3
+#define LCD_RST_GPIO_Port   GPIOB
+#define LCD_CS_Pin          GPIO_PIN_12
+#define LCD_CS_GPIO_Port    GPIOB
+
+#define LCD_CD0             LCD_CD_GPIO_Port->BRR = LCD_CD_Pin
+#define LCD_CD1             LCD_CD_GPIO_Port->BSRR = LCD_CD_Pin
+#define LCD_BKL0            LCD_BKL_GPIO_Port->BRR = LCD_BKL_Pin
+#define LCD_BKL1            LCD_BKL_GPIO_Port->BSRR = LCD_BKL_Pin
+#define LCD_CS0             LCD_CS_GPIO_Port->BRR = LCD_CS_Pin
+#define LCD_CS1             LCD_CS_GPIO_Port->BSRR = LCD_CS_Pin
+#define LCD_RST0            LCD_RST_GPIO_Port->BRR = LCD_RST_Pin
+#define LCD_RST1            LCD_RST_GPIO_Port->BSRR = LCD_RST_Pin
+
+//LCD_CD_GPIO_Port->CRH = (LCD_CD_GPIO_Port->CRH & ~(0xF << 4)) | (2 << 4);
+//GPIOB->CRL = (GPIOA->CRL & ~(0xF << (4<<2))) | (2 <<(4<<2));
+//GPIOB->CRL = (GPIOA->CRL & ~(0xF << (3<<2))) | (2 <<(3<<2));
+    
+#define LCD_W LCD_GetWidth()
+#define LCD_H LCD_GetHeight()
+
+void SPI_Init(void);
+uint8_t SPI_Send(uint8_t data);
+void SPI_Read(uint8_t *dst, uint32_t len);
+void SPI_WriteDMA(uint16_t *dst, uint32_t len);
+
 
 /** 
  * Global variables
@@ -106,9 +148,6 @@ static inline void reenumerate_usb(void){
     //for (unsigned int i = 0; i < 100000; i++)
 	//	__asm__("nop");
 }
-
-#define LCD_W SSD1306_LCDWIDTH
-#define LCD_H SSD1306_LCDHEIGHT
 
 /**
  * PWM
@@ -169,6 +208,12 @@ uint16_t PWM_Get(uint8_t);
 #define ADC_CH_V_LOAD       5
 #define ADC_CH_I_LOAD       6
 
+
+
+/**
+ * 
+ * */
+void BOARD_Init(void);
 
 /* ***********************************************************
  * ADC is triggered by TIM3 TRGO and performs dual 

@@ -9,9 +9,7 @@ char CmdDfu::execute(void *ptr){
 
 
     console->print("Entering DFU mode\n");
-    LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
-    LCD_Update();
-
+    LCD_FillRect(0, 0, LCD_W, LCD_H, BLACK);
 	ENABLE_DFU_MAGIC;
     NVIC_SystemReset();
     
