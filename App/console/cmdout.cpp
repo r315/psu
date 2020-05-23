@@ -8,9 +8,9 @@ char CmdOut::execute(void *ptr) {
     }
 
     if(pdata == 1){
-        setOutputEnable(1);
+        app_setOutputEnable(1);
     }else{
-        setOutputEnable(0);
+        app_setOutputEnable(0);
     }
     
     return CMD_OK;
@@ -19,7 +19,7 @@ char CmdOut::execute(void *ptr) {
 
 char CmdMode::execute(void *ptr) {    
 
-    cycleMode();
+    //cycleMode();
     
     return CMD_OK;
 }	
