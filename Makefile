@@ -61,10 +61,8 @@ Src/usbd_cdc_if.c \
 Src/system_stm32f1xx.c \
 Src/stm32f1xx_hal_msp.c \
 Src/stm32f1xx_hal_timebase_tim.c \
-$(APP_SRC_DIR)/text.c \
-$(APP_SRC_DIR)/psu_font.c \
-$(APP_SRC_DIR)/psu_board.c \
-$(APP_SRC_DIR)/pcf8574.c \
+$(wildcard $(APP_SRC_DIR)/*.c) \
+$(wildcard $(APP_SRC_DIR)/components/*.c) \
 $(LIBEMB_PATH)/display/font.c \
 $(LIBEMB_PATH)/button/button.c \
 $(LIBEMB_PATH)/misc/strfunc.c \
@@ -104,6 +102,7 @@ $(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
 
 CPP_SOURCES = \
 $(wildcard $(APP_SRC_DIR)/*.cpp) \
+$(wildcard $(APP_SRC_DIR)/screen/*.cpp) \
 $(wildcard $(APP_SRC_DIR)/console/*.cpp) \
 $(LIBEMB_PATH)/console/console.cpp \
 
@@ -155,8 +154,9 @@ AS_DEFS =
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32F103xB \
--DCONSOLE_BLOCKING
-
+-DCONSOLE_BLOCKING \
+-DUSE_COURIER_FONT \
+-DUSE_GROTESKBOLD_FONT \
 
 
 # AS includes
@@ -167,6 +167,7 @@ C_INCLUDES =  \
 -IInc \
 -ISrc \
 -I$(APP_SRC_DIR) \
+-I$(APP_SRC_DIR)/components \
 -I$(APP_SRC_DIR)/console \
 -I"$(LIBEMB_PATH)"/include \
 -I$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Inc \
@@ -178,7 +179,6 @@ C_INCLUDES =  \
 -I$(FREERTOS_DIR)/include \
 -I$(FREERTOS_DIR)/CMSIS_RTOS \
 -I$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
-
 
 # compile gcc flags
 ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

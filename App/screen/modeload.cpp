@@ -41,14 +41,14 @@ void drawGraphAxis(void){
     memset(graph_data, 0, LOAD_GRAPH_W);
 }
 
-void ModeLoad::redraw(void){
+void ScreenLoad::redraw(void){
     LCD_FillRect(0, 0, LCD_W, LCD_H, BLACK);
-    TEXT_drawGfx(90,0, (uint8_t*)&icon_load[0]);
-    TEXT_setFont(&pixelDustFont);
-    TEXT_print(LOAD_POWER_POS,"00.0W");
-    TEXT_print(LOAD_CURRENT_POS,"0.50A");
-    TEXT_print(LOAD_VOLTAGE_POS,"4.1V");
-    TEXT_print(LOAD_TIME_POS,"00:00");
+//TEXT_drawGfx(90,0, (uint8_t*)&icon_load[0]);
+    TEXT_SetFont(&pixelDustFont);
+    TEXT_Print(LOAD_POWER_POS,"00.0W");
+    TEXT_Print(LOAD_CURRENT_POS,"0.50A");
+    TEXT_Print(LOAD_VOLTAGE_POS,"4.1V");
+    TEXT_Print(LOAD_TIME_POS,"00:00");
     drawGraphAxis();
 
     for (uint8_t i = 0; i < LOAD_GRAPH_W; i++)
@@ -57,7 +57,7 @@ void ModeLoad::redraw(void){
     }    
 }
 
-void ModeLoad::modeSet(){
+void ScreenLoad::modeSet(){
     if(mode_set == SET_OFF){
         mode_set = SET_M1;
     }else {
@@ -65,7 +65,7 @@ void ModeLoad::modeSet(){
     }
 }
 
-void ModeLoad::process(State *st){
+void ScreenLoad::process(State *st){
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         if(mode_set){
             count = 0;
@@ -81,14 +81,14 @@ void ModeLoad::process(State *st){
 
     if(mode_set == SET_OFF){
         //uint16_t *p = &st->adc_v1, i;
-        //TEXT_setFont(&pixelDustFont);        
-        //printCurrent(I_POS, st->adc_i1 * CURRENT_PERCISION);
+        //TEXT_SetFont(&pixelDustFont);        
+        //printCurrent(I_POS, st->adc_i1 * CURRENT_PRECISION);
     }else if(mode_set == SET_M1){
-        //TEXT_setFont(&pixelDustFont);
+        //TEXT_SetFont(&pixelDustFont);
         if((++count) & BLINK_TIME_MASK){
-            TEXT_print(LOAD_CURRENT_POS,"  ");
+            TEXT_Print(LOAD_CURRENT_POS,"  ");
         }else{            
-            TEXT_print(LOAD_CURRENT_POS, "0.50A");
+            TEXT_Print(LOAD_CURRENT_POS, "0.50A");
         }
     }    
     

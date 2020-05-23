@@ -20,23 +20,23 @@ void changeBtSize(uint8_t *dst, int8_t a){
         return;
     }
     *dst = n;
-    setOutputVoltage(pack_voltages[n], pack_v_max, pack_v_min);
+    app_setOutputVoltage(pack_voltages[n], pack_v_max, pack_v_min);
 }
 
-void ModeCharger::redraw(void){
+void ScreenCharger::redraw(void){
     LCD_FillRect(0, 0, LCD_W, LCD_H, BLACK);
-    TEXT_drawGfx(90,0, (uint8_t*)&icon_chr[0]);
-    TEXT_setFont(&pixelDustFont);
-    TEXT_print(V1_POS,"V1:");
-    TEXT_print(V2_POS,"V2:");
-    TEXT_print(V3_POS,"V3:");
-    TEXT_print(V4_POS,"V4:");
-    TEXT_setFont(&lcdFont);
-    TEXT_print(BT_SIZE_POS,"1S");
+//TEXT_drawGfx(90,0, (uint8_t*)&icon_chr[0]);
+    TEXT_SetFont(&pixelDustFont);
+    TEXT_Print(V1_POS,"V1:");
+    TEXT_Print(V2_POS,"V2:");
+    TEXT_Print(V3_POS,"V3:");
+    TEXT_Print(V4_POS,"V4:");
+    TEXT_SetFont(&lcdFont);
+    TEXT_Print(BT_SIZE_POS,"1S");
     bt_size = BT1S;    
 }
 
-void ModeCharger::modeSet(){
+void ScreenCharger::modeSet(){
     if(mode_set == SET_OFF){
         mode_set = SET_M1;
     }else {
@@ -44,7 +44,7 @@ void ModeCharger::modeSet(){
     }  
 }
 
-void ModeCharger::process(State *st){    
+void ScreenCharger::process(State *st){    
 
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         if(mode_set){
@@ -61,20 +61,20 @@ void ModeCharger::process(State *st){
 
     if(mode_set == SET_OFF){
         uint16_t *p = &st->adc_v1, i;
-        TEXT_setFont(&pixelDustFont);
+        TEXT_SetFont(&pixelDustFont);
         for(i = BT1S; i <= bt_size; i++, p+=2){
-        printVoltage(V_POS_OFFSET + V1_POS + i * 8, *p * VOLTAGE_PERCISION);
+        //printVoltage(V_POS_OFFSET + V1_POS + i * 8, *p * VOLTAGE_PRECISION);
         }
         for(;i <= MAX_PACK_SIZE; i++ ){
-            TEXT_print(V_POS_OFFSET + V1_POS + i * 8, "-----");   
+            TEXT_Print(V_POS_OFFSET + V1_POS + i * 8, "-----");   
         }
-        printCurrent(I_POS, st->adc_i1 * CURRENT_PERCISION);
+        //printCurrent(I_POS, st->adc_i1 * CURRENT_PRECISION);
     }else{
-        TEXT_setFont(&lcdFont);
+        TEXT_SetFont(&lcdFont);
         if((++count) & BLINK_TIME_MASK){
-            TEXT_print(BT_SIZE_POS,"  ");
+            TEXT_Print(BT_SIZE_POS,"  ");
         }else{            
-            TEXT_print(BT_SIZE_POS, bat_type + bt_size * 3);
+            TEXT_Print(BT_SIZE_POS, bat_type + bt_size * 3);
         }
     }    
 }
