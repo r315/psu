@@ -122,7 +122,7 @@ void SPI_Init(void);
 uint8_t SPI_Send(uint8_t data);
 void SPI_Read(uint8_t *dst, uint32_t len);
 void SPI_WriteDMA(uint16_t *dst, uint32_t len);
-
+void TICK_Init(void);
 
 /** 
  * Global variables

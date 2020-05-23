@@ -9,6 +9,7 @@
 static I2C_HandleTypeDef hi2c2;
 
 void BOARD_Init(void){
+    
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN;
     
     LED_INIT;
@@ -21,12 +22,30 @@ void BOARD_Init(void){
     EXPANDER_Init();
 }
 
-void setInterval(void(*cb)(), uint32_t ms){
-    // start loop, timer is configures on startup
-    // and call is made on interupt handler
-    HAL_TIM_Base_Start_IT(&htim4);
+/**
+ * @brief Time base configuration.
+ * SysTick is assigned to FreeRTOS, 
+ * Timer 4 is used to generate a 1ms time base instead
+ * */
+void TICK_Init(void){
+
+    RCC->APB1ENR  |= RCC_APB1ENR_TIM4EN;
+    RCC->APB1RSTR |= RCC_APB1ENR_TIM4EN;
+    RCC->APB1RSTR &= ~RCC_APB1ENR_TIM4EN;
+
+    TIM4->PSC = (uint32_t)((SystemCoreClock / 1000000UL) - 1);
+    TIM4->ARR = 1000 - 1;
+    TIM4->DIER |= TIM_DIER_UIE;
+
+    HAL_NVIC_SetPriority(TIM4_IRQn, 0 ,0);
+    HAL_NVIC_EnableIRQ(TIM4_IRQn);
+    TIM4->CR1 = TIM_CR1_CEN;
 }
 
+void TIM4_IRQHandler(void){
+    TIM4->SR = ~TIM_IT_UPDATE;
+    HAL_IncTick();
+}
 
 /**
  * PWM Driver
@@ -282,7 +301,7 @@ void ADC_Init(uint16_t ms){
     NVIC_SetPriority(DMA1_Channel1_IRQn, 0); // Highest priority
     NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
-    eotcb = NULL;                           // No callback configures
+    eotcb = NULL;                           // No callback configured
     TIM2->CR1 |= TIM_CR1_CEN;
 }
 
