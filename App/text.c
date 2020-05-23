@@ -79,8 +79,8 @@ void TEXT_SetPalette(uint16_t *palette){
  * */
 void TEXT_Init(void){
     TEXT_SetPalette(pal);
-    LCD_FillRect(0, 0, LCD_W, LCD_H, BLACK);
     TEXT_SetFont(DEFAULT_FONT);
+    DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
 }
 /**
  * 

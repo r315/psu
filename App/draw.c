@@ -2,7 +2,20 @@
 #include "board.h"
 #include "draw.h"
 
-uint16_t scratch[SCRATCH_BUF_SIZE];
+volatile uint8_t lcd_busy = 0;
+static uint16_t _color;
+// use dual buffer for speed
+uint16_t _scratch[2][SCRATCH_BUF_SIZE];
+uint16_t *scratch = _scratch[0];
+static uint8_t bufidx = 0;
+
+/**
+ * Called from DMA end of transfer interrupt
+ * */
+void spi_eot(void){
+    LCD_CS1;
+    lcd_busy = 0;
+}
 
 /**
  * @brief Draws bitmap on display, data has format {w,h,data...}
@@ -12,13 +25,12 @@ uint16_t scratch[SCRATCH_BUF_SIZE];
  * @param data : bitmap data
  */
 void DRAW_Bitmap(uint16_t x, uint16_t y, uint16_t *data){
-    uint16_t w = data[0], h = data[1];    
-    LCD_Window(x, y, w, h);
-    LCD_Write(&data[2], w * h);   
+    DRAW_Tile(x, y, data+2, data[0], data[1]);
 }
 
 /**
- * @brief Draws tile
+ * @brief Draws tile, blocking if the last transfer not finished.
+ * other access lcd access should be avoided .
  * 
  * @param x : x position
  * @param y : y position
@@ -27,8 +39,25 @@ void DRAW_Bitmap(uint16_t x, uint16_t y, uint16_t *data){
  * @param h : tile height
  */
 void DRAW_Tile(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, uint16_t h){
+    while(lcd_busy);
+    lcd_busy = 1;
     LCD_Window(x, y, w, h);
-    LCD_Write(data, w * h);   
+    LCD_CS0;
+    SPI_WriteDMA(data, w * h);
+    // swap buffer    
+    scratch = _scratch[(++bufidx) & 1];
+}
+
+/**
+ * @brief draw filled rectangle
+ * */
+void DRAW_FillRect(uint16_t x, uint16_t y,  uint16_t w, uint16_t h, uint16_t color){
+    while(lcd_busy);
+    lcd_busy = 1;
+    LCD_Window(x, y, w, h);
+    LCD_CS0;
+    _color = color;
+	SPI_WriteDMA(&_color, (w * h) | 0x80000000);
 }
 
 /**
@@ -89,3 +118,4 @@ void DRAW_Icon2(uint16_t x, uint16_t y, uint8_t *ico, uint16_t fcolor, uint16_t 
     DRAW_Icon2Bitmap(scratch, ico, fcolor, bcolor);
     DRAW_Bitmap(x, y, scratch);
 }
+

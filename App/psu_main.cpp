@@ -77,7 +77,7 @@ void app_setOutputEnable(uint8_t en){
     if(psu_state.output_en){
         DRAW_Icon(OUTPUT_ICON_POS, (uint8_t *)icon_out, RED);
     }else{
-        LCD_FillRect(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);        
+        DRAW_FillRect(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);        
     }
 }
 

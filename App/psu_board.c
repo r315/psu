@@ -380,7 +380,7 @@ void SPI_Init(void){
                 //SPI_CR1_DFF |
                 SPI_CR1_MSTR;
 
-    SPI2->CR2 = SPI_CR2_SSOE | SPI_CR2_TXDMAEN;
+    SPI2->CR2 = SPI_CR2_SSOE;
 
     SPI2->CR1 |= SPI_CR1_SPE;
 
@@ -431,13 +431,20 @@ void SPI_WriteDMA(uint16_t *src, uint32_t len){
         spi2handle.dma->CCR |= DMA_CCR_MINC;
     }
 
+    SPI2->CR2 |= SPI_CR2_TXDMAEN;
+
     spi2handle.count = len;    
     spi2handle.dma->CMAR = (uint32_t)src;
     spi2handle.dma->CNDTR = (spi2handle.count > 0x10000) ? 0xFFFF : spi2handle.count;
     
     spi2handle.dma->CCR |= DMA_CCR_EN;
+}
 
-    while(spi2handle.count);
+/**
+ * @brief End of transfer callback
+ * */
+__weak void spi_eot(void){
+
 }
 
 /**
@@ -462,8 +469,10 @@ void DMA1_Channel5_IRQHandler(void){
             }
             /* Restore 8bit Spi */
 	        SPI2->CR1 &= ~(SPI_CR1_SPE | SPI_CR1_DFF);
-	        SPI2->CR1 |= SPI_CR1_SPE;            
+	        SPI2->CR1 |= SPI_CR1_SPE;
+            SPI2->CR2 &= ~(SPI_CR2_TXDMAEN);
             spi2handle.count = 0;
+            spi_eot();
         }
     }
     DMA1->IFCR = DMA_IFCR_CGIF5;

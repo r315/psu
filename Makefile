@@ -183,7 +183,7 @@ C_INCLUDES =  \
 # compile gcc flags
 ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS =$(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -nostdlib -std=c99
+CFLAGS =$(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -std=c99
 CPPFLAGS =$(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
@@ -204,7 +204,7 @@ LDSCRIPT = startup/STM32F103C8Tx_FLASH.ld
 #LDSCRIPT =startup/f103c8tx_dfu.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
+LIBS =-lc -lnosys #-lm
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 

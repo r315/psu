@@ -1,4 +1,5 @@
 #include "psu.h"
+#include "draw.h"
 
 #define V_POS_OFFSET    22
 #define V1_POS          0,0
@@ -24,7 +25,7 @@ void changeBtSize(uint8_t *dst, int8_t a){
 }
 
 void ScreenCharger::redraw(void){
-    LCD_FillRect(0, 0, LCD_W, LCD_H, BLACK);
+    DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
 //TEXT_drawGfx(90,0, (uint8_t*)&icon_chr[0]);
     TEXT_SetFont(&pixelDustFont);
     TEXT_Print(V1_POS,"V1:");

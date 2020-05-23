@@ -14,7 +14,7 @@
 
 
 void ScreenPreset::createPreset(uint16_t idx, uint16_t *buf){
-char out[10];    
+char out[20];    
     if(idx == selected){
         sprintf(out, "%.1fV, %.2fA", presets[idx].voltage, presets[idx].current);
         TEXT_Print(0, 80 - 14, out);
@@ -30,7 +30,7 @@ char out[10];
 }
 
 void ScreenPreset::redraw(void){
-    LCD_FillRect(0, 0, LCD_W, LCD_H, BLACK);
+    DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
     selected = 3;
     TEXT_SetFont(PRESET_TEXT_FONT);
 

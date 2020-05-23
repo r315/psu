@@ -6,4 +6,5 @@ Debug/
 build/
 *.zip
 /deprecated/
-
+*.cfg
+*.pdn

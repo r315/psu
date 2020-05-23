@@ -1,4 +1,5 @@
 #include "psu.h"
+#include "draw.h"
 
 #define LOAD_POWER_POS       0,0
 #define LOAD_VOLTAGE_POS     88,17
@@ -42,7 +43,7 @@ void drawGraphAxis(void){
 }
 
 void ScreenLoad::redraw(void){
-    LCD_FillRect(0, 0, LCD_W, LCD_H, BLACK);
+    DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
 //TEXT_drawGfx(90,0, (uint8_t*)&icon_load[0]);
     TEXT_SetFont(&pixelDustFont);
     TEXT_Print(LOAD_POWER_POS,"00.0W");

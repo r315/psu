@@ -28,12 +28,12 @@ void ScreenPsu::startValues(float v_last, float i_last) {
 }
 
 void ScreenPsu::redraw(void){
-    LCD_FillRect(0, 0, LCD_W, LCD_H, BLACK);
+    DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
     
     DRAW_Icon(PSU_ICON_POS, (uint8_t*)&icon_psu[0], BLUE);
     
-    LCD_FillRect(0, 15, LCD_W, 1, WHITE);
-    LCD_FillRect(92, 0, 1, LCD_H, WHITE);
+    DRAW_FillRect(0, 15, LCD_W, 1, WHITE);
+    DRAW_FillRect(92, 0, 1, LCD_H, WHITE);
 
     printVoltage(0.0f, NO_BLANK);
     printCurrent(0.0f, NO_BLANK);
@@ -96,11 +96,7 @@ void ScreenPsu::printCurrent(float value, int8_t hide_digit){
 void ScreenPsu::printPower(float v, float i){
 float p = i * v;
     
-    if(p < 10.0f){
-        sprintf(gout, "0%.1fW", p);    
-    }else{
-        sprintf(gout, "%.1fW", p);
-    }
+    sprintf(gout, "%.1fW ", p);    
 
     TEXT_SetFont(PSU_TEXT_FONT);
     TEXT_SetPalette(txt_pal);
@@ -122,10 +118,7 @@ float i, v;
             }       
         }
     }
-
-    if(st->flags & STATE_FLAG_DISPLAY)
-        return;
-
+    
     if(mode_set == SET_OFF){        
         v = st->adc_v1 * VOLTAGE_PRECISION;
         i = st->adc_i1 * CURRENT_PRECISION;        
