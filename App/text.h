@@ -8,25 +8,19 @@ extern "C" {
 #include <stdint.h>
 #include <font.h>
 
-
 #define MAX_LINE_CHARS 16
-#define DEFAULT_FONT &font_default //&font_seven_seg
+#define DEFAULT_FONT        &defaultFont
 
-
-void SEVEN_Double(uint16_t x, uint16_t y, double val);
-void SEVEN_Init(void);
-void SEVEN_PrintAmps(double amps);
-void SEVEN_PrintVolts(double volts);
-
-
-void TEXT_print(uint16_t, uint16_t, const char*);
 void TEXT_Init(void);
-void TEXT_setFont(font_t *font);
-void TEXT_dro(uint16_t x, uint16_t y, float val, uint8_t precision, int8_t blank_place);
-void TEXT_drawGfx(uint16_t x, uint16_t y, uint8_t *data);
+void TEXT_Print(uint16_t, uint16_t, const char*);
+uint8_t TEXT_Char(uint16_t x, uint16_t y, uint8_t c);
+void TEXT_TileChar(uint16_t *tile, uint8_t c);
+void TEXT_SetFont(font_t *font);
+void TEXT_SetPalette(uint16_t *palette);
 
 extern font_t font_seven_seg;
-extern font_t font_default;
+extern font_t defaultFont;
+
 #ifdef __cplusplus
 }
 #endif

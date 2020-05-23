@@ -24,8 +24,7 @@ extern "C" {
 #define UPDATE_INTERVAL             100
 
 #define LOAD_ICON_POS               70,0
-#define PSU_ICON_POS                90,0
-#define OUTPUT_ICON_POS             110,0
+#define OUTPUT_ICON_POS             160-16,0
 #define MODE_ICONS_AREA_POS_S       70,0
 #define MODE_ICONS_AREA_SIZE        40,8
 
@@ -37,6 +36,8 @@ extern "C" {
 
 #define CONSOLE_PROMPT              "PSU >"
 #define STATE_FLAG_DISPLAY          1   // LCD Init flag
+
+#define MAX_PRESET                  6
 
 enum SET_MODE {SET_OFF = 0, SET_M1, SET_M2};
 
@@ -69,7 +70,7 @@ typedef struct _State{
     void *ctx;
 }State;
 
-class Mode{
+class Screen{
 
 protected:
     float *set_value;
@@ -84,7 +85,7 @@ protected:
     void incrementPlace(int8_t base);
     void (*setOutput)(float val, float max, float min);
 public:
-    Mode() {}
+    Screen() {}
     /**
      * Redraws the mode screen with default values
      * called when mode is selected
@@ -99,51 +100,60 @@ public:
      * called every 100ms to process data 
      * */
     virtual void process(State *st){}
-    /**
-     * Shows power on a given location,
-     * font must be set before calliing it
-     * */
-    void printPower(uint16_t x, uint16_t y, float v, float i);
-    void printVoltage(uint16_t x, uint16_t y, float v);
-    void printCurrent(uint16_t x, uint16_t y, float i);
 };
 
-class ModePsu: public Mode{
+class ScreenPsu: public Screen{
     float set_v;
-    float set_i;        
+    float set_i;
+
+    void printVoltage(float value, int8_t hide_place);
+    void printCurrent(float value, int8_t hide_place);
+    void printPower(float v, float i);
 public:
-    ModePsu() : Mode() {}	
+    ScreenPsu() : Screen() {}	
     void process(State *st);
     void redraw();
     void modeSet();
     void startValues(float v_last, float i_last);
 };
 
-class ModeLoad: public Mode{
+class ScreenLoad: public Screen{
 public:
-    ModeLoad() : Mode(){}	
+    ScreenLoad() : Screen(){}	
     void process(State *st);
     void redraw();
     void modeSet();
 };
 
-class ModeCharger: public Mode{
+class ScreenCharger: public Screen{
     uint8_t bt_size;
 public:
-    ModeCharger() : Mode(){}	
+    ScreenCharger() : Screen(){}	
     void process(State *st);
     void redraw();
     void modeSet();
 };
 
+typedef struct preset{
+    float voltage;
+    float current;
+}preset_t;
 
+class ScreenPreset: public Screen{
+private:
+    uint8_t selected;
+    preset_t presets[MAX_PRESET];
+    void createPreset(uint16_t idx, uint16_t *buf);
+public:
+    ScreenPreset() : Screen(){}	
+    void process(State *st);
+    void redraw();
+    void modeSet();
+};
 
-void toggleOutput(void);
-void setOutputEnable(uint8_t en);
-void setMode(uint8_t mode);
-void cycleMode(void);
-void setOutputVoltage(float val, float max, float min);
-void setOutputCurrent(float val, float max, float min);
+void app_setOutputEnable(uint8_t en);
+void app_setOutputVoltage(float val, float max, float min);
+void app_setOutputCurrent(float val, float max, float min);
 
 extern const uint8_t icon_out[];
 extern const uint8_t icon_psu[];

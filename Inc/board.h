@@ -14,8 +14,8 @@ extern "C" {
 #include "st7735.h"
 
 
-#define VOLTAGE_PERCISION           0.005f  //MAX_VOLTAGE / 2^ADC_RESOLUTION
-#define CURRENT_PERCISION           0.0008f
+#define VOLTAGE_PRECISION           0.005f  //MAX_VOLTAGE / 2^ADC_RESOLUTION
+#define CURRENT_PRECISION           0.0008f
 #define MAX_VOLTAGE                 14.0f
 #define MIN_VOLTAGE                 1.2f
 #define MAX_CURRENT                 3.00f
@@ -26,6 +26,16 @@ extern "C" {
 /**
  * HW symbols for button handling
  * */
+#if 1
+#define BUTTON_UP       (1<<1)
+#define BUTTON_DOWN     (1<<0)
+#define BUTTON_LEFT  	(1<<3)
+#define BUTTON_RIGHT 	(1<<2)
+#define BUTTON_SET  	(1<<4)
+#define BUTTON_MODE     (1<<5)
+#define BUTTON_OUT      (1<<6)
+#define BUTTON_MEM      (1<<7)
+#else
 #define BUTTON_UP       (1<<0)
 #define BUTTON_DOWN     (1<<1)
 #define BUTTON_LEFT  	(1<<2)
@@ -34,6 +44,7 @@ extern "C" {
 #define BUTTON_MODE     (1<<5)
 #define BUTTON_OUT      (1<<6)
 #define BUTTON_MEM      (1<<7)
+#endif
 
 #define BUTTON_HW_INIT
 #define BUTTON_HW_READ ~EXPANDER_Read()
