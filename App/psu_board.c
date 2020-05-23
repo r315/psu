@@ -425,7 +425,8 @@ void SPI_WriteDMA(uint16_t *src, uint32_t len){
     SPI2->CR1 |= SPI_CR1_DFF | SPI_CR1_SPE;
 
     if(len & 0x80000000){
-         len &= 0x7FFFFFFF;
+        len &= 0x7FFFFFFF;
+        spi2handle.dma->CCR &= ~(DMA_CCR_MINC);
     }else{
         spi2handle.dma->CCR |= DMA_CCR_MINC;
     }
@@ -445,16 +446,13 @@ void SPI_WriteDMA(uint16_t *src, uint32_t len){
 void DMA1_Channel5_IRQHandler(void){
 
     if(DMA1->ISR & DMA_ISR_TCIF5){
-        spi2handle.dma->CCR &= ~(DMA_CCR_EN | DMA_CCR_MINC);
+        spi2handle.dma->CCR &= ~(DMA_CCR_EN);
         
         if(spi2handle.count > 0x10000){
             spi2handle.count -= 0x10000;
             spi2handle.dma->CNDTR = (spi2handle.count > 0x10000) ? 0xFFFF : spi2handle.count;
             spi2handle.dma->CCR |= DMA_CCR_EN;
         }else{
-            /* Restore 8bit Spi */
-	        SPI2->CR1 &= ~(SPI_CR1_SPE | SPI_CR1_DFF);
-	        SPI2->CR1 |= SPI_CR1_SPE;
             // wait for the last byte to be transmitted
             while(SPI2->SR & SPI_SR_BSY){
                 if(SPI2->SR & SPI_SR_OVR){
@@ -462,6 +460,9 @@ void DMA1_Channel5_IRQHandler(void){
                     spi2handle.count = SPI2->DR;
                 }
             }
+            /* Restore 8bit Spi */
+	        SPI2->CR1 &= ~(SPI_CR1_SPE | SPI_CR1_DFF);
+	        SPI2->CR1 |= SPI_CR1_SPE;            
             spi2handle.count = 0;
         }
     }
