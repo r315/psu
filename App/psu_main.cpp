@@ -1,6 +1,6 @@
 
 #include "psu.h"
-
+#include "draw.h"
 
 /**
  * HW modules configuration
@@ -13,15 +13,38 @@
  * */
 
 static State psu_state;
+static ScreenPsu cpsu;
+static ScreenLoad cload;
+static ScreenCharger ccharger;
+static ScreenPreset preset;
 
-static ModePsu cpsu;
-static ModeLoad cload;
-static ModeCharger ccharger;
-
-static Mode *modes[] = {
+static Screen *modes[] = {
     &cpsu,
     &cload,
-    &ccharger      
+    &ccharger,
+    &preset
+};
+
+static Console console;
+static CmdHelp help;
+static CmdAdc adc1;
+static CmdPwm pwm;
+static CmdDfu dfu;
+static CmdPwr pwr;
+static CmdOut out;
+static CmdIo io;
+static CmdMode mode;
+
+static ConsoleCommand *commands[] = {
+    &help,
+    &adc1,
+    &pwm,
+    &dfu,
+    &pwr,
+    &out,
+    &io,
+    &mode,
+    NULL
 };
 
 static calibration_t default_cal_data[PWM_NUM_CH] = { 
@@ -32,33 +55,33 @@ static calibration_t default_cal_data[PWM_NUM_CH] = {
 };
 
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
-uint16_t pwm_value = (x - in_min) * (psu_state.cal_data[ch].max - psu_state.cal_data[ch].min) / (in_max - in_min) + psu_state.cal_data[ch].min;
+    uint16_t pwm_value = (x - in_min) * (psu_state.cal_data[ch].max - psu_state.cal_data[ch].min) / (in_max - in_min) + psu_state.cal_data[ch].min;
     PWM_Set(PWM_CH_VOLTAGE, pwm_value);
 }
 
-void setOutputVoltage(float val, float max, float min){
+void app_setOutputVoltage(float val, float max, float min){
     mapAndSetPwm(val, max, min, PWM_CH_VOLTAGE);
 }
 
-void setOutputCurrent(float val, float max, float min){
+void app_setOutputCurrent(float val, float max, float min){
     mapAndSetPwm(val, max, min, PWM_CH_CURRENT);
 }
 
-void setInputLoad(float val, float max, float min){
+void app_setInputLoad(float val, float max, float min){
     mapAndSetPwm(val, max, min, PWM_CH_LOAD);
 }
 
-
-void setOutputEnable(uint8_t en){
+void app_setOutputEnable(uint8_t en){
     psu_state.output_en = en;
+    
     if(psu_state.output_en){
-        TEXT_drawGfx(OUTPUT_ICON_POS, (uint8_t*)&icon_out[0]);
+        DRAW_Icon(OUTPUT_ICON_POS, (uint8_t *)icon_out, RED);
     }else{
-        LCD_FillRect(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);
+        LCD_FillRect(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);        
     }
 }
 
-void selectMode(uint8_t mode){
+void app_selectMode(uint8_t mode){
     
     if(mode >= MAX_MODES){
         return;
@@ -69,29 +92,25 @@ void selectMode(uint8_t mode){
     // Mode clears screen, so must redraw output icon,
     // only if active
     if(psu_state.output_en)
-        setOutputEnable(psu_state.output_en);
+        app_setOutputEnable(psu_state.output_en);
 }
 
-void cycleMode(void){
+void app_cycleMode(void){
 uint8_t mode = psu_state.mode + 1;
     
     if(mode == MAX_MODES ){
         mode = 0;
     }
     
-    selectMode(mode);
+    app_selectMode(mode);
 }
 
-void toggleOutput(void){
-    setOutputEnable(!psu_state.output_en);
-}
-
-void checkButtons(){
+void app_checkButtons(){
     BUTTON_Read();
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         switch(BUTTON_VALUE){
-            case BUTTON_MODE: cycleMode(); break;
-            case BUTTON_OUT: toggleOutput(); break;
+            case BUTTON_MODE: app_cycleMode(); break;
+            case BUTTON_OUT: app_setOutputEnable(!psu_state.output_en); break;
             case BUTTON_SET: modes[psu_state.mode]->modeSet(); break;
         }
     }
@@ -100,7 +119,7 @@ void checkButtons(){
 /**
  * ADC End of convertion callback
  * */
-void adcEocCb(uint16_t *res){
+static void app_adcEocCb(uint16_t *res){
 uint32_t *src = (uint32_t*)res;
     for (uint32_t i = 0; i < ADC_SEQ_LEN; i++, src++)
     {
@@ -114,14 +133,13 @@ uint32_t *src = (uint32_t*)res;
  * ensures operation of lcd update and button handling
  * */
 void tskPsu(void *ptr){
-static TickType_t xLastWakeTime;
-    TEXT_Init();
+static TickType_t xLastWakeTime;    
 
-    selectMode(psu_state.mode);
-    ADC_SetCallBack(adcEocCb);   
+    app_selectMode(psu_state.mode);
+    ADC_SetCallBack(app_adcEocCb);
 
     while(1){
-        checkButtons();
+        app_checkButtons();
         DBG_PIN_HIGH;
         modes[psu_state.mode]->process(&psu_state);
         DBG_PIN_LOW;        
@@ -129,27 +147,11 @@ static TickType_t xLastWakeTime;
     }
 }
 
-void tskConsole(void *ptr){
-Console console;
-CmdHelp help;
-CmdAdc adc1;
-CmdPwm pwm;
-CmdDfu dfu;
-CmdPwr pwr;
-CmdOut out;
-CmdIo io;
-CmdMode mode;
+void tskCmdLine(void *ptr){
     
     vcom.init();    
     console.init(&vcom, CONSOLE_PROMPT);
-    console.addCommand(&help);
-    console.addCommand(&adc1);
-    console.addCommand(&pwm);
-    console.addCommand(&dfu);
-    console.addCommand(&pwr); 
-    console.addCommand(&out); 
-    console.addCommand(&io);
-    console.addCommand(&mode); 
+    console.registerCommandList(commands);
 
     while(1){
         console.process();
@@ -166,16 +168,18 @@ uint16_t pwm_start_values[PWM_NUM_CH];
         pwm_start_values[i] = psu_state.cal_data[i].start;
     }
 
-    cpsu.startValues(MIN_VOLTAGE, MIN_CURRENT );
+    cpsu.startValues(MIN_VOLTAGE, MIN_CURRENT);
 
     BOARD_Init();
 
     PWM_Init(pwm_start_values);
     ADC_Init(ADC_INTERVAL);
 
+    TEXT_Init();
+
     psu_state.mode = 0;
 
-    xTaskCreate( tskConsole, "CLI", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
+    xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
 }
 
