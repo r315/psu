@@ -47,11 +47,12 @@ static ConsoleCommand *commands[] = {
     NULL
 };
 
+// min, max, start
 static calibration_t default_cal_data[PWM_NUM_CH] = { 
-    {0, 4096, 0 },
-    {0, 4096, 0 },
-    {0, 4096, 0 },    
-    {0, 1012, 1012},
+    {0, (1<<PWM_RESOLUTION), 100 },
+    {0, (1<<PWM_RESOLUTION), 100 },
+    {0, (1<<PWM_RESOLUTION), 100 },    
+    {0, (1<<PWM_RESOLUTION), 100 },
 };
 
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){

@@ -96,8 +96,7 @@ void PWM_Set(uint8_t ch, uint16_t newvalue){
     if(newvalue >  PWM_MAX_VALUE || newvalue < PWM_MIN_VALUE)    
         return;
 
-    uint32_t *ccr = (uint32_t*)&TIM3->CCR1;
-    ccr[ch&3] = newvalue;    
+    ((uint32_t*)&TIM3->CCR1)[ch & 3] = newvalue;
 }
 
 uint16_t PWM_Get(uint8_t ch){
