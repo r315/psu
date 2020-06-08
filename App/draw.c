@@ -61,6 +61,40 @@ void DRAW_FillRect(uint16_t x, uint16_t y,  uint16_t w, uint16_t h, uint16_t col
 }
 
 /**
+ * @brief draw vertical line
+ * 
+ * @param x,y : start x,y position
+ * @param h : line hight
+ * @param color : line color
+ * */
+void DRAW_VLine(uint16_t x, uint16_t y, uint16_t h, uint16_t color){
+    DRAW_FillRect(x, y, 1, h, color);
+}
+
+/**
+ * @brief draw horizontal line
+ * 
+ * @param x,y : start x,y position
+ * @param h : line width
+ * @param color : line color
+ * */
+void DRAW_HLine(uint16_t x, uint16_t y, uint16_t w, uint16_t color){
+    DRAW_FillRect(x, y, w, 1, color);
+}
+
+/**
+ * @brief 
+ * 
+ * @param x,y : start x,y position
+ * @param h : line width
+ * @param color : line color
+ * */
+void DRAW_Pixel(uint16_t x, uint16_t y, uint16_t color){
+    while(lcd_busy);
+    LCD_Pixel(x, y, color);
+}
+
+/**
  * @brief Converts an 1bpp icon to single 16bit color bitmap.
  * Note: icon data should be left aligned
  * 
