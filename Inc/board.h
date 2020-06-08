@@ -200,6 +200,7 @@ void PWM_Set(uint8_t, uint16_t);
  * */
 uint16_t PWM_Get(uint8_t);
 
+#ifndef USE_ADCMUX
 /**
  * ADC
  *
@@ -216,6 +217,14 @@ uint16_t PWM_Get(uint8_t);
 #define ADC_CH_CURRENT      4
 #define ADC_CH_V_LOAD       5
 #define ADC_CH_I_LOAD       6
+#else
+/**
+ * ADC Channel for adc mux
+ * */
+#define ADCMUX_CHANNEL      0
+
+#endif
+
 
 
 
@@ -224,31 +233,53 @@ uint16_t PWM_Get(uint8_t);
  * */
 void BOARD_Init(void);
 
-/* ***********************************************************
- * ADC is triggered by TIM3 TRGO and performs dual 
- * simultaneous convertion. it converts 4 channels and transfers 
- * the result to memory using DMA 
+/**
+ * @brief Configure ADC in continuos mode using TIM2.
+ * Simultaneous convertions are taken and transffered using DMA.
+ * Single conversion is performed if adc mux is used
  * 
  * \param ms    Time between convertions
- ************************************************************ */
+ **/
 void ADC_Init(uint16_t);
 
-/* ***********************************************************
- * Configure callback for end of transfer of ADC convertions
+#ifndef USE_ADCMUX
+/**
+ *  @brief Configure callback for end of transfer of ADC convertions
  * 
- * \param  cb    call back function void cb(uin16_t *adc_convertions);
+ * \param  cb : call back function for eot
  * \return none
  ************************************************************ */
 void ADC_SetCallBack(void (*)(uint16_t*));
 
-/* ***********************************************************
- * Get the last performed convertions
+/**
+ * @brief Get the last performed convertions
  * Not thread safe
  * \param  none
  * \return uint16_t *last_adc_convertions 
  ************************************************************ */
 uint16_t *ADC_LastConvertion(void);
+#else
+/**
+ * @brief Configure callback for end of ADC convertion
+ * 
+ * \param  cb : call back function for eoc
+ * \return none
+ **/
+void ADC_SetCallBack(void (*)(uint16_t));
 
+/**
+ * @brief Pause ADC conversions
+ * 
+ * \return : 0: fail, 1: paused
+ **/
+uint8_t ADC_Pause(void);
+
+/**
+ * @brief Resume ADC conversions
+ **/
+void ADC_Resume(void);
+
+#endif
 
 /** ***********************************************************
  *

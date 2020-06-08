@@ -22,8 +22,14 @@ static char gout[7];
 static uint16_t vdro_pal[2] = {BLACK, GREEN};
 static uint16_t idro_pal[2] = {BLACK, YELLOW};
 static uint16_t txt_pal[2] = {BLACK, PINK};
+static const uint8_t adc_seq[] = {0 , 1};
 
 volatile uint16_t v1,v2, update;
+
+extern "C" void psu_cb(uint16_t *data){
+    v1 = data[0];
+    v2 = data[1];
+    update = true;
 }
 
 void ScreenPsu::initPreSetValues(float v_set, float i_set){
@@ -35,7 +41,11 @@ void ScreenPsu::init(void){
 
     update = false;
 
+    ADCMUX_StartSequence((uint8_t*)adc_seq, sizeof(adc_seq), psu_cb);
+
     redraw();
+}
+
 void ScreenPsu::redraw(void){
     DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
 

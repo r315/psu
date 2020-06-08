@@ -118,6 +118,7 @@ void app_checkButtons(){
     }
 }
 
+#ifndef USE_ADCMUX
 /**
  * ADC End of convertion callback
  * */
@@ -128,6 +129,7 @@ uint32_t *src = (uint32_t*)res;
         psu_state.adcvalues[i] = *src;
     }
 }
+#endif
 
 /**
  * Called every 10ms by Timer4 interrupt, as console
@@ -138,7 +140,9 @@ void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;    
 
     app_selectMode(psu_state.mode);
+#ifndef USE_ADCMUX
     ADC_SetCallBack(app_adcEocCb);
+#endif
 
     while(1){
         app_checkButtons();

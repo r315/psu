@@ -190,10 +190,10 @@ StdOut vcom = {
 #define ADC_SMPR2_(ch, cy)                   (cy << (ch * 3))
 #define ADC_CH_IN(ch)                        (0xf << (ch*4))
 
+#ifndef USE_ADCMUX
 static void (*eotcb)(uint16_t*);
 // Each index holds two conversion results
 static uint32_t adcres[ADC_SEQ_LEN];
-
 /* ***********************************************************
  * ADC is triggered by TIM2 TRGO and performs dual 
  * simultaneous convertion on regular simultaneous mode. 
@@ -204,7 +204,6 @@ static uint32_t adcres[ADC_SEQ_LEN];
  * 
  * \param ms    Time between convertions
  ************************************************************ */
-
 void ADC_Init(uint16_t ms){
 
     /* Configure DMA Channel1*/
@@ -324,11 +323,94 @@ void DMA1_Channel1_IRQHandler(void){
     DMA1->IFCR = DMA_IFCR_CGIF1;    // Clear DMA Flags TODO: ADD DMA Error handling ?
 }
 
-
 void ADC_SetCallBack(void (*cb)(uint16_t*)){
     eotcb = cb;
 }
+#else /* USE_ADCMUX */
+static void (*g_adceoc)(uint16_t);
+/* ***********************************************************
+ * @brief ADC is triggered by TIM2 TRGO and performs single convertion 
+ * on one channel. The result is placed on destination using the EOC interrupt
+ * 
+ * @param ms : Time between convertions
+ ************************************************************ */
+void ADC_Init(uint16_t ms){
+    /* Configure Timer 2 */
+    RCC->APB1ENR  |= RCC_APB1ENR_TIM2EN;    // Enable Timer 2
+    RCC->APB1RSTR |= RCC_APB1ENR_TIM2EN;    // Reset timer registers
+    RCC->APB1RSTR &= ~RCC_APB1ENR_TIM2EN;
 
+    TIM2->CCMR1 = (3<<TIM_CCMR1_OC2M_Pos);  // Toggle OC2REF on match
+    TIM2->CCER = TIM_CCER_CC2E;             // Enable compare output for CCR2
+    TIM2->PSC = (SystemCoreClock/10000) - 1; // Timer counts 100us units
+
+    TIM2->ARR = (ms * 5) - 1;               // Due to OC2REF toggle, timer must count half of 100us units
+    TIM2->CCR2 = TIM2->ARR;
+
+    /* Configure ADC 1, sinble cobvertion and EOC interrupt */
+    RCC->APB2ENR  |= RCC_APB2ENR_ADC1EN;     // Enable Adc1
+    RCC->APB2RSTR |= RCC_APB2ENR_ADC1EN;
+    RCC->APB2RSTR &= ~RCC_APB2ENR_ADC1EN;
+
+    ADC1->CR2 = ADC_CR2_ADON;               // Turn on ADC1
+    ADC1->CR2 |=
+            ADC_CR2_EXTTRIG  |              // Only the rising edge of external signal can start the conversion
+            //ADC_CR2_EXTSEL_2 |            // 0b100 Select TIM3_TRGO as Trigger source
+            ADC_CR2_EXTSEL_1 |              // 0b011 Select TIM2_CC2 Event
+            ADC_CR2_EXTSEL_0 ;              //
+
+    ADC1->CR1 = ADC_CR1_EOCIE;
+
+    ADC1->SQR1 = ADC_SQR1_L_(1 - 1);                // number of channels on sequence
+    ADC1->SQR3 = ADC_SQR3_SQ1_(ADCMUX_CHANNEL);     // Set channel to be converted                
+    ADC1->SMPR2 = ADC_SMPR2_(ADCMUX_CHANNEL, 7);    // set sample time to 239.5 cycles
+
+    g_adceoc = NULL;                           // No callback configured
+
+    //NVIC_SetPriority(DMA1_Channel1_IRQn, 0); // Highest priority
+    NVIC_EnableIRQ(ADC1_2_IRQn);
+
+    TIM2->CR1 |= TIM_CR1_CEN;
+}
+
+void ADC_SetCallBack(void (*cb)(uint16_t)){
+    ADC_Pause();
+    if(ADC1->SR & ADC_SR_EOC){
+        return;
+    }
+    g_adceoc = cb;
+    ADC_Resume();
+}
+
+uint8_t ADC_Pause(void){
+    uint16_t timeout;
+    if(TIM2->CR1 & TIM_CR1_CEN){
+        TIM2->CR1 &= ~(TIM_CR1_CEN);
+        timeout = 1000;
+        while(ADC1->SR & ADC_SR_EOC){
+            if(--timeout == 0){               
+                return 0;
+            }
+        }
+    }
+    return 1;    
+}
+
+void ADC_Resume(void){
+    TIM2->CR1 |= TIM_CR1_CEN;
+}
+/**
+ * 
+ * */
+void ADC1_2_IRQHandler(void){
+    if(ADC1->SR & ADC_SR_EOC){
+        uint16_t result = ADC1->DR;
+        if(g_adceoc != NULL)
+            g_adceoc(result);
+    }
+    //DBG_PIN_TOGGLE;
+}
+#endif
 /**
  * RTC
  * 
