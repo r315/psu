@@ -4,6 +4,7 @@
 #include "draw.h"
 #include "text.h"
 #include "adcmux.h"
+#include "graph.h"
 
 #define VOLTAGE_DRO_POS_X           0
 #define VOLTAGE_DRO_POS_Y           16
@@ -22,6 +23,7 @@ static char gout[7];
 static uint16_t vdro_pal[2] = {BLACK, GREEN};
 static uint16_t idro_pal[2] = {BLACK, YELLOW};
 static uint16_t txt_pal[2] = {BLACK, PINK};
+static uint16_t graph_pal[] = {RGB565(5,10,5), RED, GREEN, YELLOW};
 static const uint8_t adc_seq[] = {0 , 1};
 
 volatile uint16_t v1,v2, update;
@@ -43,6 +45,7 @@ void ScreenPsu::init(void){
 
     ADCMUX_StartSequence((uint8_t*)adc_seq, sizeof(adc_seq), psu_cb);
 
+    graph.init(93, LCD_H - 32, LCD_W - 93, 30, graph_pal);
     redraw();
 }
 
@@ -57,6 +60,7 @@ void ScreenPsu::redraw(void){
     printVoltage(set_v, NO_BLANK);
     printCurrent(set_i, NO_BLANK);
     printPower(set_v, set_i);
+    graph.redraw();
 }
 
 void ScreenPsu::modeSet(void){
@@ -165,6 +169,10 @@ float i, v;
                 printPower(v, i);        
                 printVoltage(v, NO_BLANK);
                 printCurrent(i, NO_BLANK);
+                graph.addPoint(0x80 | (int)v, 0);
+                graph.addPoint(0xC0 | (int)i, 1);
+                graph.nextPoint();
+                graph.update();                
                 update = false;
             }
             break;

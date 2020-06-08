@@ -15,15 +15,11 @@
 ######################################
 TARGET = app_psu
 
-
 ######################################
 # building variables
 ######################################
 # debug build?
-DEBUG = 1
-# optimization
-OPT = -Og
-
+DEBUG =1
 
 #######################################
 # paths
@@ -48,7 +44,7 @@ PERIFLIB_PATH =
 BUILD_DIR :=build
 
 ######################################
-# source
+# sources
 ######################################
 # C sources
 C_SOURCES =  \
@@ -73,13 +69,9 @@ $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c \
-$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c \
-$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c \
-$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
-$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
@@ -94,7 +86,6 @@ $(FREERTOS_DIR)/tasks.c \
 $(FREERTOS_DIR)/timers.c \
 $(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
 
-
 CPP_SOURCES = \
 $(wildcard $(APP_SRC_DIR)/*.cpp) \
 $(wildcard $(APP_SRC_DIR)/screen/*.cpp) \
@@ -105,12 +96,35 @@ $(LIBEMB_PATH)/console/console.cpp \
 ASM_SOURCES =  \
 startup/startup_stm32f103xb.s
 
+######################################
+# Includes
+######################################
+
+# AS includes
+AS_INCLUDES = 
+
+# C includes
+C_INCLUDES =  \
+-IInc \
+-ISrc \
+-I$(APP_SRC_DIR) \
+-I$(APP_SRC_DIR)/components \
+-I$(APP_SRC_DIR)/console \
+-I"$(LIBEMB_PATH)"/include \
+-I$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Inc \
+-I$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
+-I$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Inc \
+-I$(REPOSITORY)Drivers/CMSIS/Device/ST/STM32F1xx/Include \
+-I$(REPOSITORY)Drivers/CMSIS/Include \
+-I$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
+-I$(FREERTOS_DIR)/include \
+-I$(FREERTOS_DIR)/CMSIS_RTOS \
+-I$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
 
 ######################################
 # firmware library
 ######################################
 PERIFLIB_SOURCES = 
-
 
 #######################################
 # binaries
@@ -136,7 +150,7 @@ CPU = -mcpu=cortex-m3
 # NONE for Cortex-M0/M0+/M3
 
 # float-abi
-FLOAT-ABI = -u_printf_float
+FLOAT-ABI =-u_printf_float
 
 # mcu
 MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
@@ -152,44 +166,21 @@ C_DEFS =  \
 -DCONSOLE_BLOCKING \
 -DUSE_COURIER_FONT \
 -DUSE_GROTESKBOLD_FONT \
-
-
-# AS includes
-AS_INCLUDES = 
-
-# C includes
-C_INCLUDES =  \
--IInc \
--ISrc \
--I$(APP_SRC_DIR) \
--I$(APP_SRC_DIR)/components \
--I$(APP_SRC_DIR)/console \
--I"$(LIBEMB_PATH)"/include \
--I$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Inc \
--I$(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
--I$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Inc \
--I$(REPOSITORY)Drivers/CMSIS/Device/ST/STM32F1xx/Include \
--I$(REPOSITORY)Drivers/CMSIS/Include \
--I$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
--I$(FREERTOS_DIR)/include \
--I$(FREERTOS_DIR)/CMSIS_RTOS \
--I$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
+-DUSE_ADCMUX \
 
 # compile gcc flags
-ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
-
-CFLAGS =$(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -std=c99
-CPPFLAGS =$(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
-
 ifeq ($(DEBUG), 1)
-CFLAGS +=-g -gdwarf-2
-CPPFLAGS +=-g -gdwarf-2
+OPT =-Og -g -gdwarf-2
+else
+OPT =-Os
 endif
 
+ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections
+CFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections -std=c99
+CPPFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections
 
 # Generate dependency information
 #CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst))
-
 
 #######################################
 # LDFLAGS
@@ -204,8 +195,13 @@ LIBDIR =
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).bin #$(BUILD_DIR)/$(TARGET).hex
+all: size $(BUILD_DIR)/$(TARGET).bin #$(BUILD_DIR)/$(TARGET).hex
 #@echo $(OBJECTS)
+
+size: $(BUILD_DIR)/$(TARGET).elf
+	@echo "--- Size ---"
+	$(SZ) -A -x $<
+	$(SZ) -B $<
 
 $(TARGET).cfg:
 	@echo "Creating opencod configuration file"
@@ -255,9 +251,6 @@ $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) #Makefile
 	@echo "--- Linking ---"
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
-	@echo "--- Size ---"
-	$(SZ) -A -x $@
-	$(SZ) -B $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@

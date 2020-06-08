@@ -18,6 +18,7 @@ extern "C" {
 #include "cmdout.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "graph.h"
 
 #define ADC_INTERVAL                100 //ms
 #define APP_INTERVAL                10
@@ -51,7 +52,7 @@ typedef struct _State{
     uint8_t mode;
     uint8_t output_en;
     union{
-        uint32_t adcvalues[ADC_SEQ_LEN];
+        //uint32_t adcvalues[ADC_SEQ_LEN];
         struct {
             uint16_t adc_v1;
             uint16_t adc_i1;
@@ -105,7 +106,7 @@ public:
 class ScreenPsu: public Screen{
     float set_v;
     float set_i;
-
+    Graph graph;
     void printVoltage(float value, int8_t hide_place);
     void printCurrent(float value, int8_t hide_place);
     void printPower(float v, float i);
