@@ -3,6 +3,7 @@
 #include "psu.h"
 #include "draw.h"
 #include "text.h"
+#include "adcmux.h"
 
 #define VOLTAGE_DRO_POS_X           0
 #define VOLTAGE_DRO_POS_Y           16
