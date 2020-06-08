@@ -2,6 +2,8 @@
 #include "board.h"
 #include "draw.h"
 
+#ifdef ENABLE_DFU
+
 void CmdDfu::help(void){ 
 //console->print("Adc Command\n");
 }
@@ -16,3 +18,5 @@ char CmdDfu::execute(void *ptr){
     
     return CMD_OK; 
 }
+
+#endif

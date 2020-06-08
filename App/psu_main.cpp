@@ -29,21 +29,25 @@ static Console console;
 static CmdHelp help;
 static CmdAdc adc1;
 static CmdPwm pwm;
-static CmdDfu dfu;
 static CmdPwr pwr;
 static CmdOut out;
 static CmdIo io;
 static CmdMode mode;
+#ifdef ENABLE_DFU
+static CmdDfu dfu;
+#endif
 
 static ConsoleCommand *commands[] = {
     &help,
     &adc1,
     &pwm,
-    &dfu,
     &pwr,
     &out,
     &io,
     &mode,
+#ifdef ENABLE_DFU
+    &dfu,
+#endif
     NULL
 };
 
