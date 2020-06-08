@@ -12,10 +12,8 @@
 #define LOAD_GRAPH_H         20
 #define LOAD_GRAPH_W         70
 
-uint8_t graph_data[LOAD_GRAPH_W];
-
 void plotPoint(uint8_t x, uint8_t y){
-    if(graph_data[x] > 0){
+   /* if(graph_data[x] > 0){
         LCD_Pixel(x, graph_data[x], BLACK);
     }
     if(y > LOAD_GRAPH_H){
@@ -23,7 +21,7 @@ void plotPoint(uint8_t x, uint8_t y){
     }
     y = LOAD_GRAPH_Y + LOAD_GRAPH_H - y;
     graph_data[x] = y;
-    LCD_Pixel(LOAD_GRAPH_X + x, y, WHITE);
+    LCD_Pixel(LOAD_GRAPH_X + x, y, WHITE); */
 }
 
 void drawHVLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2){
@@ -59,16 +57,16 @@ void ScreenLoad::redraw(void){
 }
 
 void ScreenLoad::modeSet(){
-    if(mode_set == SET_OFF){
-        mode_set = SET_M1;
+    if(mode_state == MODEST_NORMAL){
+        mode_state = MODEST_SET_V;
     }else {
-        mode_set = SET_OFF;
+        mode_state = MODEST_NORMAL;
     }
 }
 
 void ScreenLoad::process(State *st){
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
-        if(mode_set){
+        if(mode_state){
             count = 0;
             switch(BUTTON_VALUE){
                 case BUTTON_SET: count = BLINK_TIME_MASK; break;
@@ -80,11 +78,11 @@ void ScreenLoad::process(State *st){
         }
     }
 
-    if(mode_set == SET_OFF){
+    if(mode_state == MODEST_NORMAL){
         //uint16_t *p = &st->adc_v1, i;
         //TEXT_SetFont(&pixelDustFont);        
         //printCurrent(I_POS, st->adc_i1 * CURRENT_PRECISION);
-    }else if(mode_set == SET_M1){
+    }else if(mode_state == MODEST_SET_V){
         //TEXT_SetFont(&pixelDustFont);
         if((++count) & BLINK_TIME_MASK){
             TEXT_Print(LOAD_CURRENT_POS,"  ");
@@ -93,4 +91,8 @@ void ScreenLoad::process(State *st){
         }
     }    
     
+}
+
+void ScreenLoad::init(){
+    redraw();
 }

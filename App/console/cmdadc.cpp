@@ -6,7 +6,7 @@ console->print("Adc Command\n");
 }
 
 char CmdAdc::execute(void *ptr){ 
-uint16_t *buf;
+/* uint16_t *buf;
     do{
         console->print("\n");
         buf = ADC_LastConvertion();
@@ -15,6 +15,6 @@ uint16_t *buf;
         }      
         DelayMs(400);
     }while(!console->kbhit());
-    
+ */   
     return CMD_OK; 
 }

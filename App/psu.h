@@ -39,7 +39,7 @@ extern "C" {
 
 #define MAX_PRESET                  6
 
-enum SET_MODE {SET_OFF = 0, SET_M1, SET_M2};
+typedef enum {MODEST_NORMAL = 0, MODEST_SET_V, MODEST_SET_I, MODEST_SET_SHOW} modestate_t;
 
 typedef struct _calibration_t{
     uint16_t min;
@@ -76,14 +76,12 @@ protected:
     float *set_value;
     float set_max;
     float set_min;
-    uint8_t place;
+    uint8_t digit;
     int8_t base_place;
-    uint8_t mode_set;
+    modestate_t mode_state;
     uint8_t count;
-    uint16_t mapPwm(float x, float in_max);
-    void changePlace(int8_t sel);
-    void incrementPlace(int8_t base);
-    void (*setOutput)(float val, float max, float min);
+    void selectDigit(int8_t sel);
+    void changeDigit(int8_t base);
 public:
     Screen() {}
     /**
@@ -100,6 +98,8 @@ public:
      * called every 100ms to process data 
      * */
     virtual void process(State *st){}
+
+    virtual void init(){}
 };
 
 class ScreenPsu: public Screen{
@@ -114,7 +114,8 @@ public:
     void process(State *st);
     void redraw();
     void modeSet();
-    void startValues(float v_last, float i_last);
+    void initPreSetValues(float v_set, float i_set);
+    void init();
 };
 
 class ScreenLoad: public Screen{
@@ -123,6 +124,7 @@ public:
     void process(State *st);
     void redraw();
     void modeSet();
+    void init();
 };
 
 class ScreenCharger: public Screen{
@@ -132,6 +134,7 @@ public:
     void process(State *st);
     void redraw();
     void modeSet();
+    void init();
 };
 
 typedef struct preset{
@@ -149,11 +152,8 @@ public:
     void process(State *st);
     void redraw();
     void modeSet();
+    void init();
 };
-
-void app_setOutputEnable(uint8_t en);
-void app_setOutputVoltage(float val, float max, float min);
-void app_setOutputCurrent(float val, float max, float min);
 
 extern const uint8_t icon_out[];
 extern const uint8_t icon_psu[];
@@ -161,6 +161,27 @@ extern const uint8_t icon_load[];
 extern const uint8_t icon_chr[];
 extern const uint8_t dro_unit_v[];
 extern const uint8_t dro_unit_a[];
+
+/**
+ * @brief PSU control API
+ * */
+
+/**
+ * @brief Set/Get output enable status
+ * */
+void psu_setOutputEnable(uint8_t en);
+uint8_t psu_getOutputEnable(void);
+
+/**
+ * @brief Set/Get PSU output voltage
+ * */
+void psu_setOutputVoltage(float val, float max, float min);
+
+/**
+ * @brief Set/Get PSU output current
+ * */
+void psu_setOutputCurrent(float val, float max, float min);
+
 
 #ifdef __cplusplus
 }

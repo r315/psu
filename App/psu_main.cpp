@@ -2,15 +2,6 @@
 #include "psu.h"
 #include "draw.h"
 
-/**
- * HW modules configuration
- * TIM4     HAL Timer
- * TIM2     ADC Trigger
- * DMA1-CH1 ADC data transfer
- * DMA1-CH4 I2C data transfer
- * ADC1-2   Dual configuration for simultaneous convertion
- * TIM3     PWM signals
- * */
 
 static State psu_state;
 static ScreenPsu cpsu;
@@ -64,19 +55,22 @@ static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
     PWM_Set(PWM_CH_VOLTAGE, pwm_value);
 }
 
-void app_setOutputVoltage(float val, float max, float min){
+/**
+ * PSU public control functions
+ * */
+void psu_setOutputVoltage(float val, float max, float min){
     mapAndSetPwm(val, max, min, PWM_CH_VOLTAGE);
 }
 
-void app_setOutputCurrent(float val, float max, float min){
+void psu_setOutputCurrent(float val, float max, float min){
     mapAndSetPwm(val, max, min, PWM_CH_CURRENT);
 }
 
-void app_setInputLoad(float val, float max, float min){
+void psu_setInputLoad(float val, float max, float min){
     mapAndSetPwm(val, max, min, PWM_CH_LOAD);
 }
 
-void app_setOutputEnable(uint8_t en){
+void psu_setOutputEnable(uint8_t en){
     psu_state.output_en = en;
     
     if(psu_state.output_en){
@@ -86,6 +80,9 @@ void app_setOutputEnable(uint8_t en){
     }
 }
 
+/**
+ * Application api
+ * */
 void app_selectMode(uint8_t mode){
     
     if(mode >= MAX_MODES){
@@ -93,11 +90,11 @@ void app_selectMode(uint8_t mode){
     }
 
     psu_state.mode = mode;    
-    (modes[mode])->redraw();
+    (modes[mode])->init();
     // Mode clears screen, so must redraw output icon,
     // only if active
     if(psu_state.output_en)
-        app_setOutputEnable(psu_state.output_en);
+        psu_setOutputEnable(psu_state.output_en);
 }
 
 void app_cycleMode(void){
@@ -115,7 +112,7 @@ void app_checkButtons(){
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         switch(BUTTON_VALUE){
             case BUTTON_MODE: app_cycleMode(); break;
-            case BUTTON_OUT: app_setOutputEnable(!psu_state.output_en); break;
+            case BUTTON_OUT: psu_setOutputEnable(!psu_state.output_en); break;
             case BUTTON_SET: modes[psu_state.mode]->modeSet(); break;
         }
     }
@@ -145,9 +142,9 @@ static TickType_t xLastWakeTime;
 
     while(1){
         app_checkButtons();
-        DBG_PIN_HIGH;
+        //DBG_PIN_HIGH;
         modes[psu_state.mode]->process(&psu_state);
-        DBG_PIN_LOW;        
+        //DBG_PIN_LOW;        
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
 }
@@ -166,6 +163,9 @@ void tskCmdLine(void *ptr){
 extern "C" void app_setup(void){  
 uint16_t pwm_start_values[PWM_NUM_CH];
 
+    BOARD_Init();
+    TEXT_Init();
+
     memcpy(psu_state.cal_data, default_cal_data, sizeof(calibration_t) * PWM_NUM_CH);    
 
     for(int i = 0; i < PWM_NUM_CH ; i++)
@@ -173,14 +173,10 @@ uint16_t pwm_start_values[PWM_NUM_CH];
         pwm_start_values[i] = psu_state.cal_data[i].start;
     }
 
-    cpsu.startValues(MIN_VOLTAGE, MIN_CURRENT);
-
-    BOARD_Init();
+    cpsu.initPreSetValues(MIN_VOLTAGE, MIN_CURRENT);
 
     PWM_Init(pwm_start_values);
     ADC_Init(ADC_INTERVAL);
-
-    TEXT_Init();
 
     psu_state.mode = 0;
 

@@ -74,6 +74,7 @@ extern "C" {
 #define DBG_LED_ON HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_RESET)
 #define DBG_PIN_HIGH DBG_LED_OFF
 #define DBG_PIN_LOW DBG_LED_ON
+#define DBG_PIN_TOGGLE DBG_LED_TOGGLE
 
 #define GetTicks HAL_GetTick
 #define DelayMs(d) HAL_Delay(d)

@@ -8,9 +8,9 @@ char CmdOut::execute(void *ptr) {
     }
 
     if(pdata == 1){
-        app_setOutputEnable(1);
+        psu_setOutputEnable(1);
     }else{
-        app_setOutputEnable(0);
+        psu_setOutputEnable(0);
     }
     
     return CMD_OK;

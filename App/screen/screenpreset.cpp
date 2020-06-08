@@ -51,3 +51,7 @@ void ScreenPreset::process(State *st){
 void ScreenPreset::modeSet(){
 
 }
+
+void ScreenPreset::init(){
+    redraw();
+}
