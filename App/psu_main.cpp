@@ -23,6 +23,7 @@ static CmdPwr pwr;
 static CmdOut out;
 static CmdIo io;
 static CmdMode mode;
+static CmdSet set;
 #ifdef ENABLE_DFU
 static CmdDfu dfu;
 #endif
@@ -35,6 +36,7 @@ static ConsoleCommand *commands[] = {
     &out,
     &io,
     &mode,
+    &set,
 #ifdef ENABLE_DFU
     &dfu,
 #endif
@@ -202,7 +204,7 @@ void tskCmdLine(void *ptr){
     vcom.init();    
     console.init(&vcom, CONSOLE_PROMPT);
     console.registerCommandList(commands);
-
+    
     #ifdef ENABLE_DEBUG
     dbg_init(&vcom);
     #endif
