@@ -62,7 +62,7 @@ void Graph::update(){
     if(scroll){
         npoints = xsize;
     }else{
-        npoints = (head > tail)? head - tail : xsize - tail + head;
+        npoints = (head > tail) ? head - tail : xsize - tail + head;
     }
 
     for(uint8_t i = 0; i < npoints; i++){

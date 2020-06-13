@@ -203,6 +203,10 @@ void tskCmdLine(void *ptr){
     console.init(&vcom, CONSOLE_PROMPT);
     console.registerCommandList(commands);
 
+    #ifdef ENABLE_DEBUG
+    dbg_init(&vcom);
+    #endif
+
     while(1){
         console.process();
     }

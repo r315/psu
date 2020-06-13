@@ -20,6 +20,7 @@ extern "C" {
 #include "task.h"
 #include "graph.h"
 #include "nvdata.h"
+#include "dbg.h"
 
 #define ADC_INTERVAL                100 //ms
 #define APP_INTERVAL                10
@@ -44,6 +45,14 @@ extern "C" {
 #define EEPROM_ID_OFFSET            
 #define EEPROM_PRESETS_OFFSET
 #define EEPROM_PWM_CAL_OFFSET            
+
+#if defined(ENABLE_DEBUG)
+    #define DBG_PRINT dbg_printf
+    #define DBG_DUMP_LINE dbg_HexDumpLine
+#else
+    #define DBG_PRINT(...)
+    #define DBG_DUMP_LINE(...)
+#endif
 
 typedef enum {MODEST_NORMAL = 0, MODEST_SET_V, MODEST_SET_I, MODEST_SET_SHOW} modestate_t;
 

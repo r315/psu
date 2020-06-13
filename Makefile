@@ -62,6 +62,7 @@ $(LIBEMB_PATH)/display/font.c \
 $(LIBEMB_PATH)/button/button.c \
 $(LIBEMB_PATH)/misc/strfunc.c \
 $(LIBEMB_PATH)/misc/nvdata.c \
+$(LIBEMB_PATH)/misc/debug.c \
 $(LIBEMB_PATH)/drv/tft/st7735.c \
 $(LIBEMB_PATH)/display/lcd.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
@@ -174,6 +175,7 @@ C_DEFS =  \
 # compile gcc flags
 ifeq ($(DEBUG), 1)
 OPT =-Og -g -gdwarf-2
+C_DEFS +=-DENABLE_DEBUG
 else
 OPT =-Os
 endif
@@ -198,13 +200,15 @@ LIBDIR =
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
-all: size $(BUILD_DIR)/$(TARGET).bin #$(BUILD_DIR)/$(TARGET).hex
+all: elf #$(BUILD_DIR)/$(TARGET).bin #$(BUILD_DIR)/$(TARGET).hex
 #@echo $(OBJECTS)
 
-size: $(BUILD_DIR)/$(TARGET).elf
+size: 
 	@echo "--- Size ---"
-	$(SZ) -A -x $<
-	$(SZ) -B $<
+	$(SZ) -A -x $(BUILD_DIR)/$(TARGET).elf
+	$(SZ) -B $(BUILD_DIR)/$(TARGET).elf
+
+elf: $(BUILD_DIR)/$(TARGET).elf size
 
 $(TARGET).cfg:
 	@echo "Creating opencod configuration file"
@@ -214,7 +218,7 @@ $(TARGET).cfg:
 	echo "adapter_khz 4000" >> $@
 
 #use winusb driver
-program: $(BUILD_DIR)/$(TARGET).elf $(TARGET).cfg
+program: elf $(TARGET).cfg
 	openocd -f $(TARGET).cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 #openocd -f $(TARGET).cfg -c "program $(BUILD_DIR)/$(TARGET).bin 0x08001000 verify reset exit"
 
