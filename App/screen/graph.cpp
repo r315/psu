@@ -30,8 +30,8 @@ void Graph::drawGraphAxis(void){
     DRAW_HLine(posx, posy + ysize + 1, xsize, pal[1]);
 }
 
-void Graph::addPoint(uint8_t value, uint8_t trace){
-    graph_data[trace][head] = value;
+void Graph::addPoint(uint8_t value, uint8_t flags){
+    graph_data[flags & 0x0F][head] = value;
 }
 
 void Graph::nextPoint(){
@@ -57,18 +57,30 @@ void Graph::update(){
     
     uint8_t tt = tail;
 
-    for(uint8_t i = 0; i < xsize; i++){
+    uint8_t npoints;
+
+    if(scroll){
+        npoints = xsize;
+    }else{
+        npoints = (head > tail)? head - tail : xsize - tail + head;
+    }
+
+    for(uint8_t i = 0; i < npoints; i++){
         DRAW_VLine(posx + i, posy + 1, ysize, pal[0]);
 
         for(uint8_t trace = 0; trace < GRAPH_MAX_TRACE; trace++){
-            uint8_t data = graph_data[trace][tt];
-            uint8_t color = data >> 6;
-            DRAW_Pixel(posx + i, posy + ysize - (data & 63), pal[color]);
+            uint8_t data = graph_data[trace][tt];            
+            DRAW_Pixel(posx + i, posy + ysize - data, pal[trace + 2]);
         }        
         
-        tt++;
-        if(tt > GRAPH_MAX_DATA){
+        if( (++tt) > GRAPH_MAX_DATA){
             tt = 0;
         }
     }
+}
+
+void Graph::reset(){
+    clear();
+    tail = head = 0;
+    scroll = false;
 }
