@@ -140,7 +140,7 @@ float p = i * v;
     TEXT_Print(POWER_DRO_POS, gout);
 }
 
-void ScreenPsu::process(State *st){
+void ScreenPsu::process(psu_t *st){
 float i, v;
 
     if(BUTTON_GetEvents() == BUTTON_PRESSED){

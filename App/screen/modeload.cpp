@@ -64,7 +64,7 @@ void ScreenLoad::modeSet(){
     }
 }
 
-void ScreenLoad::process(State *st){
+void ScreenLoad::process(psu_t *st){
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         if(mode_state){
             count = 0;

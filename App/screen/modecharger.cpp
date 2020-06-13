@@ -45,7 +45,7 @@ void ScreenCharger::modeSet(){
     }  
 }
 
-void ScreenCharger::process(State *st){    
+void ScreenCharger::process(psu_t *st){    
 
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         if(mode_state){
@@ -61,7 +61,8 @@ void ScreenCharger::process(State *st){
     }
 
     if(mode_state == MODEST_NORMAL){
-        uint16_t *p = &st->adc_v1, i;
+        // TODO: FIX
+        uint16_t *p = NULL, i;
         TEXT_SetFont(&pixelDustFont);
         for(i = BT1S; i <= bt_size; i++, p+=2){
         //printVoltage(V_POS_OFFSET + V1_POS + i * 8, *p * VOLTAGE_PRECISION);
