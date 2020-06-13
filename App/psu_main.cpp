@@ -2,8 +2,7 @@
 #include "psu.h"
 #include "draw.h"
 
-
-static State psu_state;
+static psu_t psu;
 static ScreenPsu cpsu;
 static ScreenLoad cload;
 static ScreenCharger ccharger;
@@ -43,7 +42,7 @@ static ConsoleCommand *commands[] = {
 };
 
 // min, max, start
-static calibration_t default_cal_data[PWM_NUM_CH] = { 
+static pwmcal_t default_cal_data[PWM_NUM_CH] = { 
     {0, (1<<PWM_RESOLUTION), 100 },
     {0, (1<<PWM_RESOLUTION), 100 },
     {0, (1<<PWM_RESOLUTION), 100 },    
@@ -51,7 +50,7 @@ static calibration_t default_cal_data[PWM_NUM_CH] = {
 };
 
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
-    uint16_t pwm_value = (x - in_min) * (psu_state.cal_data[ch].max - psu_state.cal_data[ch].min) / (in_max - in_min) + psu_state.cal_data[ch].min;
+    uint16_t pwm_value = (x - in_min) * (psu.pwm_cal[ch].max - psu.pwm_cal[ch].min) / (in_max - in_min) + psu.pwm_cal[ch].min;
     PWM_Set(PWM_CH_VOLTAGE, pwm_value);
 }
 
@@ -71,9 +70,9 @@ void psu_setInputLoad(float val, float max, float min){
 }
 
 void psu_setOutputEnable(uint8_t en){
-    psu_state.output_en = en;
+    psu.output_en = en;
     
-    if(psu_state.output_en){
+    if(psu.output_en){
         DRAW_Icon(OUTPUT_ICON_POS, (uint8_t *)icon_out, RED);
     }else{
         DRAW_FillRect(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);        
@@ -89,16 +88,16 @@ void app_selectMode(uint8_t mode){
         return;
     }
 
-    psu_state.mode = mode;    
+    psu.mode = mode;    
     (modes[mode])->init();
     // Mode clears screen, so must redraw output icon,
     // only if active
-    if(psu_state.output_en)
-        psu_setOutputEnable(psu_state.output_en);
+    if(psu.output_en)
+        psu_setOutputEnable(psu.output_en);
 }
 
 void app_cycleMode(void){
-uint8_t mode = psu_state.mode + 1;
+uint8_t mode = psu.mode + 1;
     
     if(mode == MAX_MODES ){
         mode = 0;
@@ -107,15 +106,60 @@ uint8_t mode = psu_state.mode + 1;
     app_selectMode(mode);
 }
 
+/**
+ * @brief Read buttons connected to I2C io expander
+ * */
 void app_checkButtons(){
     BUTTON_Read();
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         switch(BUTTON_VALUE){
             case BUTTON_MODE: app_cycleMode(); break;
-            case BUTTON_OUT: psu_setOutputEnable(!psu_state.output_en); break;
-            case BUTTON_SET: modes[psu_state.mode]->modeSet(); break;
+            case BUTTON_OUT: psu_setOutputEnable(!psu.output_en); break;
+            case BUTTON_SET: modes[psu.mode]->modeSet(); break;
         }
     }
+}
+
+/**
+ * @brief
+ * 
+ * */
+void app_InitEEPROM(uint8_t *dst){
+/*
+uint8_t bind_flag;
+    
+    if(EEPROM_Read(EEPROM_BIND_FLAG, &bind_flag, 1) != 1){
+        DBG_PRINT("Error reading EEPROM\n");
+        return;
+    }
+        
+    if(bind_flag == BIND_FLAG_VALUE){    
+        if(NV_Restore(dst, EEPROM_SIZE) != EEPROM_SIZE){
+            DBG_PRINT("Error reading EEPROM\n");
+            return;
+        }
+        DBG_PRINT("Data loaded from EEPROM\n");
+    }
+*/
+}
+
+/**
+ * @brief Save the ram eeprom content to flash memory
+ * Note: In order to save eeprom
+ * 
+ * */
+void app_SaveEEPROM(void){
+
+   /*  // FIXME: Really should implement CRC
+    *((uint8_t*)eeprom_data+EEPROM_BIND_FLAG) = BIND_FLAG_VALUE;
+
+    EEPROM_Write(EEPROM_ID_OFFSET, (uint8_t*)eeprom_data, EEPROM_SIZE);
+
+    if(!EEPROM_Sync()){
+        DBG_PRINT("!! Fail to sync EEPROM !!\n");
+    }else{
+        DBG_PRINT("EEPROM Saved\n");
+    } */
 }
 
 #ifndef USE_ADCMUX
@@ -126,7 +170,7 @@ static void app_adcEocCb(uint16_t *res){
 uint32_t *src = (uint32_t*)res;
     for (uint32_t i = 0; i < ADC_SEQ_LEN; i++, src++)
     {
-        psu_state.adcvalues[i] = *src;
+        psu.adcvalues[i] = *src;
     }
 }
 #endif
@@ -139,7 +183,7 @@ uint32_t *src = (uint32_t*)res;
 void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;    
 
-    app_selectMode(psu_state.mode);
+    app_selectMode(psu.mode);
 #ifndef USE_ADCMUX
     ADC_SetCallBack(app_adcEocCb);
 #endif
@@ -147,7 +191,7 @@ static TickType_t xLastWakeTime;
     while(1){
         app_checkButtons();
         //DBG_PIN_HIGH;
-        modes[psu_state.mode]->process(&psu_state);
+        modes[psu.mode]->process(&psu);
         //DBG_PIN_LOW;        
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
@@ -169,20 +213,18 @@ uint16_t pwm_start_values[PWM_NUM_CH];
 
     BOARD_Init();
     TEXT_Init();
+    NV_Init();
 
-    memcpy(psu_state.cal_data, default_cal_data, sizeof(calibration_t) * PWM_NUM_CH);    
+    app_InitEEPROM(psu.eeprom);
 
-    for(int i = 0; i < PWM_NUM_CH ; i++)
-    {
-        pwm_start_values[i] = psu_state.cal_data[i].start;
-    }
+    memcpy(psu.pwm_cal, default_cal_data, sizeof(pwmcal_t) * PWM_NUM_CH);
 
     cpsu.initPreSetValues(MIN_VOLTAGE, MIN_CURRENT);
 
     PWM_Init(pwm_start_values);
     ADC_Init(ADC_INTERVAL);
 
-    psu_state.mode = 0;
+    psu.mode = 0;
 
     xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );

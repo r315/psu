@@ -621,6 +621,46 @@ void I2C_Read(uint8_t addr, uint8_t *data, uint32_t size){
     HAL_I2C_Master_Receive(&hi2c2, addr << 1, data, size, 100);
 }
 
+
+/**
+ * @brief Flash write functions for EEPROM emulation
+ */
+uint32_t flashWrite(uint8_t *dst, uint8_t *data, uint16_t count){
+uint16_t *src = (uint16_t*)data;
+uint32_t res, address = (uint32_t)dst;
+
+    res = HAL_FLASH_Unlock();
+    if( res == HAL_OK){    
+        for (uint16_t i = 0; i < count; i+= 2, src++){
+            res = HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, address + i, *src);
+            if(res != HAL_OK){
+                break; 
+            }
+        }
+    }
+    HAL_FLASH_Lock();
+    return res;
+}
+
+/**
+ * @brief Erase 1k selctor on flash
+ * 
+ * @param address:  start address for erasing
+ * @return : 0 on fail
+ * */
+uint32_t flashPageErase(uint32_t address){
+uint32_t res;
+
+    res = HAL_FLASH_Unlock();
+
+    if( res == HAL_OK){
+        FLASH_PageErase(address);
+    }
+    
+    HAL_FLASH_Lock();
+    return 1;
+}
+
 /**
  * */
 void Error_Handler(const char *file, int line){

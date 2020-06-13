@@ -126,6 +126,14 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
 
+  /* used for EEPROM emulation, must be placed at next flash free page */
+  .eeprom : ALIGN(1024)
+  {       
+      _seeprom = .;
+      *(.eeprom*)
+      . += 1024;
+      _eeeprom = .;
+  } >FLASH
   
   /* Uninitialized data section */
   . = ALIGN(4);

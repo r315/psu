@@ -115,7 +115,25 @@ static inline uint32_t ElapsedTicks(uint32_t start_ticks){
 //LCD_CD_GPIO_Port->CRH = (LCD_CD_GPIO_Port->CRH & ~(0xF << 4)) | (2 << 4);
 //GPIOB->CRL = (GPIOA->CRL & ~(0xF << (4<<2))) | (2 <<(4<<2));
 //GPIOB->CRL = (GPIOA->CRL & ~(0xF << (3<<2))) | (2 <<(3<<2));
-    
+
+/* Symbols for NVDATA */
+#define NVDATA_SECTOR_INIT      
+#define NVDATA_SECTOR_START     &_seeprom
+#define NVDATA_SECTOR_END       &_eeeprom
+#define NVDATA_SECTOR_READ      memcpy
+#define NVDATA_SECTOR_WRITE     flashWrite
+#define NVDATA_SECTOR_ERASE     flashPageErase
+#define EEPROM_Read             NV_Read
+#define EEPROM_Write(_A,_B,_C)  NV_Write(_A,_B,_C)
+#define EEPROM_Sync             NV_Sync
+#define EEPROM_SIZE             30
+extern uint32_t _seeprom, _eeeprom;     //declared on linker script
+uint32_t flashWrite(uint8_t *dst, uint8_t *data, uint16_t count);
+uint32_t flashPageErase(uint32_t PageAddress);
+void FLASH_PageErase(uint32_t PageAddress);       // HAL Function
+
+/**
+ * */
 #define LCD_W LCD_GetWidth()
 #define LCD_H LCD_GetHeight()
 

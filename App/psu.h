@@ -19,6 +19,7 @@ extern "C" {
 #include "FreeRTOS.h"
 #include "task.h"
 #include "graph.h"
+#include "nvdata.h"
 
 #define ADC_INTERVAL                100 //ms
 #define APP_INTERVAL                10
@@ -40,36 +41,26 @@ extern "C" {
 
 #define MAX_PRESET                  6
 
+#define EEPROM_ID_OFFSET            
+#define EEPROM_PRESETS_OFFSET
+#define EEPROM_PWM_CAL_OFFSET            
+
 typedef enum {MODEST_NORMAL = 0, MODEST_SET_V, MODEST_SET_I, MODEST_SET_SHOW} modestate_t;
 
-typedef struct _calibration_t{
+typedef struct pwmcal{
     uint16_t min;
     uint16_t max;
     uint16_t start;
-}calibration_t;
+}pwmcal_t;
 
-typedef struct _State{ 
+typedef struct psu{ 
     uint8_t mode;
-    uint8_t output_en;
-    union{
-        //uint32_t adcvalues[ADC_SEQ_LEN];
-        struct {
-            uint16_t adc_v1;
-            uint16_t adc_i1;
-            uint16_t adc_v2;
-            uint16_t adc_i2;
-            uint16_t adc_v3;
-            uint16_t adc_i3;
-            uint16_t adc_v4;
-            uint16_t adc_i4;
-            uint16_t adc_vl;
-            uint16_t adc_il;    
-        };
-    };
+    uint8_t output_en;    
     uint8_t flags;
-    calibration_t cal_data[PWM_NUM_CH];
+    uint8_t eeprom[EEPROM_SIZE];
+    pwmcal_t pwm_cal[PWM_NUM_CH];
     void *ctx;
-}State;
+}psu_t;
 
 class Screen{
 
@@ -98,7 +89,7 @@ public:
     /**
      * called every 100ms to process data 
      * */
-    virtual void process(State *st){}
+    virtual void process(psu_t *st){}
 
     virtual void init(){}
 };
@@ -112,7 +103,7 @@ class ScreenPsu: public Screen{
     void printPower(float v, float i);
 public:
     ScreenPsu() : Screen() {}	
-    void process(State *st);
+    void process(psu_t *st);
     void redraw();
     void modeSet();
     void initPreSetValues(float v_set, float i_set);
@@ -122,7 +113,7 @@ public:
 class ScreenLoad: public Screen{
 public:
     ScreenLoad() : Screen(){}	
-    void process(State *st);
+    void process(psu_t *st);
     void redraw();
     void modeSet();
     void init();
@@ -132,7 +123,7 @@ class ScreenCharger: public Screen{
     uint8_t bt_size;
 public:
     ScreenCharger() : Screen(){}	
-    void process(State *st);
+    void process(psu_t *st);
     void redraw();
     void modeSet();
     void init();
@@ -150,7 +141,7 @@ private:
     void createPreset(uint16_t idx, uint16_t *buf);
 public:
     ScreenPreset() : Screen(){}	
-    void process(State *st);
+    void process(psu_t *st);
     void redraw();
     void modeSet();
     void init();
