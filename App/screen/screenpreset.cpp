@@ -18,7 +18,7 @@
 void ScreenPreset::createPreset(uint16_t idx, uint16_t *buf){
 char out[20];    
     if(idx == selected){
-        sprintf(out, "%.1fV, %.2fA", presets[idx].voltage, presets[idx].current);
+        xsprintf(out, "%.1fV, %.2fA", presets[idx].voltage, presets[idx].current);
         TEXT_Print(0, 80 - 14, out);
         memset16(buf, PRESET_SELECT, PRESET_SIZE); 
     }else{
