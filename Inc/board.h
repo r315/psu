@@ -139,7 +139,15 @@ void TICK_Init(void);
  * Global variables
  * */
 extern TIM_HandleTypeDef htim4;
+#ifdef ENABLE_USB_CDC
 extern StdOut vcom;
+#define DEFSTDIO vcom
+#elif defined(ENABLE_DEBUG)
+extern stdout_t dummy_out;
+#define DEFSTDIO dummy_out
+#else
+// TODO:
+#endif
 
 /**
  * Function prototypes

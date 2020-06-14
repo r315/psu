@@ -238,12 +238,11 @@ static void MX_GPIO_Init(void)
   */
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
-{
-    
-    
-                 
+{                 
   /* init code for USB_DEVICE */
+  #ifdef ENABLE_USB_CDC
   MX_USB_DEVICE_Init();
+  #endif
 
   /* USER CODE BEGIN 5 */
   /* Infinite loop */

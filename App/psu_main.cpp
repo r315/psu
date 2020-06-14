@@ -223,12 +223,12 @@ static TickType_t xLastWakeTime;
 
 void tskCmdLine(void *ptr){
     
-    vcom.init();    
-    console.init(&vcom, CONSOLE_PROMPT);
+    DEFSTDIO.init();    
+    console.init(&DEFSTDIO, CONSOLE_PROMPT);
     console.registerCommandList(commands);
-    
+
     #ifdef ENABLE_DEBUG
-    dbg_init(&vcom);
+    dbg_init(&DEFSTDIO);
     #endif
 
     while(1){

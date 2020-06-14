@@ -179,11 +179,11 @@ void DMA1_Channel4_IRQHandler(void){
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
   /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 0 */
-
+  #ifdef ENABLE_USB_CDC
   /* USER CODE END USB_LP_CAN1_RX0_IRQn 0 */
   HAL_PCD_IRQHandler(&hpcd_USB_FS);
   /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 1 */
-
+  #endif
   /* USER CODE END USB_LP_CAN1_RX0_IRQn 1 */
 }
 

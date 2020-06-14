@@ -107,7 +107,7 @@ uint16_t PWM_Get(uint8_t ch){
 /**
  * virtual com port stuff
  * */
-
+#ifdef ENABLE_USB_CDC
 #define VC_QUEUE_LENGTH 10
 #define VC_QUEUE_ITEM_SIZE 1
 
@@ -169,7 +169,7 @@ StdOut vcom = {
     .getCharNonBlocking = vc_getCharNonBlocking,
     .kbhit = vc_kbhit
 };
-
+#endif
 /**
  * ADC Driver
  * */
