@@ -38,14 +38,16 @@ void dummy(float val){
 }
 
 void CmdSet::help(void){
-    console->print("Usage: set <command> <parameter>\n\n");
+    console->print("Usage: set <command> <parameter>\n");
+    console->print("Psu control commands\n\n");
     console->print("Commands:\n");
     console->print("\tvoltage <float>\t\tSet output voltage\n");
     console->print("\tcurrent <float>\t\tSet output current limit\n");
+    console->print("\toutput <on|off>\t\tEnable output\n");
 }
 
 char CmdSet::execute(void *ptr){
-    char *argv[4];
+    char *argv[4], *param;
     uint32_t argc;
     argc = strToArray((char*)ptr, argv);
     uint16_t value;
@@ -55,9 +57,21 @@ char CmdSet::execute(void *ptr){
         return CMD_OK;
     }
 
+    if((param = getOptValue("output", argc, argv)) != NULL){
+        if(xstrcmp("on", param) == 0){
+            psu_setOutputEnable(true);
+        }else if(xstrcmp("off", param) == 0){
+            psu_setOutputEnable(false);            
+        }else{
+            console->print("output: %s\n", psu_getOutputEnable()?"on":"off");
+        }
+        return CMD_OK;
+    }
+
     if(readFloatParameter("voltage", argc, argv, &value, dummy) == CMD_OK)
         return CMD_OK;
     if(readFloatParameter("current", argc, argv, &value, dummy) == CMD_OK)
         return CMD_OK;
+
     return CMD_BAD_PARAM;
 }
