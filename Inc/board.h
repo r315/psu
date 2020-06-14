@@ -12,6 +12,7 @@ extern "C" {
 #include "pcf8574.h"
 #include "lcd.h"
 #include "st7735.h"
+#include "adcmux.h"
 
 
 #define VOLTAGE_PRECISION           0.005f  //MAX_VOLTAGE / 2^ADC_RESOLUTION
@@ -243,9 +244,6 @@ uint16_t PWM_Get(uint8_t);
 
 #endif
 
-
-
-
 /**
  * 
  * */
@@ -288,14 +286,10 @@ void ADC_SetCallBack(void (*)(uint16_t));
 /**
  * @brief Pause ADC conversions
  * 
- * \return : 0: fail, 1: paused
  **/
-uint8_t ADC_Pause(void);
+void ADC_Start(void);
 
-/**
- * @brief Resume ADC conversions
- **/
-void ADC_Resume(void);
+
 
 #endif
 

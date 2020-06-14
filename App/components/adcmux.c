@@ -14,29 +14,41 @@ static void adcmux_cb(uint16_t data){
     adcmux_ch[seq_idx] = data;
     if(++seq_idx == seq_len){
         adcmux_eoc_cb(adcmux_ch);
-        seq_idx = 0;
+        return;
     }
     adc_mux_select_ch(seq[seq_idx]);
+    ADC_Start();
 }
 
+/**
+ * @brief
+ * */
+void ADCMUX_Init(void){
+    ADC_Init(0);
+}
+
+/**
+ * @brief
+ * */
 uint16_t ADCMUX_Convert(uint8_t channel){
     return 0;
 }
 
-void ADCMUX_StartSequence(uint8_t *s, uint8_t len, void(*cb)(uint16_t *data)){
-    if(!ADC_Pause()){
-        return;
-    }
+/**
+ * @brief
+ * */
+void ADCMUX_SetSequence(uint8_t *s, uint8_t len, void(*cb)(uint16_t *data)){
     seq = s;
     seq_idx = 0;
     seq_len = len;
     adcmux_eoc_cb = cb;
     ADC_SetCallBack(adcmux_cb);
-    ADC_Resume();
 }
 
-void ADCMUX_StopSequence(void){
-    ADC_Pause();
-    seq_len = 0;
-    adcmux_eoc_cb = NULL;
+void ADCMUX_Start(void){
+    if(adcmux_eoc_cb == NULL || seq_len == 0){
+        return;
+    }
+    seq_idx = 0;
+    ADC_Start();
 }

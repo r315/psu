@@ -2,7 +2,8 @@
 #include "board.h"
 
 void CmdAdc::help(void){ 
-console->print("Adc Command\n");
+console->print("Usage: adc\n");
+console->print("Command not implemented\n");
 }
 
 char CmdAdc::execute(void *ptr){ 

@@ -15,7 +15,6 @@ extern "C" {
 #include "cmddfu.h"
 #include "cmdpwr.h"
 #include "cmdio.h"
-#include "cmdout.h"
 #include "cmdset.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -55,6 +54,23 @@ extern "C" {
     #define DBG_DUMP_LINE(...)
 #endif
 
+#define _FLAGS              psu.flags
+#define SET_FLAG(f)         _FLAGS |= (1 << f)
+#define CLR_FLAG(f)         _FLAGS &= ~(1 << f)
+#define GET_FLAG(f)         ((_FLAGS & (1 << f)) != 0)
+#define IS_FLAG_SET(x,f)    ((x & (1 << f)) != 0)
+// Psu output enable flag
+#define SET_OE_FLAG         SET_FLAG(0)
+#define CLR_OE_FLAG         CLR_FLAG(0)
+#define GET_OE_FLAG         GET_FLAG(0)
+#define IS_OE_FLAG_SET(x)   IS_FLAG_SET(x,0)
+//Psu adc conversion ready
+#define SET_AD_FLAG         SET_FLAG(1)
+#define CLR_AD_FLAG         CLR_FLAG(1)
+#define GET_AD_FLAG         GET_FLAG(1)
+#define IS_AD_FLAG_SET(x)   IS_FLAG_SET(x,1)
+
+
 typedef enum {MODEST_NORMAL = 0, MODEST_SET_V, MODEST_SET_I, MODEST_SET_SHOW} modestate_t;
 
 typedef struct pwmcal{
@@ -65,11 +81,10 @@ typedef struct pwmcal{
 
 typedef struct psu{ 
     uint8_t mode;
-    uint8_t output_en;    
-    uint8_t flags;
+    volatile uint8_t flags;
     uint8_t eeprom[EEPROM_SIZE];
     pwmcal_t pwm_cal[PWM_NUM_CH];
-    void *ctx;
+    void *ptr;
 }psu_t;
 
 class Screen{
@@ -178,12 +193,23 @@ uint8_t psu_getOutputEnable(void);
  * @brief Set/Get PSU output voltage
  * */
 void psu_setOutputVoltage(float val, float max, float min);
+float psu_getVoltage(void);
 
 /**
  * @brief Set/Get PSU output current
  * */
 void psu_setOutputCurrent(float val, float max, float min);
+float psu_getCurrent(void);
 
+/**
+ * @brief
+ * */
+float psu_getLoadCurrent(void);
+
+/**
+ * @brief
+ * */
+uint8_t psu_getOutputEnable(void);
 
 #ifdef __cplusplus
 }

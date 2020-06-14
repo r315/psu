@@ -20,9 +20,7 @@ static CmdHelp help;
 static CmdAdc adc1;
 static CmdPwm pwm;
 static CmdPwr pwr;
-static CmdOut out;
 static CmdIo io;
-static CmdMode mode;
 static CmdSet set;
 #ifdef ENABLE_DFU
 static CmdDfu dfu;
@@ -33,9 +31,7 @@ static ConsoleCommand *commands[] = {
     &adc1,
     &pwm,
     &pwr,
-    &out,
     &io,
-    &mode,
     &set,
 #ifdef ENABLE_DFU
     &dfu,
@@ -51,9 +47,17 @@ static pwmcal_t default_cal_data[PWM_NUM_CH] = {
     {0, (1<<PWM_RESOLUTION), 100 },
 };
 
+// ch1, ch2, ......
+static const uint8_t adc_seq[] = {0 , 1};
+
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
     uint16_t pwm_value = (x - in_min) * (psu.pwm_cal[ch].max - psu.pwm_cal[ch].min) / (in_max - in_min) + psu.pwm_cal[ch].min;
-    PWM_Set(PWM_CH_VOLTAGE, pwm_value);
+    PWM_Set(ch, pwm_value);
+}
+
+extern "C" void psu_adc_cb(uint16_t *data){
+    psu.ptr = data;
+    SET_AD_FLAG;
 }
 
 /**
@@ -72,15 +76,31 @@ void psu_setInputLoad(float val, float max, float min){
 }
 
 void psu_setOutputEnable(uint8_t en){
-    psu.output_en = en;
     
-    if(psu.output_en){
+    if(en){
+        SET_OE_FLAG;
         DRAW_Icon(OUTPUT_ICON_POS, (uint8_t *)icon_out, RED);
     }else{
+        CLR_OE_FLAG;
         DRAW_FillRect(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);        
     }
 }
 
+float psu_getVoltage(void){
+    return *(uint16_t*)psu.ptr * VOLTAGE_PRECISION;
+}
+
+float psu_getCurrent(void){
+    return *(uint16_t*)psu.ptr + 1 * CURRENT_PRECISION;
+}
+
+float psu_getLoadCurrent(void){
+    return 0.0f;
+}
+
+uint8_t psu_getOutputEnable(void){
+    return  GET_OE_FLAG;
+}
 /**
  * Application api
  * */
@@ -94,8 +114,7 @@ void app_selectMode(uint8_t mode){
     (modes[mode])->init();
     // Mode clears screen, so must redraw output icon,
     // only if active
-    if(psu.output_en)
-        psu_setOutputEnable(psu.output_en);
+    psu_setOutputEnable(GET_OE_FLAG);
 }
 
 void app_cycleMode(void){
@@ -116,7 +135,7 @@ void app_checkButtons(){
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         switch(BUTTON_VALUE){
             case BUTTON_MODE: app_cycleMode(); break;
-            case BUTTON_OUT: psu_setOutputEnable(!psu.output_en); break;
+            case BUTTON_OUT: psu_setOutputEnable(!GET_OE_FLAG); break;
             case BUTTON_SET: modes[psu.mode]->modeSet(); break;
         }
     }
@@ -186,15 +205,18 @@ void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;    
 
     app_selectMode(psu.mode);
-#ifndef USE_ADCMUX
-    ADC_SetCallBack(app_adcEocCb);
-#endif
+
+    ADCMUX_Start();
 
     while(1){
         app_checkButtons();
         //DBG_PIN_HIGH;
         modes[psu.mode]->process(&psu);
         //DBG_PIN_LOW;        
+        if(GET_AD_FLAG){
+            CLR_AD_FLAG;
+            ADCMUX_Start();
+        }
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
 }
@@ -228,7 +250,9 @@ uint16_t pwm_start_values[PWM_NUM_CH];
     cpsu.initPreSetValues(MIN_VOLTAGE, MIN_CURRENT);
 
     PWM_Init(pwm_start_values);
-    ADC_Init(ADC_INTERVAL);
+    ADCMUX_Init();
+
+    ADCMUX_SetSequence((uint8_t*)adc_seq, sizeof(adc_seq), psu_adc_cb);
 
     psu.mode = 0;
 

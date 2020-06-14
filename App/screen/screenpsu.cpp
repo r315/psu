@@ -3,7 +3,6 @@
 #include "psu.h"
 #include "draw.h"
 #include "text.h"
-#include "adcmux.h"
 #include "graph.h"
 
 #define VOLTAGE_DRO_POS_X           0
@@ -24,15 +23,6 @@ static uint16_t vdro_pal[2] = {BLACK, GREEN};
 static uint16_t idro_pal[2] = {BLACK, YELLOW};
 static uint16_t txt_pal[2] = {BLACK, PINK};
 static uint16_t graph_pal[] = {RGB565(5,10,5), RED, GREEN, YELLOW};
-static const uint8_t adc_seq[] = {0 , 1};
-
-volatile uint16_t v1,v2, update;
-
-extern "C" void psu_cb(uint16_t *data){
-    v1 = data[0];
-    v2 = data[1];
-    update = true;
-}
 
 void ScreenPsu::initPreSetValues(float v_set, float i_set){
     set_v = v_set;
@@ -40,10 +30,6 @@ void ScreenPsu::initPreSetValues(float v_set, float i_set){
 }
 
 void ScreenPsu::init(void){
-
-    update = false;
-
-    ADCMUX_StartSequence((uint8_t*)adc_seq, sizeof(adc_seq), psu_cb);
 
     graph.init(93, LCD_H - 32, LCD_W - 93, 30, graph_pal);
     redraw();
@@ -158,14 +144,14 @@ float i, v;
 
     switch(mode_state){
         case MODEST_NORMAL:
-            if(st->output_en == FALSE){
+            if(IS_OE_FLAG_SET(st->flags) == FALSE){
                 mode_state = MODEST_SET_SHOW;
                 break;
             }
 
-            if(update){        
-                v = v1 * VOLTAGE_PRECISION;
-                i = v2 * CURRENT_PRECISION;        
+            if(IS_AD_FLAG_SET(st->flags)){        
+                v = psu_getVoltage();
+                i = psu_getCurrent();
                 printPower(v, i);        
                 printVoltage(v, NO_BLANK);
                 printCurrent(i, NO_BLANK);
@@ -173,7 +159,6 @@ float i, v;
                 graph.addPoint((int)i, 1);
                 graph.nextPoint();
                 graph.update();                
-                update = false;
             }
             break;
         
@@ -194,7 +179,7 @@ float i, v;
             break;
 
         case MODEST_SET_SHOW:
-            if(st->output_en == TRUE){
+            if(IS_OE_FLAG_SET(st->flags) == TRUE){
                 mode_state = MODEST_NORMAL;
                 break;
             }
