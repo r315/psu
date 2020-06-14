@@ -289,7 +289,8 @@ void ADC_SetCallBack(void (*)(uint16_t));
 void ADC_Start(void);
 
 
-
+float ADC_GetResolution(void);
+uint16_t ADC_GetCalibration(void);
 #endif
 
 /** ***********************************************************
