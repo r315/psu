@@ -22,6 +22,15 @@ extern "C" {
 #include "nvdata.h"
 #include "dbg.h"
 
+#define VOLTAGE_PRECISION           0.005f  //MAX_VOLTAGE / 2^ADC_RESOLUTION
+#define CURRENT_PRECISION           0.0008f
+#define MAX_VOLTAGE                 14.0f
+#define MIN_VOLTAGE                 1.2f
+#define MAX_CURRENT                 3.00f
+#define MIN_CURRENT                 0.00f
+#define MAX_LOAD                    3.00f
+#define MIN_LOAD                    0.00f
+
 #define ADC_INTERVAL                100 //ms
 #define APP_INTERVAL                10
 #define UPDATE_INTERVAL             100
@@ -83,7 +92,7 @@ typedef struct psu{
     uint8_t mode;
     volatile uint8_t flags;
     uint8_t eeprom[EEPROM_SIZE];
-    pwmcal_t pwm_cal[PWM_NUM_CH];
+    pwmcal_t pwm_cal[PWM_NUM_CH];    
     void *ptr;
 }psu_t;
 

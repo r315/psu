@@ -15,15 +15,6 @@ extern "C" {
 #include "adcmux.h"
 
 
-#define VOLTAGE_PRECISION           0.005f  //MAX_VOLTAGE / 2^ADC_RESOLUTION
-#define CURRENT_PRECISION           0.0008f
-#define MAX_VOLTAGE                 14.0f
-#define MIN_VOLTAGE                 1.2f
-#define MAX_CURRENT                 3.00f
-#define MIN_CURRENT                 0.00f
-#define MAX_LOAD                    3.00f
-#define MIN_LOAD                    0.00f
-
 /**
  * HW symbols for button handling
  * */

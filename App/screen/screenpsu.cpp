@@ -86,6 +86,10 @@ void ScreenPsu::modeSet(void){
 }
 
 void ScreenPsu::printVoltage(float value, int8_t hide_digit){
+    if(value > MAX_VOLTAGE){
+        value = MAX_VOLTAGE;
+    }
+
     if(value < 9.9f)
         sprintf(gout,"0%.1fV", value);
     else
@@ -103,7 +107,11 @@ void ScreenPsu::printVoltage(float value, int8_t hide_digit){
 }
 
 void ScreenPsu::printCurrent(float value, int8_t hide_digit){
-    sprintf(gout,"%.2fA", value);
+
+    if(value > MAX_CURRENT){
+        value = MAX_CURRENT;
+    }
+
 
     if(hide_digit != NO_BLANK){
         if(hide_digit > 0)
@@ -119,7 +127,10 @@ void ScreenPsu::printCurrent(float value, int8_t hide_digit){
 void ScreenPsu::printPower(float v, float i){
 float p = i * v;
     
-    sprintf(gout, "%.1fW ", p);    
+    if(p > MAX_CURRENT * MAX_VOLTAGE){
+        p = MAX_CURRENT * MAX_VOLTAGE;
+    }
+
 
     TEXT_SetFont(PSU_TEXT_FONT);
     TEXT_SetPalette(txt_pal);

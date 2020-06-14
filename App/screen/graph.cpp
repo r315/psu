@@ -31,6 +31,9 @@ void Graph::drawGraphAxis(void){
 }
 
 void Graph::addPoint(uint8_t value, uint8_t flags){
+    if(value > ysize){
+        value = ysize;
+    }
     graph_data[flags & 0x0F][head] = value;
 }
 
