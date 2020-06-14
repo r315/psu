@@ -43,7 +43,7 @@ void drawGraphAxis(void){
 void ScreenLoad::redraw(void){
     DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
 //TEXT_drawGfx(90,0, (uint8_t*)&icon_load[0]);
-    TEXT_SetFont(&pixelDustFont);
+    //TEXT_SetFont(&pixelDustFont);
     TEXT_Print(LOAD_POWER_POS,"00.0W");
     TEXT_Print(LOAD_CURRENT_POS,"0.50A");
     TEXT_Print(LOAD_VOLTAGE_POS,"4.1V");

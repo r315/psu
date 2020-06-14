@@ -27,12 +27,12 @@ void changeBtSize(uint8_t *dst, int8_t a){
 void ScreenCharger::redraw(void){
     DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
 //TEXT_drawGfx(90,0, (uint8_t*)&icon_chr[0]);
-    TEXT_SetFont(&pixelDustFont);
+    //TEXT_SetFont(&pixelDustFont);
     TEXT_Print(V1_POS,"V1:");
     TEXT_Print(V2_POS,"V2:");
     TEXT_Print(V3_POS,"V3:");
     TEXT_Print(V4_POS,"V4:");
-    TEXT_SetFont(&lcdFont);
+    //TEXT_SetFont(&lcdFont);
     TEXT_Print(BT_SIZE_POS,"1S");
     bt_size = BT1S;    
 }
@@ -63,7 +63,7 @@ void ScreenCharger::process(psu_t *st){
     if(mode_state == MODEST_NORMAL){
         // TODO: FIX
         uint16_t *p = NULL, i;
-        TEXT_SetFont(&pixelDustFont);
+        //TEXT_SetFont(&pixelDustFont);
         for(i = BT1S; i <= bt_size; i++, p+=2){
         //printVoltage(V_POS_OFFSET + V1_POS + i * 8, *p * VOLTAGE_PRECISION);
         }
@@ -72,7 +72,7 @@ void ScreenCharger::process(psu_t *st){
         }
         //printCurrent(I_POS, st->adc_i1 * CURRENT_PRECISION);
     }else{
-        TEXT_SetFont(&lcdFont);
+        //TEXT_SetFont(&lcdFont);
         if((++count) & BLINK_TIME_MASK){
             TEXT_Print(BT_SIZE_POS,"  ");
         }else{            

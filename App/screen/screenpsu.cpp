@@ -4,6 +4,7 @@
 #include "draw.h"
 #include "text.h"
 #include "graph.h"
+#include "font.h"
 
 #define VOLTAGE_DRO_POS_X           0
 #define VOLTAGE_DRO_POS_Y           16
@@ -16,7 +17,7 @@
 #define PSU_ICON_POS                97,0
 
 #define PSU_TEXT_FONT               &courierFont
-#define PSU_DRO_FONT                &GroteskBold16x32 //&font_seven_seg
+#define PSU_DRO_FONT                &GroteskBold16x32
 
 static char gout[7];
 static uint16_t vdro_pal[2] = {BLACK, GREEN};

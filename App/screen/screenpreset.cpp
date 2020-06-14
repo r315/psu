@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "psu.h"
 #include "draw.h"
+#include "font.h"
 
 #define PRESET_POS          16,16
 #define PRESET_SPACING      16
@@ -11,6 +12,7 @@
 #define PRESET_SELECT       PINK
 #define PRESET_SIZE         (16*16)
 #define PRESET_TEXT_FONT    &courierFont
+//#define PRESET_TEXT_FONT    &defaultFont
 
 
 void ScreenPreset::createPreset(uint16_t idx, uint16_t *buf){
