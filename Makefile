@@ -49,11 +49,7 @@ BUILD_DIR :=build
 # C sources
 C_SOURCES =  \
 Src/main.c \
-Src/usbd_desc.c \
-Src/usbd_conf.c \
-Src/usb_device.c \
 Src/stm32f1xx_it.c \
-Src/usbd_cdc_if.c \
 Src/system_stm32f1xx.c \
 Src/stm32f1xx_hal_msp.c \
 $(wildcard $(APP_SRC_DIR)/*.c) \
@@ -65,10 +61,6 @@ $(LIBEMB_PATH)/misc/nvdata.c \
 $(LIBEMB_PATH)/misc/debug.c \
 $(LIBEMB_PATH)/drv/tft/st7735.c \
 $(LIBEMB_PATH)/display/lcd.c \
-$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
-$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
-$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
-$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c \
@@ -83,12 +75,22 @@ $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
 $(FREERTOS_DIR)/portable/GCC/ARM_CM3/port.c \
 $(FREERTOS_DIR)/portable/MemMang/heap_4.c \
-$(FREERTOS_DIR)/croutine.c \
 $(FREERTOS_DIR)/list.c \
 $(FREERTOS_DIR)/queue.c \
 $(FREERTOS_DIR)/tasks.c \
 $(FREERTOS_DIR)/timers.c \
 $(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
+
+# USB lib
+C_SOURCES += \
+$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
+$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
+$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
+$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
+Src/usbd_cdc_if.c \
+Src/usbd_desc.c \
+Src/usbd_conf.c \
+Src/usb_device.c \
 
 CPP_SOURCES = \
 $(wildcard $(APP_SRC_DIR)/*.cpp) \
@@ -154,7 +156,7 @@ CPU = -mcpu=cortex-m3
 # NONE for Cortex-M0/M0+/M3
 
 # float-abi
-FLOAT-ABI =-u_printf_float
+#FLOAT-ABI =-u_printf_float
 
 # mcu
 MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
@@ -172,7 +174,7 @@ C_DEFS =  \
 -DUSE_MULTIPLE_FONTS \
 -DUSE_COURIER_FONT \
 -DUSE_GROTESKBOLD_FONT \
--D_ENABLE_USB_CDC \
+-DENABLE_USB_CDC \
 
 # compile gcc flags
 ifeq ($(DEBUG), 1)
@@ -197,9 +199,13 @@ LDSCRIPT = startup/STM32F103C8Tx_FLASH.ld
 #LDSCRIPT =startup/f103c8tx_dfu.ld
 
 # libraries
-LIBS =-lc -lnosys #-lm
+#-nostdlib, -nostartfiles: Missign reference to _init
+#-specs=nosys.specs, lnosys, not libs: has same size
+#-specs=nano.specs: has the small size
+
+LIBS =-specs=nano.specs -nolibc
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
 all: elf #$(BUILD_DIR)/$(TARGET).bin #$(BUILD_DIR)/$(TARGET).hex
