@@ -2,15 +2,19 @@
 #include "board.h"
 
 void CmdPwm::help(void){ 
-console->print("\tusage pwm <ch> [value]\n\tch, 1-4\n");
-console->print("\t+/-, duty\n");
-console->print("\tv, enter value\n");
-console->print("\tq, quit\n");
-console->xputs("\tPins\n"
-                "\t\tPB4 PWM1 -> vset\n"
-                "\t\tPB5 PWM2 -> iset\n"
-                "\t\tPB0 PWM3 -> iload\n"
-                "\t\tPB1 PWM4 -> NA");
+    console->print("\nUsage: pwm <ch> [value]\n");
+    console->print("PWM control\n\n");
+    console->print("Channel: 1-4\n");
+    console->print("Value: 0-1023\n");
+    console->print("Control mode (no value specified on command):\n\n");
+    console->print("\t+/-, change duty\n");
+    console->print("\tv, enter value\n");
+    console->print("\tq, quit\n");
+    console->xputs("\tPins\n"
+                "\t\tPB4 -> PWM1\n"
+                "\t\tPB5 -> PWM2\n"
+                "\t\tPB0 -> PWM3\n"
+                "\t\tPB1 -> PWM4");
 }
 
 char CmdPwm::execute(void *ptr){

@@ -190,7 +190,7 @@ static inline void reenumerate_usb(void){
 #define PWM_CH_LOAD        (3-1)
 #define PWM_RESOLUTION      10UL
 #define PWM_MAX_VALUE       (1<<PWM_RESOLUTION)
-#define PWM_MIN_VALUE       5
+#define PWM_MIN_VALUE       0
 #define PWM_NUM_CH          4          // Number of channels
 
 /**
