@@ -15,6 +15,10 @@ public:
     CmdAdc () : ConsoleCommand("adc") { }
     char execute(void *ptr);
     void help(void);
+private:
+    void printResolution(void);
+    void printCalibrationData(void);
+    void printChannelVoltage(uint8_t channel);
 };
 
 

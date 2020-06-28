@@ -59,6 +59,7 @@ $(LIBEMB_PATH)/button/button.c \
 $(LIBEMB_PATH)/misc/strfunc.c \
 $(LIBEMB_PATH)/misc/nvdata.c \
 $(LIBEMB_PATH)/misc/debug.c \
+$(LIBEMB_PATH)/misc/pinName.c \
 $(LIBEMB_PATH)/drv/tft/st7735.c \
 $(LIBEMB_PATH)/display/lcd.c \
 $(REPOSITORY)Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
@@ -168,8 +169,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DUSE_ADCMUX \
 -DSTM32F103xB \
+-DUSE_ADCMGR \
 -DCONSOLE_BLOCKING \
 -DUSE_MULTIPLE_FONTS \
 -DUSE_COURIER_FONT \

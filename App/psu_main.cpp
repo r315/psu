@@ -183,7 +183,7 @@ void app_SaveEEPROM(void){
     } */
 }
 
-#ifndef USE_ADCMUX
+#ifndef USE_ADCMGR
 /**
  * ADC End of convertion callback
  * */
@@ -203,10 +203,11 @@ uint32_t *src = (uint32_t*)res;
  * */
 void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;    
+uint8_t count = 0;
 
     app_selectMode(psu.mode);
 
-    ADCMUX_Start();
+    ADCMGR_Start();
 
     while(1){
         app_checkButtons();
@@ -215,7 +216,12 @@ static TickType_t xLastWakeTime;
         //DBG_PIN_LOW;        
         if(GET_AD_FLAG){
             CLR_AD_FLAG;
-            ADCMUX_Start();
+            ADCMGR_Start();
+        }
+        if(((++count)&0x0f) == 0){
+            LED_ON;
+        }else{
+            LED_OFF;
         }
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
@@ -250,9 +256,9 @@ uint16_t pwm_start_values[PWM_NUM_CH];
     cpsu.initPreSetValues(MIN_VOLTAGE, MIN_CURRENT);
 
     PWM_Init(pwm_start_values);
-    ADCMUX_Init();
+    ADCMGR_Init();
 
-    ADCMUX_SetSequence((uint8_t*)adc_seq, sizeof(adc_seq), psu_adc_cb);
+    ADCMGR_SetSequence((uint8_t*)adc_seq, sizeof(adc_seq), psu_adc_cb);
 
     psu.mode = 0;
 

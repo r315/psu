@@ -10,11 +10,11 @@ void CmdPwm::help(void){
     console->print("\t+/-, change duty\n");
     console->print("\tv, enter value\n");
     console->print("\tq, quit\n");
-    console->xputs("\tPins\n"
-                "\t\tPB4 -> PWM1\n"
-                "\t\tPB5 -> PWM2\n"
-                "\t\tPB0 -> PWM3\n"
-                "\t\tPB1 -> PWM4");
+    console->xputs("\nPins:\n"
+                "\tPB4 -> PWM1\n"
+                "\tPB5 -> PWM2\n"
+                "\tPB0 -> PWM3\n"
+                "\tPB1 -> PWM4");
 }
 
 char CmdPwm::execute(void *ptr){

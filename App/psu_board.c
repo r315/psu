@@ -10,7 +10,7 @@ static I2C_HandleTypeDef hi2c2;
 
 void BOARD_Init(void){
     
-    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN;
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPCEN;
     
     LED_INIT;
     SPI_Init();
@@ -241,7 +241,15 @@ static void adcSampleTime(uint16_t ch, uint16_t time){
  * calculate resolution based on the 1.20V 
  * internal reference
  * */
-uint32_t adcCalibrate(void){
+void ADC_Calibrate(void){
+uint32_t cr1, sqr1, sqr3;
+
+    //Backup registers
+    sqr3 = ADC1->SQR3;
+    sqr1 = ADC1->SQR1;
+    cr1 = ADC1->CR1;
+    // Clear Interrupts
+    ADC1->CR1 = 0;
 
     // Perform ADC calibration
     ADC1->CR2 |= ADC_CR2_CAL;
@@ -251,7 +259,7 @@ uint32_t adcCalibrate(void){
 
     hadc.calibration_code = ADC1->DR;
     // Set calibration flag
-    hadc.flags.cal = 1;
+    hadc.flags.cal = 1;    
     // select VREFINT channel for first conversion
     ADC1->SQR3 = (ADC_VREFINT_CHANNEL << 0);
     // Ensure one conversion
@@ -271,11 +279,14 @@ uint32_t adcCalibrate(void){
     hadc.resolution = ADC_VREFINT_VALUE / ADC1->DR;
     // power down VREFINT
     ADC1->CR2 &= ~ADC_CR2_TSVREFE;
+    //restore registers
+    ADC1->SQR3 = sqr3;
+    ADC1->SQR1 = sqr1;
+    ADC1->CR1 = cr1;
     // Set resolution flag
     hadc.flags.res = 1;
-    return 1;
 }
-#ifndef USE_ADCMUX
+#ifndef USE_ADCMGR
 static void (*eotcb)(uint16_t*);
 // Each index holds two conversion results
 static uint32_t adcres[ADC_SEQ_LEN];
@@ -469,7 +480,7 @@ void ADC_Init(uint16_t ms){
     adcSampleTime(ADCMUX_CHANNEL, 7);           // set sample time to 239.5 cycles
 
     // Perform start up calibration
-    adcCalibrate();
+    ADC_Calibrate();
     
     ADC1->CR1 = ADC_CR1_EOCIE;                  // Enable end of convertion interrupt
 

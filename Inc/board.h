@@ -12,13 +12,13 @@ extern "C" {
 #include "pcf8574.h"
 #include "lcd.h"
 #include "st7735.h"
-#include "adcmux.h"
+#include "adcmgr.h"
+#include "pinName.h"
 
 
 /**
- * HW symbols for button handling
+ * Button 
  * */
-#if 1
 #define BUTTON_UP       (1<<1)
 #define BUTTON_DOWN     (1<<0)
 #define BUTTON_LEFT  	(1<<3)
@@ -27,16 +27,6 @@ extern "C" {
 #define BUTTON_MODE     (1<<5)
 #define BUTTON_OUT      (1<<6)
 #define BUTTON_MEM      (1<<7)
-#else
-#define BUTTON_UP       (1<<0)
-#define BUTTON_DOWN     (1<<1)
-#define BUTTON_LEFT  	(1<<2)
-#define BUTTON_RIGHT 	(1<<3)
-#define BUTTON_SET  	(1<<4)
-#define BUTTON_MODE     (1<<5)
-#define BUTTON_OUT      (1<<6)
-#define BUTTON_MEM      (1<<7)
-#endif
 
 #define BUTTON_HW_INIT
 #define BUTTON_HW_READ ~EXPANDER_Read()
@@ -50,24 +40,26 @@ extern "C" {
     GPIOA->ODR &= ~GPIO_PIN_2; \
     while(1);
 
-
+/**
+ * LEDS and debug pin
+ * */
 #if 1
-#define LED_PORT    GPIOB
-#define LED_PIN     GPIO_PIN_3
-#define LED_INIT    GPIOB->CRL = (GPIOB->CRL & ~(15<<12)) | (2<<12) // assume swd is already enabled
+#define LED_PIN     PC_13
+#define LED_INIT    pinInit(LED_PIN, GPO_2MHZ);
 #else// GPIO
-#define LED_PORT    GPIOA
-#define LED_PIN     GPIO_PIN_4
 #define LED_INIT
 #endif
 
-#define DBG_LED_TOGGLE HAL_GPIO_TogglePin(LED_PORT, LED_PIN)
-#define DBG_LED_OFF HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET)
-#define DBG_LED_ON HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_RESET)
-#define DBG_PIN_HIGH DBG_LED_OFF
-#define DBG_PIN_LOW DBG_LED_ON
-#define DBG_PIN_TOGGLE DBG_LED_TOGGLE
+#define LED_TOGGLE HAL_GPIO_TogglePin(PIN_NAME_TO_PORT(LED_PIN), PIN_NAME_TO_PIN(LED_PIN))
+#define LED_OFF pinWrite(LED_PIN, GPIO_PIN_SET)
+#define LED_ON  pinWrite(LED_PIN, GPIO_PIN_RESET)
+#define DBG_PIN_HIGH LED_OFF
+#define DBG_PIN_LOW LED_ON
+#define DBG_PIN_TOGGLE LED_TOGGLE
 
+/**
+ * Delay and tick count
+ * */
 #define GetTicks HAL_GetTick
 #define DelayMs(d) HAL_Delay(d)
 
@@ -76,9 +68,19 @@ static inline uint32_t ElapsedTicks(uint32_t start_ticks){
     return (current > start_ticks) ? current - start_ticks : 0xFFFFFFFF - start_ticks + current;
 }
 
-
+void TICK_Init(void);
+/**
+ * SPI
+ * */
 #define SPI_BLOCK_DMA
 
+void SPI_Init(void);
+uint8_t SPI_Send(uint8_t data);
+void SPI_Read(uint8_t *dst, uint32_t len);
+void SPI_WriteDMA(uint16_t *dst, uint32_t len);
+/**
+ * Display
+ * */
 #define TFT_W 80
 #define TFT_H 160  // 162 on GRAM
 
@@ -108,7 +110,12 @@ static inline uint32_t ElapsedTicks(uint32_t start_ticks){
 //GPIOB->CRL = (GPIOA->CRL & ~(0xF << (4<<2))) | (2 <<(4<<2));
 //GPIOB->CRL = (GPIOA->CRL & ~(0xF << (3<<2))) | (2 <<(3<<2));
 
-/* Symbols for NVDATA */
+#define LCD_W LCD_GetWidth()
+#define LCD_H LCD_GetHeight()
+
+/**
+ *  NVDATA 
+ * */
 #define NVDATA_SECTOR_INIT      
 #define NVDATA_SECTOR_START     &_seeprom
 #define NVDATA_SECTOR_END       &_eeeprom
@@ -124,21 +131,9 @@ uint32_t flashWrite(uint8_t *dst, uint8_t *data, uint16_t count);
 uint32_t flashPageErase(uint32_t PageAddress);
 void FLASH_PageErase(uint32_t PageAddress);       // HAL Function
 
-/**
- * */
-#define LCD_W LCD_GetWidth()
-#define LCD_H LCD_GetHeight()
-
-void SPI_Init(void);
-uint8_t SPI_Send(uint8_t data);
-void SPI_Read(uint8_t *dst, uint32_t len);
-void SPI_WriteDMA(uint16_t *dst, uint32_t len);
-void TICK_Init(void);
-
 /** 
- * Global variables
+ * stdout
  * */
-extern TIM_HandleTypeDef htim4;
 #ifdef ENABLE_USB_CDC
 extern StdOut vcom;
 #define DEFSTDIO vcom
@@ -150,7 +145,7 @@ extern stdout_t dummy_out;
 #endif
 
 /**
- * Function prototypes
+ * I2C
  * 
  * PB10 SCL
  * PB11 SDA
@@ -164,9 +159,11 @@ void I2C_Read(uint8_t addr, uint8_t *dst, uint32_t size);
 
 
 /**
-* Vile hack to reenumerate, physically _drag_ d+ low.
-* (need at least 2.5us to trigger usb disconnect)
-* */
+ * USB
+ * 
+ * Vile hack to reenumerate, physically _drag_ d+ low.
+ * (need at least 2.5us to trigger usb disconnect)
+ * */
 static inline void reenumerate_usb(void){
     USB->CNTR = USB_CNTR_PDWN;
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
@@ -184,7 +181,6 @@ static inline void reenumerate_usb(void){
  * PB0 PWM3 -> I load
  * PB1 PWM4 -> NA
  */
-
 #define PWM_CH_VOLTAGE     (1-1)       // Channel that controls output voltage
 #define PWM_CH_CURRENT     (2-1)       // Channel that controls output current
 #define PWM_CH_LOAD        (3-1)
@@ -218,7 +214,11 @@ void PWM_Set(uint8_t, uint16_t);
  * */
 uint16_t PWM_Get(uint8_t);
 
-#ifndef USE_ADCMUX
+
+/**
+ * ADC
+ * */
+#ifndef USE_ADCMGR
 /**
  * ADC
  *
@@ -244,11 +244,6 @@ uint16_t PWM_Get(uint8_t);
 #endif
 
 /**
- * 
- * */
-void BOARD_Init(void);
-
-/**
  * @brief Configure ADC in continuos mode using TIM2.
  * Simultaneous convertions are taken and transffered using DMA.
  * Single conversion is performed if adc mux is used
@@ -257,7 +252,7 @@ void BOARD_Init(void);
  **/
 void ADC_Init(uint16_t);
 
-#ifndef USE_ADCMUX
+#ifndef USE_ADCMGR
 /**
  *  @brief Configure callback for end of transfer of ADC convertions
  * 
@@ -288,21 +283,28 @@ void ADC_SetCallBack(void (*)(uint16_t));
  **/
 void ADC_Start(void);
 
+/**
+ * @brief Perform adc calibration and get resolution based on 
+ * internal 1.2V reference
+ * 
+ * */
+void ADC_Calibrate(void);
 
 float ADC_GetResolution(void);
 uint16_t ADC_GetCalibration(void);
 #endif
 
-/** ***********************************************************
- *
- * RTC Init
- */ 
- 
- void RTC_Init(void);
+/**
+ * RTC
+ */  
+void RTC_Init(void);
 
+/**
+ * General
+ * */
+void BOARD_Init(void);
 
-
- void Error_Handler(const char *file, int line);
+void Error_Handler(const char *file, int line);
  
 #ifdef __cplusplus
 }
