@@ -22,6 +22,7 @@ static CmdPwm pwm;
 static CmdPwr pwr;
 static CmdIo io;
 static CmdSet set;
+static CmdReset reset;
 #ifdef ENABLE_DFU
 static CmdDfu dfu;
 #endif
@@ -36,6 +37,7 @@ static ConsoleCommand *commands[] = {
 #ifdef ENABLE_DFU
     &dfu,
 #endif
+    &reset,
     NULL
 };
 
@@ -236,6 +238,10 @@ void tskCmdLine(void *ptr){
     #ifdef ENABLE_DEBUG
     dbg_init(&DEFSTDIO);
     #endif
+    // wait for usb to start if connected
+    vTaskDelay(pdMS_TO_TICKS(500));
+
+    console.cls();
 
     while(1){
         console.process();

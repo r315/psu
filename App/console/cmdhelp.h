@@ -29,6 +29,19 @@ public:
 	}	
 };
 
+class CmdReset : public ConsoleCommand {
+public:
+    CmdReset() : ConsoleCommand("reset") {}	
+	void init(void *params) { }
+
+	void help(void) { }
+
+	char execute(void *ptr) {
+		NVIC_SystemReset();
+		return CMD_OK;
+	}	
+};
+
 
 #ifdef __cplusplus
 }
