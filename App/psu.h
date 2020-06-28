@@ -80,19 +80,24 @@ extern "C" {
 #define IS_AD_FLAG_SET(x)   IS_FLAG_SET(x,1)
 
 
-typedef enum {MODEST_NORMAL = 0, MODEST_SET_V, MODEST_SET_I, MODEST_SET_SHOW} modestate_t;
+typedef enum {
+    MODEST_NORMAL = 0, 
+    MODEST_SET_V, 
+    MODEST_SET_I, 
+    MODEST_SET_SHOW
+}modestate_e;
 
 typedef struct pwmcal{
     uint16_t min;
     uint16_t max;
-    uint16_t start;
+    uint16_t init;
 }pwmcal_t;
 
 typedef struct psu{ 
-    uint8_t mode;
+    uint8_t mode_idx;
     volatile uint8_t flags;
     uint8_t eeprom[EEPROM_SIZE];
-    pwmcal_t pwm_cal[PWM_NUM_CH];    
+    pwmcal_t pwm_ch[PWM_NUM_CH];    
     void *ptr;
 }psu_t;
 
@@ -104,7 +109,7 @@ protected:
     float set_min;
     uint8_t digit;
     int8_t base_place;
-    modestate_t mode_state;
+    modestate_e mode_state;
     uint8_t count;
     void selectDigit(int8_t sel);
     void changeDigit(int8_t base);

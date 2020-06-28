@@ -50,10 +50,10 @@ static pwmcal_t default_cal_data[PWM_NUM_CH] = {
 };
 
 // ch1, ch2, ......
-static const uint8_t adc_seq[] = {0 , 1};
+static const uint8_t adc_seq[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
-    uint16_t pwm_value = (x - in_min) * (psu.pwm_cal[ch].max - psu.pwm_cal[ch].min) / (in_max - in_min) + psu.pwm_cal[ch].min;
+    uint16_t pwm_value = (x - in_min) * (psu.pwm_ch[ch].max - psu.pwm_ch[ch].min) / (in_max - in_min) + psu.pwm_ch[ch].min;
     PWM_Set(ch, pwm_value);
 }
 
@@ -77,8 +77,7 @@ void psu_setInputLoad(float val, float max, float min){
     mapAndSetPwm(val, max, min, PWM_CH_LOAD);
 }
 
-void psu_setOutputEnable(uint8_t en){
-    
+void psu_setOutputEnable(uint8_t en){    
     if(en){
         SET_OE_FLAG;
         DRAW_Icon(OUTPUT_ICON_POS, (uint8_t *)icon_out, RED);
@@ -103,6 +102,7 @@ float psu_getLoadCurrent(void){
 uint8_t psu_getOutputEnable(void){
     return  GET_OE_FLAG;
 }
+
 /**
  * Application api
  * */
@@ -112,7 +112,7 @@ void app_selectMode(uint8_t mode){
         return;
     }
 
-    psu.mode = mode;    
+    psu.mode_idx = mode;    
     (modes[mode])->init();
     // Mode clears screen, so must redraw output icon,
     // only if active
@@ -120,7 +120,7 @@ void app_selectMode(uint8_t mode){
 }
 
 void app_cycleMode(void){
-uint8_t mode = psu.mode + 1;
+uint8_t mode = psu.mode_idx + 1;
     
     if(mode == MAX_MODES ){
         mode = 0;
@@ -138,7 +138,7 @@ void app_checkButtons(){
         switch(BUTTON_VALUE){
             case BUTTON_MODE: app_cycleMode(); break;
             case BUTTON_OUT: psu_setOutputEnable(!GET_OE_FLAG); break;
-            case BUTTON_SET: modes[psu.mode]->modeSet(); break;
+            case BUTTON_SET: modes[psu.mode_idx]->modeSet(); break;
         }
     }
 }
@@ -207,14 +207,14 @@ void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;    
 uint8_t count = 0;
 
-    app_selectMode(psu.mode);
+    app_selectMode(psu.mode_idx);
 
     ADCMGR_Start();
 
     while(1){
         app_checkButtons();
         //DBG_PIN_HIGH;
-        modes[psu.mode]->process(&psu);
+        modes[psu.mode_idx]->process(&psu);
         //DBG_PIN_LOW;        
         if(GET_AD_FLAG){
             CLR_AD_FLAG;
@@ -232,6 +232,7 @@ uint8_t count = 0;
 void tskCmdLine(void *ptr){
     
     DEFSTDIO.init();    
+
     console.init(&DEFSTDIO, CONSOLE_PROMPT);
     console.registerCommandList(commands);
 
@@ -249,7 +250,7 @@ void tskCmdLine(void *ptr){
 }
 
 extern "C" void app_setup(void){  
-uint16_t pwm_start_values[PWM_NUM_CH];
+uint16_t pwm_init_values[PWM_NUM_CH];
 
     BOARD_Init();
     TEXT_Init();
@@ -257,16 +258,20 @@ uint16_t pwm_start_values[PWM_NUM_CH];
 
     app_InitEEPROM(psu.eeprom);
 
-    memcpy(psu.pwm_cal, default_cal_data, sizeof(pwmcal_t) * PWM_NUM_CH);
-
+    memcpy(psu.pwm_ch, default_cal_data, sizeof(pwmcal_t) * PWM_NUM_CH);
     cpsu.initPreSetValues(MIN_VOLTAGE, MIN_CURRENT);
 
-    PWM_Init(pwm_start_values);
+    psu.mode_idx = 0;
+
+    for (uint8_t i = 0; i < PWM_NUM_CH; i++){
+        pwm_init_values[i] = psu.pwm_ch[i].init;
+    }    
+
+    PWM_Init(pwm_init_values);
+
     ADCMGR_Init();
 
     ADCMGR_SetSequence((uint8_t*)adc_seq, sizeof(adc_seq), psu_adc_cb);
-
-    psu.mode = 0;
 
     xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
