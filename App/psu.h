@@ -22,6 +22,8 @@ extern "C" {
 #include "nvdata.h"
 #include "dbg.h"
 
+#define PRIORITY_LOW                3
+
 #define VOLTAGE_PRECISION           0.005f  //MAX_VOLTAGE / 2^ADC_RESOLUTION
 #define CURRENT_PRECISION           0.0008f
 #define MAX_VOLTAGE                 14.0f

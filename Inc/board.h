@@ -134,14 +134,25 @@ void FLASH_PageErase(uint32_t PageAddress);       // HAL Function
 /** 
  * stdout
  * */
-#ifdef ENABLE_USB_CDC
-extern StdOut vcom;
-#define DEFSTDIO vcom
+#if defined(ENABLE_USB_CDC) || defined(ENABLE_UART)
+extern StdOut stdio_ops;
+#define DEFSTDIO stdio_ops
 #elif defined(ENABLE_DEBUG)
 extern stdout_t dummy_out;
 #define DEFSTDIO dummy_out
-#else
-// TODO:
+#endif
+
+
+#if defined(ENABLE_USB_CDC)
+void MX_USB_DEVICE_Init(void);
+#elif defined(ENABLE_UART)
+
+#define UART_TX_PIN     PA_9
+#define UART_RX_PIN     PA_10
+
+#define IRQ_PRIORITY_LOW            5 //configLIBRARY_LOWEST_INTERRUPT_PRIORITY
+
+void UART_Init(void);
 #endif
 
 /**

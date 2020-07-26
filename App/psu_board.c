@@ -8,6 +8,7 @@
 
 static I2C_HandleTypeDef hi2c2;
 
+
 void BOARD_Init(void){
     
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPCEN;
@@ -105,41 +106,53 @@ uint16_t PWM_Get(uint8_t ch){
 }
 
 /**
- * virtual com port stuff
+ * Console stdout, stdin
  * */
-#ifdef ENABLE_USB_CDC
-#define VC_QUEUE_LENGTH 10
-#define VC_QUEUE_ITEM_SIZE 1
+#define STDIN_QUEUE_LENGTH 128
+#define STDOUT_QUEUE_LENGTH 128
+#define STDIO_QUEUE_ITEM_SIZE 1
 
-static QueueHandle_t chars_queue;
+static QueueHandle_t stdin_queue;
+static QueueHandle_t stdout_queue;
 
-static void vc_init(void){
-    chars_queue = xQueueCreate( VC_QUEUE_LENGTH, VC_QUEUE_ITEM_SIZE );
-    configASSERT( chars_queue != NULL );
+// called from ISR
+void stdin_queue_char(uint8_t *c){
+    xQueueSendToBackFromISR(stdin_queue, c, NULL);
 }
 
-// called from cdc interface
-void vc_put(uint8_t *c){
-    if(chars_queue != NULL)
-        xQueueSendFromISR(chars_queue, c, 0);
-}
-
-static uint8_t vc_getCharNonBlocking(char *c){
-    if(chars_queue == NULL)
+static uint8_t stdin_try_dequeue(char *c){
+    if(stdin_queue == NULL)
         return 0;
-    return xQueueReceive(chars_queue, c, 0) == pdPASS;
+    return xQueueReceive(stdin_queue, c, 0) == pdPASS;
 }
 
-static char vc_getchar(void){
+static char stdin_wait_char(void){
     char c;
-    xQueueReceive(chars_queue, &c, portMAX_DELAY);
+    xQueueReceive(stdin_queue, &c, portMAX_DELAY);
     return c;
 }
 
-uint8_t vc_kbhit(void){
-    return VC_QUEUE_LENGTH - uxQueueSpacesAvailable(chars_queue);
+uint8_t stdin_queued(void){
+    return STDIN_QUEUE_LENGTH - uxQueueSpacesAvailable(stdin_queue);
 }
 
+static void stdio_init(void){
+    stdin_queue = xQueueCreate( STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE );
+    configASSERT( stdin_queue != NULL );
+
+    stdout_queue = xQueueCreate( STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE );
+    configASSERT( stdout_queue != NULL );
+
+    #if defined(ENABLE_USB_CDC)
+    MX_USB_DEVICE_Init();
+    #elif defined(ENABLE_UART)
+    UART_Init();
+    #endif
+}
+
+
+
+#ifdef ENABLE_USB_CDC
 static void putAndRetry(uint8_t *data, uint16_t len){
 uint32_t retries = 1000;
 	while(retries--){
@@ -148,11 +161,11 @@ uint32_t retries = 1000;
 	}
 }
 
-static void vc_putchar(char c){
+static void stdout_enqueue_char(char c){
 	putAndRetry((uint8_t*)&c, 1);
 }
 
-static void vc_puts(const char *s){
+static void stdout_puts(const char *s){
 uint16_t len = 0;
 	
 	while( *((const char*)(s + len)) != '\0'){
@@ -160,16 +173,76 @@ uint16_t len = 0;
 	}
 	putAndRetry((uint8_t*)s, len);
 }
+#endif
 
-StdOut vcom = {
-    .init = vc_init,
-    .xgetchar = vc_getchar,
-    .xputchar = vc_putchar,
-    .xputs = vc_puts,
-    .getCharNonBlocking = vc_getCharNonBlocking,
-    .kbhit = vc_kbhit
+#if defined(ENABLE_UART) 
+
+
+void UART_Init(void){
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+    RCC->APB2RSTR |= RCC_APB2RSTR_USART1RST;
+    RCC->APB2RSTR &= ~RCC_APB2RSTR_USART1RST;
+
+    pinInit(UART_TX_PIN, GPO_AF | GPO_2MHZ);  // TX
+    pinInit(UART_RX_PIN, GPI_PU);            // RX
+
+    USART1->BRR = 0x271;        //115200
+    USART1->CR1 = USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
+
+    //USART1->CR1 |= USART_CR1_UE;
+    //while((USART1->SR & USART_SR_TC) == 0);
+    //NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );  
+    HAL_NVIC_SetPriority(USART1_IRQn, IRQ_PRIORITY_LOW ,0);
+    NVIC_EnableIRQ(USART1_IRQn);
+}
+
+static void stdout_enqueue_char(char c){
+    xQueueSendToBack(stdout_queue, &c, pdMS_TO_TICKS(100));
+    USART1->CR1 |= USART_CR1_TXEIE;
+}
+
+static void stdout_puts(const char *s){
+    while(*s){
+        xQueueSendToBack(stdout_queue, s++, pdMS_TO_TICKS(100));
+    }
+    USART1->CR1 |= USART_CR1_TXEIE;
+}
+
+void USART1_IRQHandler(void){
+volatile uint32_t status = USART1->SR;
+uint8_t data;
+
+    // Data received
+    if (status & USART_SR_RXNE) {
+        USART1->SR &= ~USART_SR_RXNE;
+        stdin_queue_char((uint8_t*)&USART1->DR);
+    }
+    
+    // Check if data transmiter if empty 
+    if (status & USART_SR_TXE) {
+        USART1->SR &= ~USART_SR_TXE;	          // clear interrupt
+        // Check if data is available to send
+        if(xQueueReceiveFromISR( stdout_queue, &data, NULL) == pdPASS){        
+            USART1->DR = data;            
+        }else{
+            // No more data, disable interrupt
+            USART1->CR1 &= ~USART_CR1_TXEIE;      // disable TX interrupt if nothing to send
+        }
+    }    
+}
+#endif
+
+#if defined(ENABLE_USB_CDC) || defined(ENABLE_UART)
+StdOut stdio_ops = {
+    .init = stdio_init,
+    .xgetchar = stdin_wait_char,
+    .xputchar = stdout_enqueue_char,
+    .xputs = stdout_puts,
+    .getCharNonBlocking = stdin_try_dequeue,
+    .kbhit = stdin_queued
 };
 #endif
+
 /**
  * ADC Driver
  * */

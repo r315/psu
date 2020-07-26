@@ -83,7 +83,7 @@ $(FREERTOS_DIR)/timers.c \
 $(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
 
 # USB lib
-C_SOURCES += \
+#C_SOURCES += \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
@@ -175,7 +175,8 @@ C_DEFS =  \
 -DUSE_MULTIPLE_FONTS \
 -DUSE_COURIER_FONT \
 -DUSE_GROTESKBOLD_FONT \
--DENABLE_USB_CDC \
+-D_ENABLE_USB_CDC \
+-DENABLE_UART \
 
 # compile gcc flags
 ifeq ($(DEBUG), 1)

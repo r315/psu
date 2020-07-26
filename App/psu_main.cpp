@@ -231,13 +231,16 @@ uint8_t count = 0;
 
 void tskCmdLine(void *ptr){
     
-    DEFSTDIO.init();    
+    
+    stdout_t *stdio_port = (stdout_t*)ptr;
 
-    console.init(&DEFSTDIO, CONSOLE_PROMPT);
+    stdio_port->init();    
+
+    console.init(stdio_port, CONSOLE_PROMPT);
     console.registerCommandList(commands);
 
     #ifdef ENABLE_DEBUG
-    dbg_init(&DEFSTDIO);
+    dbg_init(stdio_port);
     #endif
     // wait for usb to start if connected
     vTaskDelay(pdMS_TO_TICKS(500));
@@ -273,8 +276,8 @@ uint16_t pwm_init_values[PWM_NUM_CH];
 
     ADCMGR_SetSequence((uint8_t*)adc_seq, sizeof(adc_seq), psu_adc_cb);
 
-    xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
-    xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL );
+    xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, &DEFSTDIO, PRIORITY_LOW, NULL );
+    xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, PRIORITY_LOW + 1, NULL );
 }
 
 
