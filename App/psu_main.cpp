@@ -42,11 +42,14 @@ static ConsoleCommand *commands[] = {
 };
 
 // min, max, start
-static pwmcal_t default_cal_data[PWM_NUM_CH] = { 
-    {0, (1<<PWM_RESOLUTION), 100 },
-    {0, (1<<PWM_RESOLUTION), 100 },
-    {0, (1<<PWM_RESOLUTION), 100 },    
-    {0, (1<<PWM_RESOLUTION), 100 },
+static uint16_t default_eeprom_data[] = {
+    0,                              // cur_mode/rsv1
+    0, (1<<PWM_RESOLUTION), 100,    // pwm1 calibration
+    0, (1<<PWM_RESOLUTION), 100,    // pwm2 calibration
+    0, (1<<PWM_RESOLUTION), 100,    // pwm3 calibration
+    0, (1<<PWM_RESOLUTION), 100,    // pwm4 calibration
+    0x999A, 0x3f99,                 // v_out (1.2f)
+    0, 0                            // i_out (0.0f)
 };
 
 // ch1, ch2, ......
@@ -65,16 +68,16 @@ extern "C" void psu_adc_cb(uint16_t *data){
 /**
  * PSU public control functions
  * */
-void psu_setOutputVoltage(float val, float max, float min){
-    mapAndSetPwm(val, max, min, PWM_CH_VOLTAGE);
+void psu_setOutputVoltage(float val){
+    mapAndSetPwm(val, MAX_VOLTAGE, MIN_VOLTAGE, PWM_CH_VOLTAGE);
 }
 
-void psu_setOutputCurrent(float val, float max, float min){
-    mapAndSetPwm(val, max, min, PWM_CH_CURRENT);
+void psu_setOutputCurrent(float val){
+    mapAndSetPwm(val, MAX_CURRENT, MIN_CURRENT, PWM_CH_CURRENT);
 }
 
-void psu_setInputLoad(float val, float max, float min){
-    mapAndSetPwm(val, max, min, PWM_CH_LOAD);
+void psu_setInputLoad(float val){
+    mapAndSetPwm(val, MAX_LOAD, MIN_LOAD, PWM_CH_LOAD);
 }
 
 void psu_setOutputEnable(uint8_t en){    
@@ -111,8 +114,7 @@ void app_selectMode(uint8_t mode){
     if(mode >= MAX_MODES){
         return;
     }
-
-    psu.mode_idx = mode;    
+    psu.cur_mode = mode;    
     (modes[mode])->init();
     // Mode clears screen, so must redraw output icon,
     // only if active
@@ -120,7 +122,7 @@ void app_selectMode(uint8_t mode){
 }
 
 void app_cycleMode(void){
-uint8_t mode = psu.mode_idx + 1;
+uint8_t mode = psu.cur_mode + 1;
     
     if(mode == MAX_MODES ){
         mode = 0;
@@ -138,7 +140,7 @@ void app_checkButtons(){
         switch(BUTTON_VALUE){
             case BUTTON_MODE: app_cycleMode(); break;
             case BUTTON_OUT: psu_setOutputEnable(!GET_OE_FLAG); break;
-            case BUTTON_SET: modes[psu.mode_idx]->modeSet(); break;
+            case BUTTON_SET: modes[psu.cur_mode]->modeSet(); break;
         }
     }
 }
@@ -147,7 +149,9 @@ void app_checkButtons(){
  * @brief
  * 
  * */
-void app_InitEEPROM(uint8_t *dst){
+void app_InitEEPROM(void){
+
+    memcpy(&psu, default_eeprom_data, sizeof(default_eeprom_data));
 /*
 uint8_t bind_flag;
     
@@ -207,14 +211,14 @@ void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;    
 uint8_t count = 0;
 
-    app_selectMode(psu.mode_idx);
+    app_selectMode(psu.cur_mode);
 
     ADCMGR_Start();
 
     while(1){
         app_checkButtons();
         //DBG_PIN_HIGH;
-        modes[psu.mode_idx]->process(&psu);
+        modes[psu.cur_mode]->process(&psu);
         //DBG_PIN_LOW;        
         if(GET_AD_FLAG){
             CLR_AD_FLAG;
@@ -253,28 +257,25 @@ void tskCmdLine(void *ptr){
 }
 
 extern "C" void app_setup(void){  
-uint16_t pwm_init_values[PWM_NUM_CH];
-
     BOARD_Init();
     TEXT_Init();
     NV_Init();
 
-    app_InitEEPROM(psu.eeprom);
+    app_InitEEPROM();
 
-    memcpy(psu.pwm_ch, default_cal_data, sizeof(pwmcal_t) * PWM_NUM_CH);
-    cpsu.initPreSetValues(MIN_VOLTAGE, MIN_CURRENT);
-
-    psu.mode_idx = 0;
-
-    for (uint8_t i = 0; i < PWM_NUM_CH; i++){
-        pwm_init_values[i] = psu.pwm_ch[i].init;
-    }    
-
-    PWM_Init(pwm_init_values);
+    PWM_Init();
 
     ADCMGR_Init();
 
     ADCMGR_SetSequence((uint8_t*)adc_seq, sizeof(adc_seq), psu_adc_cb);
+
+    cpsu.initPreSetValues(psu.v_out, psu.i_out);
+
+    psu_setOutputEnable(FALSE);
+
+    psu_setOutputVoltage(psu.v_out);
+
+    psu_setOutputCurrent(psu.i_out);
 
     xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, &DEFSTDIO, PRIORITY_LOW, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, PRIORITY_LOW + 1, NULL );

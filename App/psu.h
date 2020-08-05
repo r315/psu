@@ -96,10 +96,13 @@ typedef struct pwmcal{
 }pwmcal_t;
 
 typedef struct psu{ 
-    uint8_t mode_idx;
-    volatile uint8_t flags;
-    uint8_t eeprom[EEPROM_SIZE];
+    uint8_t cur_mode;
+    uint8_t preset;
     pwmcal_t pwm_ch[PWM_NUM_CH];    
+    uint8_t crc;
+    float   v_out;
+    float   i_out;
+    volatile uint8_t flags;
     void *ptr;
 }psu_t;
 
@@ -208,13 +211,13 @@ uint8_t psu_getOutputEnable(void);
 /**
  * @brief Set/Get PSU output voltage
  * */
-void psu_setOutputVoltage(float val, float max, float min);
+void psu_setOutputVoltage(float val);
 float psu_getVoltage(void);
 
 /**
  * @brief Set/Get PSU output current
  * */
-void psu_setOutputCurrent(float val, float max, float min);
+void psu_setOutputCurrent(float val);
 float psu_getCurrent(void);
 
 /**

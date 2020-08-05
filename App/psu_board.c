@@ -59,7 +59,7 @@ void TIM4_IRQHandler(void){
  * \param initial - startup duty for each channel
  * 
  * */
-void PWM_Init(uint16_t *initial){
+void PWM_Init(void){
 
      /* Configure Timer 3 */
     RCC->APB1ENR  |= RCC_APB1ENR_TIM3EN;
@@ -72,11 +72,11 @@ void PWM_Init(uint16_t *initial){
     TIM3->CCER = TIM_CCER_CC4E | TIM_CCER_CC3E | TIM_CCER_CC2E | TIM_CCER_CC1E;
     TIM3->PSC = 1; // Timer3 freq = SystemClock / 2
 
-    TIM3->ARR = (1<<PWM_RESOLUTION) - 1;
-    TIM3->CCR1 = initial[0];
-    TIM3->CCR2 = initial[1];
-    TIM3->CCR3 = initial[2];
-    TIM3->CCR4 = initial[3];
+    TIM3->ARR = PWM_MAX_VALUE - 1;
+    TIM3->CCR1 = (PWM_MAX_VALUE >> 1) - 1;
+    TIM3->CCR2 = (PWM_MAX_VALUE >> 1) - 1;
+    TIM3->CCR3 = (PWM_MAX_VALUE >> 1) - 1;
+    TIM3->CCR4 = (PWM_MAX_VALUE >> 1) - 1;
     
     TIM3->CR1 |= TIM_CR1_CEN;     // Start pwm before enable outputs
 
@@ -294,7 +294,7 @@ float ADC_GetResolution(void){
 
 
 /**
- * @brief Configire sample time for a channel
+ * @brief Configure sample time for a channel
  * */
 static void adcSampleTime(uint16_t ch, uint16_t time){
     if(ch > 17){  // Max 17 channels

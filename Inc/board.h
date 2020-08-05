@@ -201,13 +201,13 @@ static inline void reenumerate_usb(void){
 #define PWM_NUM_CH          4          // Number of channels
 
 /**
- * Initialyse PWM signal on PA7-6 and PB1-0 pins
+ * Initialyse PWM signal on PB5-4 and PB1-0 pins
  * Timer 3 is used to generate pwm signals with 10bit resolution,
  * which using a 72MHz system frequency results in a 35,156KHz frequency
  * 
  * \param  none
  * */ 
-void PWM_Init(uint16_t *);
+void PWM_Init(void);
 
 /**
  * Sets duty cycle for the given channel
