@@ -9,12 +9,12 @@ void CmdPwm::help(void){
     console->print("Control mode (no value specified on command):\n\n");
     console->print("\t+/-, change duty\n");
     console->print("\tv, enter value\n");
-    console->print("\tq, quit\n");
-    console->xputs("\nPins:\n"
-                "\tPB4 -> PWM1\n"
-                "\tPB5 -> PWM2\n"
-                "\tPB0 -> PWM3\n"
-                "\tPB1 -> PWM4");
+    console->print("\tq, quit\n\nPins:\n");
+    console->print(
+                "\tPWM1 (PB4): %d\n"
+                "\tPWM2 (PB5): %d\n"
+                "\tPWM3 (PB0): %d\n"
+                "\tPWM4 (PB1): %d\n", PWM_Get(0), PWM_Get(1), PWM_Get(2), PWM_Get(3));
 }
 
 char CmdPwm::execute(void *ptr){
