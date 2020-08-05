@@ -9,8 +9,9 @@ void CmdAdc::help(void){
     console->print("Commands:\n");
     console->print("\tres\t\tResolution\n");
     console->print("\tcal\t\tCalibrate ADC\n");
-    console->print("\tread <ch>\tread channel value\n");
-    console->print("\tplot <ch>\tconstantly plot channel value in to graph, 'q' to stop\n\n");
+    console->print("\tread <ch|all>\tread channel value\n");
+    //console->print("\tplot <ch>\tconstantly plot channel value in to graph, 'q' to stop\n\n");
+    console->print("\tgain <ch> <float>\tset channel gain\n");
 }
 
 void CmdAdc::printResolution(void){
@@ -54,7 +55,15 @@ int32_t intvalue;
         if(nextInt(&param, &intvalue)){
             printChannelVoltage(intvalue);
             return CMD_OK;
-        }      
+        }
+
+        if(!xstrcmp(param, "all")){
+            for (size_t i = 0; i < ADCMGR_NUM_CHANNELS; i++)
+            {
+                printChannelVoltage(i);
+            }
+            return CMD_OK;
+        }
     }
 
     return CMD_BAD_PARAM;

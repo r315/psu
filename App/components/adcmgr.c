@@ -84,6 +84,18 @@ void ADCMGR_Start(void){
 }
 
 /**
+ * @brief Stops sequence conversion
+ * */
+void ADCMGR_Stop(void){
+    if(adcmgr_eoc_cb != NULL){
+        while(seq_idx != seq_len){
+            seq_len = 0;
+            adcmgr_eoc_cb = NULL;
+        }
+    }
+}
+
+/**
  * @brief Get channel voltage
  * 
  * \param channel : Channel 
