@@ -77,8 +77,8 @@ void ScreenPsu::modeSet(void){
 
         case MODEST_SET_I:
             mode_state = MODEST_NORMAL;
-            psu_setOutputVoltage(set_v, MAX_VOLTAGE, MIN_VOLTAGE);
-            psu_setOutputCurrent(set_i, MAX_CURRENT, MIN_CURRENT);
+            psu_setOutputVoltage(set_v);
+            psu_setOutputCurrent(set_i);
 
         default:    
             break;

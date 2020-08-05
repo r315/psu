@@ -5,6 +5,17 @@
 
 uint8_t graph_data[2][GRAPH_MAX_DATA];
 
+/**
+ * @brief Configure graph
+ * 
+ * \param x,y : X,Y graph position
+ * \param xsize : number of points on X axis
+ * \param ysize : number of points on Y axis
+ * \param plt : Color palette, plt[0] Graph background
+ *                             plt[1] Graph axis color
+ *                             plt[2] trace 1 color
+ *                             ....
+ * */
 void Graph::init(uint8_t x, uint8_t y, uint8_t xsz, uint8_t ysz, uint16_t *plt){
     pal = plt;
     xsize = xsz - 1;
@@ -15,11 +26,17 @@ void Graph::init(uint8_t x, uint8_t y, uint8_t xsz, uint8_t ysz, uint16_t *plt){
     head = tail = 0;
 }
 
+/**
+ * @brief Clears graph and graph data
+ * */
 void Graph::clear(){
     DRAW_FillRect(posx, posy, xsize, ysize, pal[0]);
     memset(graph_data, 0 , sizeof(graph_data));
 }
 
+/**
+ * @brief Redraws full graph and plots current graph data
+ * */
 void Graph::redraw(){
     drawGraphAxis();
     update();
@@ -30,6 +47,14 @@ void Graph::drawGraphAxis(void){
     DRAW_HLine(posx, posy + ysize + 1, xsize, pal[1]);
 }
 
+/**
+ * @brief Adds point to graph, each point is added to the last x.
+ * When x is equal to graph width the graph starts scrolling and each new
+ * point added is ploted on to graph end.
+ * 
+ * \param value : y value
+ * \param flags : bits 7:4 not used, bits 3:0 trace
+ * */
 void Graph::addPoint(uint8_t value, uint8_t flags){
     if(value > ysize){
         value = ysize;

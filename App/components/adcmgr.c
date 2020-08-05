@@ -1,12 +1,12 @@
 #include "adcmgr.h"
 #include "board.h"
 
-static uint16_t adcmgr_ch_data[ADCMGR_MAX_CHANNELS];
+static uint16_t adcmgr_ch_data[ADCMGR_NUM_CHANNELS];
 static void (*adcmgr_eoc_cb)(uint16_t *seq);
 static uint8_t *seq;
 static uint8_t seq_len, seq_idx;
 
-static float adcmgr_ch_gain[ADCMGR_MAX_CHANNELS];
+static float adcmgr_ch_gain[ADCMGR_NUM_CHANNELS];
 
 /**
  * @brief Select channel on external mux
@@ -14,7 +14,7 @@ static float adcmgr_ch_gain[ADCMGR_MAX_CHANNELS];
  * \param channel : Channel to be selected
  * */
 static void adc_mux_select_ch(uint8_t channel){
-    //TODO:
+    
 }
 
 /**
@@ -39,11 +39,10 @@ static void adcmgr_cb(uint16_t data){
  * */
 void ADCMGR_Init(void){
     ADC_Init(0);
-    for (uint8_t i = 0; i < ADCMGR_MAX_CHANNELS; i++)
+    for (uint8_t i = 0; i < ADCMGR_NUM_CHANNELS; i++)
     {
        adcmgr_ch_gain[i] = 1.0f;
-    }
-    
+    }    
 }
 
 /**
@@ -58,7 +57,8 @@ uint16_t ADCMGR_Convert(uint8_t channel){
 
 /**
  * @brief Configures a sequence of channels to be converted and end of convertion
- * callback
+ * callback. If sequence is already set ADCMGR_Stop must be called prior calling
+ * ADCMRG_SetSequence.
  * 
  * \param s   : Pointer to channel sequence
  * \param len : Size of sequence
