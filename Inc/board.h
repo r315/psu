@@ -29,7 +29,7 @@ extern "C" {
 #define BUTTON_MEM      (1<<7)
 
 #define BUTTON_HW_INIT
-#define BUTTON_HW_READ ~EXPANDER_Read()
+#define BUTTON_HW_READ (255 - EXPANDER_Read())
 #define BUTTON_MASK (BUTTON_LEFT | BUTTON_RIGHT | BUTTON_UP   | BUTTON_DOWN |\
                      BUTTON_SET  | BUTTON_OUT   | BUTTON_MODE | BUTTON_MEM)
 #define BUTTON_VALUE (uint8_t)BUTTON_GetValue()

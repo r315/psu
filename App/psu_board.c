@@ -150,8 +150,6 @@ static void stdio_init(void){
     #endif
 }
 
-
-
 #ifdef ENABLE_USB_CDC
 static void putAndRetry(uint8_t *data, uint16_t len){
 uint32_t retries = 1000;

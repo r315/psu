@@ -5,9 +5,9 @@
 volatile uint8_t lcd_busy = 0;
 static uint16_t _color;
 // use dual buffer for speed
-uint16_t _scratch[2][SCRATCH_BUF_SIZE];
-uint16_t *scratch = _scratch[0];
+static uint16_t _scratch[2][SCRATCH_BUF_SIZE];
 static uint8_t bufidx = 0;
+uint16_t *scratch = _scratch[0];
 
 /**
  * Called from DMA end of transfer interrupt
@@ -34,7 +34,7 @@ void DRAW_Bitmap(uint16_t x, uint16_t y, uint16_t *data){
  * 
  * @param x : x position
  * @param y : y position
- * @param data : tile data
+ * @param data : tile data, usually the scratch pointer 
  * @param w : tile width
  * @param h : tile height
  */
