@@ -27,6 +27,7 @@ static CmdReset reset;
 #ifdef ENABLE_DFU
 static CmdDfu dfu;
 #endif
+static CmdStatus status;
 
 static ConsoleCommand *commands[] = {
     &help,
@@ -39,6 +40,7 @@ static ConsoleCommand *commands[] = {
     &dfu,
 #endif
     &reset,
+    &status,
     NULL
 };
 
