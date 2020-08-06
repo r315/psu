@@ -3,7 +3,7 @@
 #include "draw.h"
 #include "psu.h"
 
-uint8_t graph_data[2][GRAPH_MAX_DATA];
+uint8_t graph_data[GRAPH_MAX_TRACE][GRAPH_MAX_DATA];
 
 /**
  * @brief Configure graph
@@ -22,16 +22,14 @@ void Graph::init(uint8_t x, uint8_t y, uint8_t xsz, uint8_t ysz, uint16_t *plt){
     ysize = ysz;
     posx = x + 1;
     posy = y;
-    scroll = false;
-    head = tail = 0;
+    reset();
 }
 
 /**
- * @brief Clears graph and graph data
+ * @brief Clears graph
  * */
 void Graph::clear(){
     DRAW_FillRect(posx, posy, xsize, ysize, pal[0]);
-    memset(graph_data, 0 , sizeof(graph_data));
 }
 
 /**
@@ -48,7 +46,7 @@ void Graph::drawGraphAxis(void){
 }
 
 /**
- * @brief Adds point to graph, each point is added to the last x.
+ * @brief Adds point to graph data buffer, each point is added to the last x.
  * When x is equal to graph width the graph starts scrolling and each new
  * point added is ploted on to graph end.
  * 
@@ -94,21 +92,25 @@ void Graph::update(){
     }
 
     for(uint8_t i = 0; i < npoints; i++){
+        // Erase graph data for current point
         DRAW_VLine(posx + i, posy + 1, ysize, pal[0]);
 
         for(uint8_t trace = 0; trace < GRAPH_MAX_TRACE; trace++){
-            uint8_t data = graph_data[trace][tt];            
+            uint8_t data = graph_data[trace][tt];
             DRAW_Pixel(posx + i, posy + ysize - data, pal[trace + 2]);
         }        
         
-        if( (++tt) > GRAPH_MAX_DATA){
+        if( (++tt) >= GRAPH_MAX_DATA){
             tt = 0;
         }
     }
 }
 
+/**
+ * @brief Clears and reset graph data buffer
+ * */
 void Graph::reset(){
-    clear();
     tail = head = 0;
     scroll = false;
+    memset(graph_data, 0 , sizeof(graph_data));
 }
