@@ -109,6 +109,21 @@ uint8_t psu_getOutputEnable(void){
     return  GET_OE_FLAG;
 }
 
+uint8_t psu_AdcReady(void){
+    return GET_AD_FLAG;
+}
+
+preset_t *psu_getPreset(void){
+    return psu.preset;
+}
+
+preset_t *psu_getPresetList(void){
+    return (preset_t*)default_preset;
+}
+
+void psu_setPreset(preset_t *preset){
+    psu.preset = preset;
+}
 /**
  * Application api
  * */
@@ -221,7 +236,7 @@ uint8_t count = 0;
     while(1){
         app_checkButtons();
         //DBG_PIN_HIGH;
-        modes[psu.cur_mode]->process(&psu);
+        modes[psu.cur_mode]->process();
         //DBG_PIN_LOW;        
         if(GET_AD_FLAG){
             CLR_AD_FLAG;
@@ -272,15 +287,13 @@ extern "C" void app_setup(void){
 
     ADCMGR_SetSequence((uint8_t*)adc_seq, sizeof(adc_seq), psu_adc_cb);
 
-    cpsu.initPreSetValues(psu.v_out, psu.i_out);
-
     psu_setOutputEnable(FALSE);
 
-    psu_setOutputVoltage(psu.v_out);
+    psu_setOutputVoltage(psu.preset->v);
 
-    psu_setOutputCurrent(psu.i_out);
+    psu_setOutputCurrent(psu.preset->i);
 
-    xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, &DEFSTDIO, PRIORITY_LOW, NULL );
+    xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, &stdio_ops, PRIORITY_LOW, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, PRIORITY_LOW + 1, NULL );
 }
 

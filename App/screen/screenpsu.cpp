@@ -25,7 +25,9 @@ static uint16_t txt_pal[2] = {BLACK, PINK};
 static uint16_t graph_pal[] = {RGB565(5,10,5), RED, GREEN, YELLOW};
 
 void ScreenPsu::init(void){
-
+    preset_t *preset = psu_getPreset();
+    set_v = preset->v;
+    set_i = preset->i;
     graph.init(93, LCD_H - 32, LCD_W - 93, 30, graph_pal);
     redraw();
 }
@@ -147,6 +149,10 @@ float i, v;
                 case BUTTON_LEFT: selectDigit(-1); break;
                 case BUTTON_RIGHT: selectDigit(1); break;
             }       
+        }else{
+            if(BUTTON_VALUE == BUTTON_SET){
+                enterModeSet();
+            }
         }
     }
 
