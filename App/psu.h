@@ -52,7 +52,7 @@ extern "C" {
 #define CONSOLE_PROMPT              "PSU >"
 #define STATE_FLAG_DISPLAY          1   // LCD Init flag
 
-#define MAX_PRESET                  6
+#define MAX_PRESETS                 6
 
 #define EEPROM_ID_OFFSET            
 #define EEPROM_PRESETS_OFFSET
@@ -95,13 +95,16 @@ typedef struct pwmcal{
     uint16_t init;
 }pwmcal_t;
 
+typedef struct preset{
+    float v;
+    float i;
+}preset_t;
+
 typedef struct psu{ 
+    pwmcal_t *pwm_cal;
+    preset_t *preset;
+    uint16_t rs;
     uint8_t cur_mode;
-    uint8_t preset;
-    pwmcal_t pwm_ch[PWM_NUM_CH];    
-    uint8_t crc;
-    float   v_out;
-    float   i_out;
     volatile uint8_t flags;
     void *ptr;
 }psu_t;
@@ -167,16 +170,12 @@ public:
     void init();
 };
 
-typedef struct preset{
-    float voltage;
-    float current;
-}preset_t;
-
 class ScreenPreset: public Screen{
 private:
-    uint8_t selected;
-    preset_t presets[MAX_PRESET];
-    void createPreset(uint16_t idx, uint16_t *buf);
+    int8_t _selected;
+    preset_t *_presets;
+    void selectPreset(uint8_t idx);
+    void moveSelect(int8_t dir);
 public:
     ScreenPreset() : Screen(){}	
     void process();

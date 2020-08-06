@@ -14,46 +14,74 @@
 #define PRESET_TEXT_FONT    &courierFont
 //#define PRESET_TEXT_FONT    &defaultFont
 
-
-void ScreenPreset::createPreset(uint16_t idx, uint16_t *buf){
-char out[20];    
-    if(idx == selected){
-        xsprintf(out, "%.1fV, %.2fA", presets[idx].voltage, presets[idx].current);
-        TEXT_Print(0, 80 - 14, out);
-        memset16(buf, PRESET_SELECT, PRESET_SIZE); 
+void ScreenPreset::selectPreset(uint8_t idx){
+    if(idx == _selected){
+        xsprintf(gOut, "%.1fV", _presets[idx].v);
+        TEXT_Print(108, 10, gOut);
+        xsprintf(gOut, "%.2fA  ", _presets[idx].i);
+        TEXT_Print(108, 30, gOut);
+        memset16(scratch, PRESET_SELECT, PRESET_SIZE); 
     }else{
-        memset16(buf, PRESET_BCOLOR, PRESET_SIZE);
+        memset16(scratch, PRESET_BCOLOR, PRESET_SIZE);
     }
 
-    uint16_t x = idx % 3;
-    uint16_t y = (idx - x) / 3;
+    uint8_t x = idx % (MAX_PRESETS >> 1);
+    uint8_t y = (idx - x) / (MAX_PRESETS >> 1);
 
-    DRAW_Tile(x*32 + 16, y*32 + 16, buf, 16, 16);
+    DRAW_Tile(x*32 + 16, y*32 + 16, scratch, 16, 16);
 }
 
 void ScreenPreset::redraw(void){
-    DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
-    selected = 3;
-    TEXT_SetFont(PRESET_TEXT_FONT);
-
-    for(uint8_t i = 0; i < MAX_PRESET; i++){
-        presets[i].voltage = i;
-        presets[i].current = i;        
-        createPreset(i, scratch);
+   
+    for(uint8_t i = 0; i < MAX_PRESETS; i++){ 
+        selectPreset(i);
     }
-    //DRAW_Icon(PSU_ICON_POS, (uint8_t*)&icon_psu[0], BLUE);
-    //DRAW_Icon(VOLTAGE_UNIT_POS, (uint8_t*)&dro_unit_v[0], GREEN);
-    //DRAW_Icon(CURRENT_UNIT_POS, (uint8_t*)&dro_unit_a[0], GREEN);
+}
+
+void ScreenPreset::moveSelect(int8_t dir){
+    _selected = (_selected + dir) % MAX_PRESETS;
+    if(_selected < 0){
+        _selected = MAX_PRESETS + _selected;
+    }
 }
 
 void ScreenPreset::process(){
+    if(BUTTON_GetEvents() == BUTTON_PRESSED){        
+        switch(BUTTON_VALUE){
+            case BUTTON_SET: break;
+            case BUTTON_UP: 
+                moveSelect((MAX_PRESETS>>1));
+                break;
 
-}
+            case BUTTON_DOWN: 
+                moveSelect((MAX_PRESETS>>1));
+                break;
 
-void ScreenPreset::modeSet(){
+            case BUTTON_LEFT:
+                moveSelect(-1);
+                break;
 
+            case BUTTON_RIGHT: 
+                moveSelect(1);
+                break;
+
+            case BUTTON_MEM:
+                psu_setPreset(&_presets[_selected]);
+                app_selectMode(0); // screen psu
+                return;
+        }
+
+        redraw();
+    }
 }
 
 void ScreenPreset::init(){
-    redraw();
+    DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
+    TEXT_SetFont(PRESET_TEXT_FONT);
+
+    _selected = 0;
+
+    _presets = psu_getPresetList();
+
+    //redraw(); // performed on process
 }

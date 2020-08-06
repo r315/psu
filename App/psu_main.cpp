@@ -44,22 +44,27 @@ static ConsoleCommand *commands[] = {
     NULL
 };
 
-// min, max, start
-static uint16_t default_eeprom_data[] = {
-    0,                              // cur_mode/rsv1
-    0, (1<<PWM_RESOLUTION), 100,    // pwm1 calibration
-    0, (1<<PWM_RESOLUTION), 100,    // pwm2 calibration
-    0, (1<<PWM_RESOLUTION), 100,    // pwm3 calibration
-    0, (1<<PWM_RESOLUTION), 100,    // pwm4 calibration
-    0x999A, 0x3f99,                 // v_out (1.2f)
-    0, 0                            // i_out (0.0f)
+pwmcal_t default_pwm_calibration[] = {
+    {0, (1<<PWM_RESOLUTION), 100},    // pwm1 calibration <min, max, start>
+    {0, (1<<PWM_RESOLUTION), 100},    // pwm2 calibration
+    {0, (1<<PWM_RESOLUTION), 100},    // pwm3 calibration
+    {0, (1<<PWM_RESOLUTION), 100},    // pwm4 calibration
+};
+
+preset_t default_preset[] = {
+    {1.2f, 0.3f},
+    {1.8f, 0.1f},
+    {2.5f, 0.1f},
+    {3.3f, 1.6f},
+    {5.0f, 0.3f},
+    {9.6f, 0.05f}
 };
 
 // ch1, ch2, ......
 static const uint8_t adc_seq[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
-    uint16_t pwm_value = (x - in_min) * (psu.pwm_ch[ch].max - psu.pwm_ch[ch].min) / (in_max - in_min) + psu.pwm_ch[ch].min;
+    uint16_t pwm_value = (x - in_min) * (psu.pwm_cal[ch].max - psu.pwm_cal[ch].min) / (in_max - in_min) + psu.pwm_cal[ch].min;
     PWM_Set(ch, pwm_value);
 }
 
@@ -158,7 +163,6 @@ void app_checkButtons(){
         switch(BUTTON_VALUE){
             case BUTTON_MODE: app_cycleMode(); break;
             case BUTTON_OUT: psu_setOutputEnable(!GET_OE_FLAG); break;
-            case BUTTON_SET: modes[psu.cur_mode]->modeSet(); break;
         }
     }
 }
@@ -169,7 +173,10 @@ void app_checkButtons(){
  * */
 void app_InitEEPROM(void){
 
-    memcpy(&psu, default_eeprom_data, sizeof(default_eeprom_data));
+    psu.pwm_cal = default_pwm_calibration;
+    psu.preset = default_preset;
+    
+    //DBG_DUMP_LINE((uint8_t*)&psu, sizeof(default_eeprom_data), 0);
 /*
 uint8_t bind_flag;
     
