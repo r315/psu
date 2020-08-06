@@ -152,12 +152,12 @@ float i, v;
 
     switch(_screen_state){
         case MODEST_NORMAL:
-            if(IS_OE_FLAG_SET(st->flags) == FALSE){
-                mode_state = MODEST_SET_SHOW;
+            if(!psu_getOutputEnable()){
+                _screen_state = MODEST_SET_SHOW;
                 break;
             }
 
-            if(IS_AD_FLAG_SET(st->flags)){        
+            if(psu_AdcReady()){
                 v = psu_getVoltage();
                 i = psu_getCurrent();
                 printPower(v, i);        
