@@ -87,7 +87,7 @@ typedef enum {
     MODEST_SET_V, 
     MODEST_SET_I, 
     MODEST_SET_SHOW
-}modestate_e;
+}screenstate_e;
 
 typedef struct pwmcal{
     uint16_t min;
@@ -114,7 +114,7 @@ protected:
     float set_min;
     uint8_t digit;
     int8_t base_place;
-    modestate_e mode_state;
+    screenstate_e _screen_state;
     uint8_t count;
     void selectDigit(int8_t sel);
     void changeDigit(int8_t base);

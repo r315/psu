@@ -48,7 +48,7 @@ void ScreenCharger::modeSet(){
 void ScreenCharger::process(psu_t *st){    
 
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
-        if(mode_state){
+        if(_screen_state){
             count = 0;
             switch(BUTTON_VALUE){
                 case BUTTON_SET: count = BLINK_TIME_MASK; break;
@@ -60,7 +60,7 @@ void ScreenCharger::process(psu_t *st){
         }
     }
 
-    if(mode_state == MODEST_NORMAL){
+    if(_screen_state == MODEST_NORMAL){
         // TODO: FIX
         uint16_t *p = NULL, i;
         //TEXT_SetFont(&pixelDustFont);

@@ -57,16 +57,16 @@ void ScreenLoad::redraw(void){
 }
 
 void ScreenLoad::modeSet(){
-    if(mode_state == MODEST_NORMAL){
-        mode_state = MODEST_SET_V;
+    if(_screen_state == MODEST_NORMAL){
+        _screen_state = MODEST_SET_V;
     }else {
-        mode_state = MODEST_NORMAL;
+        _screen_state = MODEST_NORMAL;
     }
 }
 
 void ScreenLoad::process(psu_t *st){
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
-        if(mode_state){
+        if(_screen_state){
             count = 0;
             switch(BUTTON_VALUE){
                 case BUTTON_SET: count = BLINK_TIME_MASK; break;
@@ -78,11 +78,11 @@ void ScreenLoad::process(psu_t *st){
         }
     }
 
-    if(mode_state == MODEST_NORMAL){
+    if(_screen_state == MODEST_NORMAL){
         //uint16_t *p = &st->adc_v1, i;
         //TEXT_SetFont(&pixelDustFont);        
         //printCurrent(I_POS, st->adc_i1 * CURRENT_PRECISION);
-    }else if(mode_state == MODEST_SET_V){
+    }else if(_screen_state == MODEST_SET_V){
         //TEXT_SetFont(&pixelDustFont);
         if((++count) & BLINK_TIME_MASK){
             TEXT_Print(LOAD_CURRENT_POS,"  ");

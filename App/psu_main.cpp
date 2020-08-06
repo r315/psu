@@ -2,17 +2,18 @@
 #include "psu.h"
 #include "draw.h"
 
+char gOut[10];
 static psu_t psu;
 static ScreenPsu cpsu;
 static ScreenLoad cload;
 static ScreenCharger ccharger;
-static ScreenPreset preset;
+static ScreenPreset cpreset;
 
 static Screen *modes[] = {
     &cpsu,
+    &cpreset,
     &cload,
     &ccharger,
-    &preset
 };
 
 static Console console;
