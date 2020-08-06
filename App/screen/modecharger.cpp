@@ -21,7 +21,7 @@ void changeBtSize(uint8_t *dst, int8_t a){
         return;
     }
     *dst = n;
-    psu_setOutputVoltage(pack_voltages[n], pack_v_max, pack_v_min);
+    psu_setOutputVoltage(pack_voltages[n]);
 }
 
 void ScreenCharger::redraw(void){
@@ -37,15 +37,7 @@ void ScreenCharger::redraw(void){
     bt_size = BT1S;    
 }
 
-void ScreenCharger::modeSet(){
-    if(mode_state == MODEST_NORMAL){
-        mode_state = MODEST_SET_V;
-    }else {
-        mode_state = MODEST_NORMAL;
-    }  
-}
-
-void ScreenCharger::process(psu_t *st){    
+void ScreenCharger::process(){    
 
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         if(_screen_state){

@@ -74,12 +74,11 @@ extern "C" {
 #define SET_OE_FLAG         SET_FLAG(0)
 #define CLR_OE_FLAG         CLR_FLAG(0)
 #define GET_OE_FLAG         GET_FLAG(0)
-#define IS_OE_FLAG_SET(x)   IS_FLAG_SET(x,0)
+
 //Psu adc conversion ready
 #define SET_AD_FLAG         SET_FLAG(1)
 #define CLR_AD_FLAG         CLR_FLAG(1)
 #define GET_AD_FLAG         GET_FLAG(1)
-#define IS_AD_FLAG_SET(x)   IS_FLAG_SET(x,1)
 
 
 typedef enum {
@@ -125,15 +124,11 @@ public:
      * called when mode is selected
      * */
     virtual void redraw(){}
-    /**
-     * Enter mode configuration
-     * called when user press the set key
-     * */
-    virtual void modeSet(){}
+
     /**
      * called every 100ms to process data 
      * */
-    virtual void process(psu_t *st){}
+    virtual void process(){}
 
     virtual void init(){}
 };
@@ -147,17 +142,16 @@ class ScreenPsu: public Screen{
     void printPower(float v, float i);
 public:
     ScreenPsu() : Screen() {}	
-    void process(psu_t *st);
+    void process();
     void redraw();
-    void modeSet();
-    void initPreSetValues(float v_set, float i_set);
+    void enterModeSet();
     void init();
 };
 
 class ScreenLoad: public Screen{
 public:
     ScreenLoad() : Screen(){}	
-    void process(psu_t *st);
+    void process();
     void redraw();
     void modeSet();
     void init();
@@ -167,9 +161,8 @@ class ScreenCharger: public Screen{
     uint8_t bt_size;
 public:
     ScreenCharger() : Screen(){}	
-    void process(psu_t *st);
+    void process();
     void redraw();
-    void modeSet();
     void init();
 };
 
@@ -185,9 +178,8 @@ private:
     void createPreset(uint16_t idx, uint16_t *buf);
 public:
     ScreenPreset() : Screen(){}	
-    void process(psu_t *st);
+    void process();
     void redraw();
-    void modeSet();
     void init();
 };
 
@@ -197,6 +189,8 @@ extern const uint8_t icon_load[];
 extern const uint8_t icon_chr[];
 extern const uint8_t dro_unit_v[];
 extern const uint8_t dro_unit_a[];
+
+extern char gOut[];
 
 /**
  * @brief PSU control API
@@ -229,6 +223,23 @@ float psu_getLoadCurrent(void);
  * @brief
  * */
 uint8_t psu_getOutputEnable(void);
+
+/**
+ * @brief
+ * */
+uint8_t psu_AdcReady(void);
+
+/**
+ * @brief
+ * */
+void app_selectMode(uint8_t mode);
+
+/**
+ * @brief
+ * */
+preset_t *psu_getPreset(void);
+preset_t *psu_getPresetList(void);
+void psu_setPreset(preset_t *preset);
 
 #ifdef __cplusplus
 }

@@ -24,11 +24,6 @@ static uint16_t idro_pal[2] = {BLACK, YELLOW};
 static uint16_t txt_pal[2] = {BLACK, PINK};
 static uint16_t graph_pal[] = {RGB565(5,10,5), RED, GREEN, YELLOW};
 
-void ScreenPsu::initPreSetValues(float v_set, float i_set){
-    set_v = v_set;
-    set_i = i_set;
-}
-
 void ScreenPsu::init(void){
 
     graph.init(93, LCD_H - 32, LCD_W - 93, 30, graph_pal);
@@ -49,9 +44,9 @@ void ScreenPsu::redraw(void){
     graph.redraw();
 }
 
-void ScreenPsu::modeSet(void){
+void ScreenPsu::enterModeSet(void){
 
-    switch(mode_state){
+    switch(_screen_state){
         case MODEST_SET_SHOW:
         case MODEST_NORMAL:
             printVoltage(set_v, NO_BLANK);
@@ -139,7 +134,7 @@ float p = i * v;
     TEXT_Print(POWER_DRO_POS, gOut);
 }
 
-void ScreenPsu::process(psu_t *st){
+void ScreenPsu::process(){
 float i, v;
 
     if(BUTTON_GetEvents() == BUTTON_PRESSED){

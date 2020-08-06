@@ -46,7 +46,7 @@ void ScreenPreset::redraw(void){
     //DRAW_Icon(CURRENT_UNIT_POS, (uint8_t*)&dro_unit_a[0], GREEN);
 }
 
-void ScreenPreset::process(psu_t *st){
+void ScreenPreset::process(){
 
 }
 
