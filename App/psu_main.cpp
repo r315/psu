@@ -103,7 +103,7 @@ float psu_getVoltage(void){
 }
 
 float psu_getCurrent(void){
-    return *(uint16_t*)psu.ptr + 1 * CURRENT_PRECISION;
+    return *((uint16_t*)psu.ptr + 1) * CURRENT_PRECISION;
 }
 
 float psu_getLoadCurrent(void){
@@ -118,15 +118,15 @@ uint8_t psu_AdcReady(void){
     return GET_AD_FLAG;
 }
 
-preset_t *psu_getPreset(void){
+preset_t *app_getPreset(void){
     return psu.preset;
 }
 
-preset_t *psu_getPresetList(void){
+preset_t *app_getPresetList(void){
     return (preset_t*)default_preset;
 }
 
-void psu_setPreset(preset_t *preset){
+void app_setPreset(preset_t *preset){
     psu.preset = preset;
 }
 /**

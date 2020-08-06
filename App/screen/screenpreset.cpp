@@ -48,7 +48,7 @@ void ScreenPreset::moveSelect(int8_t dir){
 void ScreenPreset::process(){
     if(BUTTON_GetEvents() == BUTTON_PRESSED){        
         switch(BUTTON_VALUE){
-            case BUTTON_SET: break;
+            
             case BUTTON_UP: 
                 moveSelect((MAX_PRESETS>>1));
                 break;
@@ -65,8 +65,8 @@ void ScreenPreset::process(){
                 moveSelect(1);
                 break;
 
-            case BUTTON_MEM:
-                psu_setPreset(&_presets[_selected]);
+            case BUTTON_SET:
+                app_setPreset(&_presets[_selected]);
                 app_selectMode(0); // screen psu
                 return;
         }
@@ -81,7 +81,7 @@ void ScreenPreset::init(){
 
     _selected = 0;
 
-    _presets = psu_getPresetList();
+    _presets = app_getPresetList();
 
     //redraw(); // performed on process
 }

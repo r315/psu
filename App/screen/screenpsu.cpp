@@ -25,7 +25,7 @@ static uint16_t txt_pal[2] = {BLACK, PINK};
 static uint16_t graph_pal[] = {RGB565(5,10,5), RED, GREEN, YELLOW};
 
 void ScreenPsu::init(void){
-    preset_t *preset = psu_getPreset();
+    preset_t *preset = app_getPreset();
     set_v = preset->v;
     set_i = preset->i;
     graph.init(93, LCD_H - 32, LCD_W - 93, 30, graph_pal);
@@ -49,7 +49,7 @@ void ScreenPsu::redraw(void){
 void ScreenPsu::enterModeSet(void){
 
     switch(_screen_state){
-        case MODEST_SET_SHOW:
+        case MODEST_SET_IDLE:
         case MODEST_NORMAL:
             printVoltage(set_v, NO_BLANK);
             printCurrent(set_i, NO_BLANK);
@@ -159,7 +159,7 @@ float i, v;
     switch(_screen_state){
         case MODEST_NORMAL:
             if(!psu_getOutputEnable()){
-                _screen_state = MODEST_SET_SHOW;
+                _screen_state = MODEST_SET_IDLE;
                 break;
             }
 
@@ -192,7 +192,7 @@ float i, v;
             }
             break;
 
-        case MODEST_SET_SHOW:
+        case MODEST_SET_IDLE:
             if(psu_getOutputEnable()){
                 _screen_state = MODEST_NORMAL;
                 break;

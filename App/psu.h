@@ -86,7 +86,8 @@ typedef enum {
     MODEST_NORMAL = 0, 
     MODEST_SET_V, 
     MODEST_SET_I, 
-    MODEST_SET_SHOW
+    MODEST_SET_IDLE,
+    MODEST_SAVE
 }screenstate_e;
 
 typedef struct pwmcal{
@@ -237,9 +238,9 @@ void app_selectMode(uint8_t mode);
 /**
  * @brief
  * */
-preset_t *psu_getPreset(void);
-preset_t *psu_getPresetList(void);
-void psu_setPreset(preset_t *preset);
+preset_t *app_getPreset(void);
+preset_t *app_getPresetList(void);
+void app_setPreset(preset_t *preset);
 
 #ifdef __cplusplus
 }
