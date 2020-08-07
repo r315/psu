@@ -43,6 +43,7 @@ void CmdSet::help(void){
     console->print("Commands:\n");
     console->print("\tvoltage <float>\t\tSet output voltage\n");
     console->print("\tcurrent <float>\t\tSet output current limit\n");
+    console->print("\trs <float>\t\tSet current sense resistor value\n");
     console->print("\toutput <on|off>\t\tEnable output\n");
 }
 
@@ -71,6 +72,8 @@ char CmdSet::execute(void *ptr){
     if(readFloatParameter("voltage", argc, argv, &value, dummy) == CMD_OK)
         return CMD_OK;
     if(readFloatParameter("current", argc, argv, &value, dummy) == CMD_OK)
+        return CMD_OK;
+    if(readFloatParameter("rs", argc, argv, &value, dummy) == CMD_OK)
         return CMD_OK;
 
     return CMD_BAD_PARAM;
