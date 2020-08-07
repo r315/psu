@@ -16,23 +16,26 @@
 
 void ScreenPreset::selectPreset(uint8_t idx){
     if(idx == _selected){
+        TEXT_SetPalette((const uint16_t []){BLACK, YELLOW});
         xsprintf(gOut, "%.1fV", _presets[idx].v);
         TEXT_Print(108, 10, gOut);
-        xsprintf(gOut, "%.2fA  ", _presets[idx].i);
+        xsprintf(gOut, "%.2fA ", _presets[idx].i);
         TEXT_Print(108, 30, gOut);
-        memset16(scratch, PRESET_SELECT, PRESET_SIZE); 
+        memset16(scratch, PRESET_SELECT, PRESET_SIZE);
+        TEXT_SetPalette((const uint16_t []){PRESET_SELECT, WHITE});
     }else{
         memset16(scratch, PRESET_BCOLOR, PRESET_SIZE);
+        TEXT_SetPalette((const uint16_t []){PRESET_BCOLOR, WHITE});
     }
 
     uint8_t x = idx % (MAX_PRESETS >> 1);
     uint8_t y = (idx - x) / (MAX_PRESETS >> 1);
 
     DRAW_Tile(x*32 + 16, y*32 + 16, scratch, 16, 16);
+    TEXT_Char(x*32 + 16 + 4, y * 32 + 16 + 1, '1' + idx);
 }
 
-void ScreenPreset::redraw(void){
-   
+void ScreenPreset::redraw(void){   
     for(uint8_t i = 0; i < MAX_PRESETS; i++){ 
         selectPreset(i);
     }
