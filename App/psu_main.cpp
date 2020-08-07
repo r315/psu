@@ -262,17 +262,11 @@ uint8_t count = 0;
 
 void tskCmdLine(void *ptr){
     
-    
-    stdout_t *stdio_port = (stdout_t*)ptr;
-
-    stdio_port->init();    
+    stdout_t *stdio_port = (stdout_t*)ptr;    
 
     console.init(stdio_port, CONSOLE_PROMPT);
     console.registerCommandList(commands);
 
-    #ifdef ENABLE_DEBUG
-    dbg_init(stdio_port);
-    #endif
     // wait for usb to start if connected
     vTaskDelay(pdMS_TO_TICKS(500));
 
@@ -285,6 +279,13 @@ void tskCmdLine(void *ptr){
 
 extern "C" void app_setup(void){  
     BOARD_Init();
+
+    stdio_ops.init();
+
+    #ifdef ENABLE_DEBUG
+    dbg_init(&stdio_ops);
+    #endif
+
     TEXT_Init();
     NV_Init();
 
