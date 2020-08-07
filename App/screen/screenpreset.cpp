@@ -79,8 +79,6 @@ void ScreenPreset::init(){
     DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
     TEXT_SetFont(PRESET_TEXT_FONT);
 
-    _selected = 0;
-
     _presets = app_getPresetList();
 
     //redraw(); // performed on process

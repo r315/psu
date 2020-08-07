@@ -139,12 +139,14 @@ public:
 };
 
 class ScreenPsu: public Screen{
+private:    
     float set_v;
     float set_i;
     Graph graph;
     void printVoltage(float value, int8_t hide_place);
     void printCurrent(float value, int8_t hide_place);
     void printPower(float v, float i);
+    void printPresetIndex();
 public:
     ScreenPsu() : Screen() {}	
     void process();
@@ -178,7 +180,7 @@ private:
     void selectPreset(uint8_t idx);
     void moveSelect(int8_t dir);
 public:
-    ScreenPreset() : Screen(){}	
+    ScreenPreset() : Screen(), _selected(0) {}	
     void process();
     void redraw();
     void init();

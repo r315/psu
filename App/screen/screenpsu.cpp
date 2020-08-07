@@ -19,10 +19,7 @@
 #define PSU_TEXT_FONT               &courierFont
 #define PSU_DRO_FONT                &GroteskBold16x32
 
-static uint16_t vdro_pal[2] = {BLACK, GREEN};
-static uint16_t idro_pal[2] = {BLACK, YELLOW};
-static uint16_t txt_pal[2] = {BLACK, PINK};
-static uint16_t graph_pal[] = {RGB565(5,10,5), RED, GREEN, YELLOW};
+#define PSU_LINE_COLOR              RGB565(5,10,5)
 
 static const uint16_t vdro_pal[2] = {BLACK, GREEN};
 static const uint16_t idro_pal[2] = {BLACK, YELLOW};
@@ -43,16 +40,26 @@ void ScreenPsu::redraw(void){
 
     //DRAW_Icon(PSU_ICON_POS, (uint8_t*)&icon_psu[0], BLUE);
     
-    DRAW_HLine(0, 15, LCD_W, WHITE);
-    DRAW_VLine(92, 0, LCD_H, WHITE);
+    DRAW_HLine(0, 15, LCD_W, PSU_LINE_COLOR);
+    DRAW_VLine(92, 0, LCD_H, PSU_LINE_COLOR);
 
     printVoltage(set_v, NO_BLANK);
     printCurrent(set_i, NO_BLANK);
     printPower(set_v, set_i);
     graph.redraw();
+
+    printPresetIndex();
+}
+
+void ScreenPsu::printPresetIndex(){
+    uint8_t index = app_getPreset() - app_getPresetList();
+    xsprintf(gOut,"M%u", index + 1);
+    TEXT_SetPalette(txt_pal);
+    TEXT_Print(LCD_W - 64, 0, gOut);
 }
 
 void ScreenPsu::enterModeSet(void){
+preset_t *pre;
 
     switch(_screen_state){
         case MODEST_SET_IDLE:
@@ -138,7 +145,7 @@ float p = i * v;
     xsprintf(gOut, "%.1fW ", p);    
     
     TEXT_SetFont(PSU_TEXT_FONT);
-    TEXT_SetPalette(txt_pal);
+    TEXT_SetPalette(pwr_pal);
     TEXT_Print(POWER_DRO_POS, gOut);
 }
 
