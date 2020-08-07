@@ -240,6 +240,8 @@ uint8_t count = 0;
 
     ADCMGR_Start();
 
+    LCD_Bkl(TRUE);
+
     while(1){
         app_checkButtons();
         //DBG_PIN_HIGH;
