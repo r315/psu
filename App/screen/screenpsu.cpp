@@ -32,6 +32,7 @@ void ScreenPsu::init(void){
     set_v = preset->v;
     set_i = preset->i;
     graph.init(93, LCD_H - 32, LCD_W - 93, 30, graph_pal);
+    _screen_state = MODEST_IDLE;
     redraw();
 }
 
@@ -62,7 +63,7 @@ void ScreenPsu::enterModeSet(void){
 preset_t *pre;
 
     switch(_screen_state){
-        case MODEST_SET_IDLE:
+        case MODEST_IDLE:
         case MODEST_NORMAL:
             _screen_state = MODEST_SET_V;
             set_value = &set_v;
@@ -183,7 +184,7 @@ float i, v;
     switch(_screen_state){
         case MODEST_NORMAL:
             if(!psu_getOutputEnable()){
-                _screen_state = MODEST_SET_IDLE;
+                _screen_state = MODEST_IDLE;
                 preset_t *pre = app_getPresetList();
                 printVoltage(pre->v, NO_BLANK);
                 printCurrent(pre->i, NO_BLANK);
@@ -219,7 +220,7 @@ float i, v;
             }
             break;
 
-        case MODEST_SET_IDLE:
+        case MODEST_IDLE:
             if(psu_getOutputEnable()){
                 _screen_state = MODEST_NORMAL;
             }            

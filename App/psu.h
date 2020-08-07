@@ -86,7 +86,7 @@ typedef enum {
     MODEST_NORMAL = 0, 
     MODEST_SET_V, 
     MODEST_SET_I, 
-    MODEST_SET_IDLE,
+    MODEST_IDLE,
     MODEST_SAVE
 }screenstate_e;
 
@@ -147,6 +147,7 @@ private:
     void printCurrent(float value, int8_t hide_place);
     void printPower(float v, float i);
     void printPresetIndex();
+    void enterModeSet();
 public:
     ScreenPsu() : Screen() {}	
     void process();
