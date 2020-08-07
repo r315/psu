@@ -64,9 +64,6 @@ preset_t *pre;
     switch(_screen_state){
         case MODEST_SET_IDLE:
         case MODEST_NORMAL:
-            printVoltage(set_v, NO_BLANK);
-            printCurrent(set_i, NO_BLANK);
-
             _screen_state = MODEST_SET_V;
             set_value = &set_v;
             set_max = MAX_VOLTAGE;
@@ -77,6 +74,7 @@ preset_t *pre;
 
         case MODEST_SET_V:
             _screen_state = MODEST_SET_I;
+            printVoltage(set_v, NO_BLANK);
             set_max = MAX_CURRENT;
             set_min = MIN_CURRENT;
             set_value = &set_i;
@@ -85,9 +83,15 @@ preset_t *pre;
             break;
 
         case MODEST_SET_I:
+            // Exit mode set state
             _screen_state = MODEST_NORMAL;
+            printCurrent(set_i, NO_BLANK);
+            pre = app_getPreset();
+            pre->v = set_v;
+            pre->i = set_i;
             psu_setOutputVoltage(set_v);
             psu_setOutputCurrent(set_i);
+            break;
 
         default:    
             break;
@@ -151,9 +155,13 @@ float p = i * v;
 
 void ScreenPsu::process(){
 float i, v;
-
-    if(BUTTON_GetEvents() == BUTTON_PRESSED){
-        if(_screen_state != MODEST_NORMAL){
+// TODO: Improve state machine
+    if(BUTTON_GetEvents() == BUTTON_PRESSED){        
+        if(BUTTON_VALUE == BUTTON_SET){
+            enterModeSet();
+        }
+        
+        if(_screen_state == MODEST_SET_V ||_screen_state == MODEST_SET_I){
             count = 0;
             switch(BUTTON_VALUE){
                 case BUTTON_SET: count = BLINK_TIME_MASK; break;
@@ -161,10 +169,6 @@ float i, v;
                 case BUTTON_DOWN: changeDigit(-base_place); break;
                 case BUTTON_LEFT: selectDigit(-1); break;
                 case BUTTON_RIGHT: selectDigit(1); break;
-            }       
-        }else{
-            if(BUTTON_VALUE == BUTTON_SET){
-                enterModeSet();
             }
         }
     }
