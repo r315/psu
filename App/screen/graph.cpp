@@ -97,7 +97,9 @@ void Graph::update(){
 
         for(uint8_t trace = 0; trace < GRAPH_MAX_TRACE; trace++){
             uint8_t data = graph_data[trace][tt];
-            DRAW_Pixel(posx + i, posy + ysize - data, pal[trace + 2]);
+            if(data < ysize){
+                DRAW_Pixel(posx + i, posy + ysize - data, pal[trace + 2]);
+            }
         }        
         
         if( (++tt) >= GRAPH_MAX_DATA){
@@ -112,5 +114,5 @@ void Graph::update(){
 void Graph::reset(){
     tail = head = 0;
     scroll = false;
-    memset(graph_data, 0 , sizeof(graph_data));
+    memset(graph_data, 255 , sizeof(graph_data));
 }
