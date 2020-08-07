@@ -56,14 +56,6 @@ void ScreenLoad::redraw(void){
     }    
 }
 
-void ScreenLoad::modeSet(){
-    if(_screen_state == MODEST_NORMAL){
-        _screen_state = MODEST_SET_V;
-    }else {
-        _screen_state = MODEST_NORMAL;
-    }
-}
-
 void ScreenLoad::process(){
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         if(_screen_state){

@@ -160,7 +160,6 @@ public:
     ScreenLoad() : Screen(){}	
     void process();
     void redraw();
-    void modeSet();
     void init();
 };
 
