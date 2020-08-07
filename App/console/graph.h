@@ -11,7 +11,8 @@ extern "C" {
 #define GRAPH_MAX_TRACE 2
 
 class Graph {
-    uint16_t xsize, ysize, posx, posy, *pal;
+    uint16_t xsize, ysize, posx, posy;
+    const uint16_t *pal;
     uint8_t scroll;
     uint8_t head, tail; 
     void drawGraphAxis();
@@ -27,7 +28,7 @@ public:
      *                             plt[2] trace 1 color
      *                             ....
      * */
-    void init(uint8_t x, uint8_t y, uint8_t xsize, uint8_t ysize, uint16_t *plt);
+    void init(uint8_t x, uint8_t y, uint8_t xsize, uint8_t ysize, const uint16_t *plt);
     void clear();
     void redraw();
     /**

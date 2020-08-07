@@ -16,7 +16,7 @@ uint8_t graph_data[GRAPH_MAX_TRACE][GRAPH_MAX_DATA];
  *                             plt[2] trace 1 color
  *                             ....
  * */
-void Graph::init(uint8_t x, uint8_t y, uint8_t xsz, uint8_t ysz, uint16_t *plt){
+void Graph::init(uint8_t x, uint8_t y, uint8_t xsz, uint8_t ysz, const uint16_t *plt){
     pal = plt;
     xsize = xsz - 1;
     ysize = ysz;

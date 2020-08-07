@@ -24,6 +24,12 @@ static uint16_t idro_pal[2] = {BLACK, YELLOW};
 static uint16_t txt_pal[2] = {BLACK, PINK};
 static uint16_t graph_pal[] = {RGB565(5,10,5), RED, GREEN, YELLOW};
 
+static const uint16_t vdro_pal[2] = {BLACK, GREEN};
+static const uint16_t idro_pal[2] = {BLACK, YELLOW};
+static const uint16_t pwr_pal[2] = {BLACK, SKYBLUE};
+static const uint16_t txt_pal[2] = {BLACK, WHITE};
+static const uint16_t graph_pal[] = {RGB565(5,10,10), RED, GREEN, YELLOW};
+
 void ScreenPsu::init(void){
     preset_t *preset = app_getPreset();
     set_v = preset->v;

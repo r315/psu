@@ -7,8 +7,7 @@
 
 
 static font_t *gfont;
-static uint16_t *gpal;
-static uint16_t pal[2] = {BLACK, WHITE};
+static const uint16_t *gpal;
 
 /**
  * draws a character using a font table.
@@ -71,14 +70,14 @@ void TEXT_SetFont(font_t *fnt){
 
 /**
  * */
-void TEXT_SetPalette(uint16_t *palette){
+void TEXT_SetPalette(const uint16_t *palette){
     gpal = palette;
 }
 
 /**
  * */
 void TEXT_Init(void){
-    TEXT_SetPalette(pal);
+    TEXT_SetPalette((const uint16_t []){BLACK, WHITE});
     TEXT_SetFont(DEFAULT_FONT);
     DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
 }
