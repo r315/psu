@@ -169,6 +169,13 @@ float i, v;
                 case BUTTON_DOWN: changeDigit(-base_place); break;
                 case BUTTON_LEFT: selectDigit(-1); break;
                 case BUTTON_RIGHT: selectDigit(1); break;
+                case BUTTON_MEM: 
+                    // Cancel set
+                    _screen_state = MODEST_NORMAL; 
+                    preset_t *pre = app_getPresetList();
+                    set_v = pre->v;
+                    set_i = pre->i;
+                    break;
             }
         }
     }
@@ -177,6 +184,9 @@ float i, v;
         case MODEST_NORMAL:
             if(!psu_getOutputEnable()){
                 _screen_state = MODEST_SET_IDLE;
+                preset_t *pre = app_getPresetList();
+                printVoltage(pre->v, NO_BLANK);
+                printCurrent(pre->i, NO_BLANK);
                 break;
             }
 
@@ -212,10 +222,7 @@ float i, v;
         case MODEST_SET_IDLE:
             if(psu_getOutputEnable()){
                 _screen_state = MODEST_NORMAL;
-                break;
-            }
-            printVoltage(set_v, NO_BLANK);
-            printCurrent(set_i, NO_BLANK);
+            }            
             break;
 
         default:
