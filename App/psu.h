@@ -114,6 +114,12 @@ typedef struct psu{
     void *ptr;
 }psu_t;
 
+typedef enum {
+    LOAD_MODE_CC = 0,
+    LOAD_MODE_CP,
+    LOAD_MODE_CR
+}loadmode_e;
+
 class Screen{
 
 protected:
@@ -156,11 +162,13 @@ public:
     ScreenPsu() : Screen() {}	
     void process();
     void redraw();
-    void enterModeSet();
     void init();
 };
 
 class ScreenLoad: public Screen{
+    Graph _graph;
+    loadmode_e _load_mode;
+    void printMode(int8_t toggle_visible);
 public:
     ScreenLoad() : Screen(){}	
     void process();

@@ -1,90 +1,125 @@
 #include "psu.h"
 #include "draw.h"
 
-#define LOAD_POWER_POS       0,0
-#define LOAD_VOLTAGE_POS     88,17
-#define LOAD_TIME_POS        88,25
-#define LOAD_CURRENT_POS     88,10
+#define LOAD_INFO_X         108
+#define LOAD_INFO1_POS      LOAD_INFO_X,0
+#define LOAD_INFO2_POS      LOAD_INFO_X,16
+#define LOAD_INFO3_POS      LOAD_INFO_X,32
+#define LOAD_INFO4_POS      LOAD_INFO_X,48
+#define LOAD_INFO5_POS      LOAD_INFO_X,64
 
-#define LOAD_GRAPH_X         1
-#define LOAD_GRAPH_Y         10
-#define LOAD_GRAPH_POS       LOAD_GRAPH_X,LOAD_GRAPH_Y
-#define LOAD_GRAPH_H         20
-#define LOAD_GRAPH_W         70
+#define LOAD_GRAPH_X        1
+#define LOAD_GRAPH_Y        (LCD_H - LOAD_GRAPH_H - 2)
+#define LOAD_GRAPH_POS      LOAD_GRAPH_X,LOAD_GRAPH_Y
+#define LOAD_GRAPH_H        40
+#define LOAD_GRAPH_W        100
 
-void plotPoint(uint8_t x, uint8_t y){
-   /* if(graph_data[x] > 0){
-        LCD_Pixel(x, graph_data[x], BLACK);
+#define LOAD_LINE_COLOR     RGB565(5,10,5)
+
+static const uint16_t txt_pal[] = {BLACK, WHITE};
+static const uint16_t graph_pal[] = {RGB565(5,10,5), RED, GREEN, YELLOW};
+static const char *load_mode_name[] = {"CC", "CP", "CR"};
+
+void ScreenLoad::printMode(int8_t toggle_visible){
+    static uint8_t count = 0;
+
+    if(toggle_visible == false || (++count) & BLINK_TIME_MASK){
+        TEXT_Print(LOAD_INFO1_POS, load_mode_name[(uint8_t)_load_mode]);   
+    }else {
+        TEXT_Print(LOAD_INFO1_POS, "  ");
     }
-    if(y > LOAD_GRAPH_H){
-        y = LOAD_GRAPH_H;
-    }
-    y = LOAD_GRAPH_Y + LOAD_GRAPH_H - y;
-    graph_data[x] = y;
-    LCD_Pixel(LOAD_GRAPH_X + x, y, WHITE); */
 }
 
-void drawHVLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2){
-    for (uint16_t h = y1; h <= y2; h++)
-    {
-        for (uint16_t w = x1; w <= x2; w++)
-        {
-            LCD_Pixel(w,h, WHITE);
-        }        
-    }    
-}
 
-void drawGraphAxis(void){
-    drawHVLine(LOAD_GRAPH_X, LOAD_GRAPH_Y, LOAD_GRAPH_X, LOAD_GRAPH_Y + LOAD_GRAPH_H);
-    drawHVLine(LOAD_GRAPH_X, LOAD_GRAPH_Y + LOAD_GRAPH_H, LOAD_GRAPH_X + LOAD_GRAPH_W, LOAD_GRAPH_Y + LOAD_GRAPH_H);
-    memset(graph_data, 0, LOAD_GRAPH_W);
+void ScreenLoad::init(){
+    _graph.init(LOAD_GRAPH_POS, LOAD_GRAPH_W, LOAD_GRAPH_H, graph_pal);
+    _screen_state = SCR_MODE_IDLE;
+    _load_mode = LOAD_MODE_CC;
+    redraw();
 }
 
 void ScreenLoad::redraw(void){
     DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
-//TEXT_drawGfx(90,0, (uint8_t*)&icon_load[0]);
-    //TEXT_SetFont(&pixelDustFont);
-    TEXT_Print(LOAD_POWER_POS,"00.0W");
-    TEXT_Print(LOAD_CURRENT_POS,"0.50A");
-    TEXT_Print(LOAD_VOLTAGE_POS,"4.1V");
-    TEXT_Print(LOAD_TIME_POS,"00:00");
-    drawGraphAxis();
 
-    for (uint8_t i = 0; i < LOAD_GRAPH_W; i++)
-    {
-        plotPoint(i, i/10);
-    }    
+    DRAW_HLine(0, 15, LCD_W, LOAD_LINE_COLOR);
+    DRAW_VLine(LOAD_INFO_X - 3, 0, LCD_H, LOAD_LINE_COLOR);
+
+    TEXT_SetPalette(txt_pal);
+    printMode(false);
+    TEXT_Print(LOAD_INFO2_POS,"00.0W");
+    TEXT_Print(LOAD_INFO3_POS,"0.50A");
+    TEXT_Print(LOAD_INFO4_POS,"4.21V");
+    TEXT_Print(LOAD_INFO5_POS,"00:00");
+
+    _graph.redraw();
+}
+
+bool checkModeChange(){
+    return (BUTTON_GetEvents() == BUTTON_PRESSED) && (BUTTON_VALUE == BUTTON_SET);
 }
 
 void ScreenLoad::process(){
-    if(BUTTON_GetEvents() == BUTTON_PRESSED){
-        if(_screen_state){
-            count = 0;
+    bool toggle_visible;
+    switch(_screen_state){
+        case SCR_MODE_IDLE:
+        case SCR_MODE_NORMAL:
+            if(checkModeChange()){
+                _screen_state = SCR_MODE_SET_MODE;
+            }
+            break;
+
+        case SCR_MODE_SET_MODE:
+            if(BUTTON_GetEvents() != BUTTON_PRESSED){
+                printMode(true);
+                break;
+            }
+
             switch(BUTTON_VALUE){
-                case BUTTON_SET: count = BLINK_TIME_MASK; break;
-                case BUTTON_UP:  break;
-                case BUTTON_DOWN: break;
-                case BUTTON_LEFT:  break;
-                case BUTTON_RIGHT:  break;
-            }       
-        }
-    }
+                case BUTTON_SET:
+                    switch(_load_mode){
+                        case LOAD_MODE_CC:
+                            _screen_state = SCR_MODE_SET_CC;
+                            break;
 
-    if(_screen_state == MODEST_NORMAL){
-        //uint16_t *p = &st->adc_v1, i;
-        //TEXT_SetFont(&pixelDustFont);        
-        //printCurrent(I_POS, st->adc_i1 * CURRENT_PRECISION);
-    }else if(_screen_state == MODEST_SET_V){
-        //TEXT_SetFont(&pixelDustFont);
-        if((++count) & BLINK_TIME_MASK){
-            TEXT_Print(LOAD_CURRENT_POS,"  ");
-        }else{            
-            TEXT_Print(LOAD_CURRENT_POS, "0.50A");
-        }
+                        case LOAD_MODE_CP:
+                            _screen_state = SCR_MODE_SET_CP;
+                            break;
+
+                        case LOAD_MODE_CR:
+                            _screen_state = SCR_MODE_SET_CR;
+                            break;
+
+                        default:
+                            break;
+                    }                
+                    break;
+
+                case BUTTON_RIGHT:
+                    switch(_load_mode){
+                    case LOAD_MODE_CC: _load_mode = LOAD_MODE_CP; break;
+                    case LOAD_MODE_CP: _load_mode = LOAD_MODE_CR; break;
+                    case LOAD_MODE_CR: _load_mode = LOAD_MODE_CC; break;
+                    }
+                    break;
+                case BUTTON_LEFT:
+                    switch(_load_mode){
+                    case LOAD_MODE_CC: _load_mode = LOAD_MODE_CR; break;
+                    case LOAD_MODE_CP: _load_mode = LOAD_MODE_CC; break;
+                    case LOAD_MODE_CR: _load_mode = LOAD_MODE_CP; break;
+                    }
+                    break;
+            }
+
+            printMode(false);            
+            break;
+
+        case SCR_MODE_SET_CC:
+        case SCR_MODE_SET_CP:
+        case SCR_MODE_SET_CR:
+            if(checkModeChange()){
+                _screen_state = SCR_MODE_NORMAL;
+                
+            }
+            break;
     }    
-    
-}
-
-void ScreenLoad::init(){
-    redraw();
 }
