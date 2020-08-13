@@ -52,7 +52,7 @@ void ScreenCharger::process(){
         }
     }
 
-    if(_screen_state == MODEST_NORMAL){
+    if(_screen_state == SCR_MODE_NORMAL){
         // TODO: FIX
         uint16_t *p = NULL, i;
         //TEXT_SetFont(&pixelDustFont);

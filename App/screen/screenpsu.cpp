@@ -32,7 +32,7 @@ void ScreenPsu::init(void){
     set_v = preset->v;
     set_i = preset->i;
     graph.init(93, LCD_H - 32, LCD_W - 93, 30, graph_pal);
-    _screen_state = MODEST_IDLE;
+    _screen_state = SCR_MODE_IDLE;
     redraw();
 }
 
@@ -63,9 +63,9 @@ void ScreenPsu::enterModeSet(void){
 preset_t *pre;
 
     switch(_screen_state){
-        case MODEST_IDLE:
-        case MODEST_NORMAL:
-            _screen_state = MODEST_SET_V;
+        case SCR_MODE_IDLE:
+        case SCR_MODE_NORMAL:
+            _screen_state = SCR_MODE_SET_V;
             set_value = &set_v;
             set_max = MAX_VOLTAGE;
             set_min = MIN_VOLTAGE;
@@ -73,8 +73,8 @@ preset_t *pre;
             base_place = 10;
             break;
 
-        case MODEST_SET_V:
-            _screen_state = MODEST_SET_I;
+        case SCR_MODE_SET_V:
+            _screen_state = SCR_MODE_SET_I;
             printVoltage(set_v, NO_BLANK);
             set_max = MAX_CURRENT;
             set_min = MIN_CURRENT;
@@ -83,9 +83,9 @@ preset_t *pre;
             base_place = 1;
             break;
 
-        case MODEST_SET_I:
+        case SCR_MODE_SET_I:
             // Exit mode set state
-            _screen_state = MODEST_NORMAL;
+            _screen_state = SCR_MODE_NORMAL;
             printCurrent(set_i, NO_BLANK);
             pre = app_getPreset();
             pre->v = set_v;
@@ -162,7 +162,7 @@ float i, v;
             enterModeSet();
         }
         
-        if(_screen_state == MODEST_SET_V ||_screen_state == MODEST_SET_I){
+        if(_screen_state == SCR_MODE_SET_V ||_screen_state == SCR_MODE_SET_I){
             count = 0;
             switch(BUTTON_VALUE){
                 case BUTTON_SET: count = BLINK_TIME_MASK; break;
@@ -172,7 +172,7 @@ float i, v;
                 case BUTTON_RIGHT: selectDigit(1); break;
                 case BUTTON_MEM: 
                     // Cancel set
-                    _screen_state = MODEST_NORMAL; 
+                    _screen_state = SCR_MODE_NORMAL; 
                     preset_t *pre = app_getPresetList();
                     set_v = pre->v;
                     set_i = pre->i;
@@ -182,9 +182,9 @@ float i, v;
     }
 
     switch(_screen_state){
-        case MODEST_NORMAL:
+        case SCR_MODE_NORMAL:
             if(!psu_getOutputEnable()){
-                _screen_state = MODEST_IDLE;
+                _screen_state = SCR_MODE_IDLE;
                 preset_t *pre = app_getPresetList();
                 printVoltage(pre->v, NO_BLANK);
                 printCurrent(pre->i, NO_BLANK);
@@ -204,7 +204,7 @@ float i, v;
             }
             break;
         
-        case MODEST_SET_V:
+        case SCR_MODE_SET_V:
             if((++count) & BLINK_TIME_MASK){
                 printVoltage(set_v, digit);
             }else{
@@ -212,7 +212,7 @@ float i, v;
             }
             break;
 
-        case MODEST_SET_I:
+        case SCR_MODE_SET_I:
             if((++count) & BLINK_TIME_MASK){
                 printCurrent(set_i, digit);
             }else{
@@ -220,9 +220,9 @@ float i, v;
             }
             break;
 
-        case MODEST_IDLE:
+        case SCR_MODE_IDLE:
             if(psu_getOutputEnable()){
-                _screen_state = MODEST_NORMAL;
+                _screen_state = SCR_MODE_NORMAL;
             }            
             break;
 
