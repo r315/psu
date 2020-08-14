@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#define GRAPH_MAX_DATA  80
+#define GRAPH_MAX_DATA  160
 #define GRAPH_MAX_TRACE 2
 
 class Graph {
