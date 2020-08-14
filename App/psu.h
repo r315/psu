@@ -158,8 +158,8 @@ private:
     void printVoltage(float value, int8_t hide_place);
     void printCurrent(float value, int8_t hide_place);
     void printPower(float v, float i);
-    void printPresetIndex();
-    void enterModeSet();
+    void printPresetIndex(void);    
+    void enterModeSet(void);
 public:
     ScreenPsu() : Screen() {}	
     void process();
@@ -170,7 +170,13 @@ public:
 class ScreenLoad: public Screen{
     Graph _graph;
     loadmode_e _load_mode;
+    float _set_i;
+    uint32_t _start_ticks;
     void printMode(int8_t toggle_visible);
+    void printCurrent(float value, int8_t hide_digit);
+    void printVoltage(float value, int8_t hide_digit);
+    void printPower(float v, float i);
+    void printTime(void);
 public:
     ScreenLoad() : Screen(){}	
     void process();
