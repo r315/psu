@@ -98,6 +98,16 @@ void psu_setOutputEnable(uint8_t en){
     }
 }
 
+void psu_setLoadEnable(uint8_t en){
+    if(en){
+        SET_LD_FLAG;
+        DRAW_Icon(LOAD_ICON_POS, (uint8_t *)icon_load, GREEN);
+    }else{
+        CLR_LD_FLAG;
+        DRAW_FillRect(LOAD_ICON_POS, icon_load[0], icon_load[1], BLACK);        
+    }
+}
+
 float psu_getVoltage(void){
     return *(uint16_t*)psu.ptr * VOLTAGE_PRECISION;
 }
@@ -106,18 +116,29 @@ float psu_getCurrent(void){
     return *((uint16_t*)psu.ptr + 1) * CURRENT_PRECISION;
 }
 
-float psu_getLoadCurrent(void){
-    return 0.0f;
-}
-
 uint8_t psu_getOutputEnable(void){
     return  GET_OE_FLAG;
+}
+
+uint8_t psu_getLoadEnabled(void){
+    return GET_LD_FLAG;
 }
 
 uint8_t psu_AdcReady(void){
     return GET_AD_FLAG;
 }
 
+void psu_setLoadCurrent(float i){
+
+}
+
+float psu_getLoadCurrent(void){
+    return psu_getCurrent();
+}
+
+/**
+ * Application api
+ * */
 preset_t *app_getPreset(void){
     return psu.preset;
 }
@@ -129,9 +150,7 @@ preset_t *app_getPresetList(void){
 void app_setPreset(preset_t *preset){
     psu.preset = preset;
 }
-/**
- * Application api
- * */
+
 void app_selectMode(uint8_t mode){
     
     if(mode >= MAX_MODES){
@@ -142,6 +161,7 @@ void app_selectMode(uint8_t mode){
     // Mode clears screen, so must redraw output icon,
     // only if active
     psu_setOutputEnable(GET_OE_FLAG);
+    psu_setLoadEnable(GET_LD_FLAG);
 }
 
 void app_cycleMode(void){

@@ -38,10 +38,8 @@ extern "C" {
 #define APP_INTERVAL                10
 #define UPDATE_INTERVAL             100
 
-#define LOAD_ICON_POS               70,0
-#define OUTPUT_ICON_POS             160-16,0
-#define MODE_ICONS_AREA_POS_S       70,0
-#define MODE_ICONS_AREA_SIZE        40,8
+#define LOAD_ICON_POS               LCD_W - 36,3
+#define OUTPUT_ICON_POS             160-16,3
 
 #define MAX_MODES sizeof(modes)/sizeof(void*)
 #define SET_MAX_DIGITS              3 // Digits in each DRO
@@ -76,11 +74,15 @@ extern "C" {
 #define CLR_OE_FLAG         CLR_FLAG(0)
 #define GET_OE_FLAG         GET_FLAG(0)
 
-//Psu adc conversion ready
+// Psu adc conversion ready
 #define SET_AD_FLAG         SET_FLAG(1)
 #define CLR_AD_FLAG         CLR_FLAG(1)
 #define GET_AD_FLAG         GET_FLAG(1)
 
+// Dummy load enable flag
+#define SET_LD_FLAG         SET_FLAG(2)
+#define CLR_LD_FLAG         CLR_FLAG(2)
+#define GET_LD_FLAG         GET_FLAG(2)
 
 typedef enum {
     SCR_MODE_IDLE = 0,
@@ -232,12 +234,14 @@ float psu_getCurrent(void);
 /**
  * @brief
  * */
-float psu_getLoadCurrent(void);
+void psu_setLoadEnable(uint8_t en);
+uint8_t psu_getLoadEnabled(void);
 
 /**
  * @brief
  * */
-uint8_t psu_getOutputEnable(void);
+void psu_setLoadCurrent(float i);
+float psu_getLoadCurrent(void);
 
 /**
  * @brief
