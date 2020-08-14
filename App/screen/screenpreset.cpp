@@ -5,22 +5,24 @@
 #include "draw.h"
 #include "font.h"
 
-#define PRESET_POS          16,16
-#define PRESET_SPACING      16
+#define PRESET_POS_X        108
+#define PRESET_INFO1_POS    PRESET_POS_X, 16
+#define PRESET_INFO2_POS    PRESET_POS_X, 32
+
 #define PRESET_BCOLOR       CYAN
 #define PRESET_FCOLOR       WHITE
 #define PRESET_SELECT       PINK
 #define PRESET_SIZE         (16*16)
 #define PRESET_TEXT_FONT    &courierFont
-//#define PRESET_TEXT_FONT    &defaultFont
+
 
 void ScreenPreset::selectPreset(uint8_t idx){
     if(idx == _selected){
         TEXT_SetPalette((const uint16_t []){BLACK, YELLOW});
         xsprintf(gOut, "%.1fV ", _presets[idx].v);
-        TEXT_Print(108, 10, gOut);
+        TEXT_Print(PRESET_INFO1_POS, gOut);
         xsprintf(gOut, "%.2fA ", _presets[idx].i);
-        TEXT_Print(108, 30, gOut);
+        TEXT_Print(PRESET_INFO2_POS, gOut);
         memset16(scratch, PRESET_SELECT, PRESET_SIZE);
         TEXT_SetPalette((const uint16_t []){PRESET_SELECT, WHITE});
     }else{
