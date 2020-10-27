@@ -14,13 +14,14 @@ void BOARD_Init(void){
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPCEN;
     
     LED_INIT;
+    PSU_OE_INIT;
+    MUX_SEL_INIT;
+    SPOWER_INIT;
+    DBG_PIN_INIT;
+        
     SPI_Init();
     I2C_Init();
     RTC_Init();
-
-    LCD_Init();
-    LCD_Rotation(LCD_REVERSE_LANDSCAPE);
-    EXPANDER_Init();
 }
 
 /**
@@ -81,9 +82,9 @@ void PWM_Init(void){
     TIM3->CR1 |= TIM_CR1_CEN;     // Start pwm before enable outputs
 
     /* Configure PWM pins */
-    GPIOB->CRL &= ~(0xFF00FF << 0); // PB5-PB4, PB1-PB0
-    GPIOB->CRL |= (0xAA00AA << 0);
-    // remap PB5-PB5
+    GPIOB->CRL &= ~(0xFF000F << 0); // PB5-PB4, PB0
+    GPIOB->CRL |= (0xAA000A << 0);
+    // remap PB5-PB4
     AFIO->MAPR |= (2 << 10);    
 }
 
@@ -244,8 +245,7 @@ StdOut stdio_ops = {
 /**
  * ADC Driver
  * */
-
-#define ADC_TRIGGER_CLOCK 500000UL
+#define ADC_TRIGGER_CLOCK                    500000UL
 #define ADC_CR1_DUALMOD_FAST_INTERLEAVED     (7 << 16)
 #define ADC_CR1_DUALMOD_SIMULTANEOUS         (6 << 16)
 #define ADC_SQR1_L_(len)                     ((len) << 20)
@@ -494,6 +494,7 @@ void ADC_SetCallBack(void (*cb)(uint16_t*)){
     eotcb = cb;
 }
 #else /* USE_ADCMUX */
+#if 0
 /* ***********************************************************
  * @brief ADC is triggered by TIM2 TRGO and performs single convertion 
  * on one channel. The result is placed on destination using the EOC interrupt
@@ -501,7 +502,6 @@ void ADC_SetCallBack(void (*cb)(uint16_t*)){
  * @param ms : Time between convertions
  ************************************************************ */
 void ADC_Init(uint16_t ms){
-    #if 0
     /* Configure Timer 2 */
     RCC->APB1ENR  |= RCC_APB1ENR_TIM2EN;    // Enable Timer 2
     RCC->APB1RSTR |= RCC_APB1ENR_TIM2EN;    // Reset timer registers
@@ -538,6 +538,13 @@ void ADC_Init(uint16_t ms){
 
     TIM2->CR1 |= TIM_CR1_CEN;
     #else
+/** 
+* @brief ADC 1 is triggered by software and performs a single conversion on 
+* the channel defined by ADCMUX_CHANNEL.
+* After the conversion the EOC flag is set and interrupt handler is called,
+* if a callback is set, it is called with the conversion result
+* */
+void ADC_Init(uint16_t ms){
     /* Configure ADC 1, single convertion with EOC interrupt */
     RCC->APB2ENR  |= RCC_APB2ENR_ADC1EN;        // Enable Adc1
     RCC->APB2RSTR |= RCC_APB2ENR_ADC1EN;
@@ -558,7 +565,6 @@ void ADC_Init(uint16_t ms){
     ADC1->SQR1 = ADC_SQR1_L_(1 - 1);            // number of channels on sequence
     ADC1->SQR3 = ADC_SQR3_SQ1_(ADCMUX_CHANNEL); // Set channel to be converted                
     
-
     hadc.cb = NULL;                             // No callback configured
 
     NVIC_EnableIRQ(ADC1_2_IRQn);
@@ -573,6 +579,7 @@ void ADC_SetCallBack(void (*cb)(uint16_t)){
 void ADC_Start(void){
     ADC1->CR2 |= ADC_CR2_SWSTART;
 }
+
 /**
  * 
  * */
@@ -584,7 +591,7 @@ void ADC1_2_IRQHandler(void){
     }
     //DBG_PIN_TOGGLE;
 }
-#endif
+#endif /* USE_ADCMUX */
 /**
  * RTC
  * 
@@ -646,8 +653,18 @@ void SPI_Init(void){
     RCC->APB1RSTR &= ~RCC_APB1RSTR_SPI2RST;
     RCC->AHBENR |= RCC_AHBENR_DMA1EN;
     
+    /**
+     * PB15 AF
+     * PB14 GPO
+     * PB13 AF
+     * PB12 GPO
+     * PB3  BKL
+     * */
     GPIOB->CRH &= (0x0000FFFF);
-    GPIOB->CRH |= (0xA2A20000);  // AF-PP
+    GPIOB->CRH |= (0xA2A20000);
+
+    GPIOB->CRL &= (0xFFFF0FFF);
+    GPIOB->CRL |= (0x00002000);
     
     SPI2->CR1 = (1 << 3) |       //BR[2:0] = PLK1/4 
                 //SPI_CR1_SSM |

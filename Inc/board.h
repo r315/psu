@@ -19,13 +19,13 @@ extern "C" {
 /**
  * Button 
  * */
-#define BUTTON_UP       (1<<1)
-#define BUTTON_DOWN     (1<<0)
-#define BUTTON_LEFT  	(1<<3)
-#define BUTTON_RIGHT 	(1<<2)
+#define BUTTON_UP       (1<<2)
+#define BUTTON_DOWN     (1<<3)
+#define BUTTON_LEFT  	(1<<1)
+#define BUTTON_RIGHT 	(1<<0)
 #define BUTTON_SET  	(1<<4)
-#define BUTTON_MODE     (1<<5)
-#define BUTTON_OUT      (1<<6)
+#define BUTTON_MODE     (1<<6)
+#define BUTTON_OUT      (1<<5)
 #define BUTTON_MEM      (1<<7)
 
 #define BUTTON_HW_INIT
@@ -34,28 +34,72 @@ extern "C" {
                      BUTTON_SET  | BUTTON_OUT   | BUTTON_MODE | BUTTON_MEM)
 #define BUTTON_VALUE (uint8_t)BUTTON_GetValue()
 
-// TODO: Properly disable all peripherals (clock pwr) and then power off
-#define SPOWER_OFF \
-    GPIOA->CRL = (GPIOA->CRH & ~(0x0F << 8)) | (2 << 8); \
-    GPIOA->ODR &= ~GPIO_PIN_2; \
+/**
+ * Softpower, PA1, PA2
+ * 
+ * PA1/ADC1 - Can measure voltage after DC jack
+ * PA2 - Can detect if power key was pressed by reading ADC2.
+ *       Seting this pin as digital output and writing low perform
+ *       poweroff
+ * */
+
+#define SPOWER_PIN      PA_2
+// TODO: Properly disable all peripherals (clock and pwr) and then power off
+#define SPOWER_OFF  \
+    pinWrite(SPOWER_PIN, GPIO_PIN_RESET); \
+    pinInit(SPOWER_PIN, GPO_2MHZ); \
     while(1);
+
+#define SPOWER_INIT                  \
+{                                    \
+    pinInit(SPOWER_PIN, GPI_ANALOG); \
+}
 
 /**
  * LEDS and debug pin
  * */
-#if 1
-#define LED_PIN     PC_13
-#define LED_INIT    pinInit(LED_PIN, GPO_2MHZ);
-#else// GPIO
-#define LED_INIT
-#endif
+#define LED_PIN         PC_13
+#define LED_INIT        pinInit(LED_PIN, GPO_2MHZ);
+#define LED_TOGGLE      HAL_GPIO_TogglePin(PIN_NAME_TO_PORT(LED_PIN), PIN_NAME_TO_PIN(LED_PIN))
+#define LED_OFF         pinWrite(LED_PIN, GPIO_PIN_SET)
+#define LED_ON          pinWrite(LED_PIN, GPIO_PIN_RESET)
 
-#define LED_TOGGLE HAL_GPIO_TogglePin(PIN_NAME_TO_PORT(LED_PIN), PIN_NAME_TO_PIN(LED_PIN))
-#define LED_OFF pinWrite(LED_PIN, GPIO_PIN_SET)
-#define LED_ON  pinWrite(LED_PIN, GPIO_PIN_RESET)
-#define DBG_PIN_HIGH LED_OFF
-#define DBG_PIN_LOW LED_ON
-#define DBG_PIN_TOGGLE LED_TOGGLE
+#define DBG_PIN         PB_6
+#define DBG_PIN_INIT    pinInit(DBG_PIN, GPO_2MHZ);
+#define DBG_PIN_HIGH    pinWrite(LED_PIN, GPIO_PIN_SET)
+#define DBG_PIN_LOW     pinWrite(LED_PIN, GPIO_PIN_RESET)
+#define DBG_PIN_TOGGLE  pinToggle(DBG_PIN)
+
+/**
+ * Output enable pin
+ * */
+#define PSU_OE_PIN      PB_1
+#define PSU_OE_INIT     pinWrite(PSU_OE_PIN, GPIO_PIN_RESET); pinInit(PSU_OE_PIN, GPO_2MHZ)
+#define PSU_OE_SET(_X)  pinWrite(PSU_OE_PIN, _X)
+
+/**
+ * Analog mux selectors
+ * PA7-4
+ * */
+#define MUX_S0  PA_4
+#define MUX_S1  PA_5
+#define MUX_S2  PA_6
+#define MUX_S3  PA_7
+
+#define MUX_SEL_INIT \
+{                                                                \
+    pinWrite(MUX_S0, GPIO_PIN_RESET); pinInit(MUX_S0, GPO_2MHZ); \
+    pinWrite(MUX_S1, GPIO_PIN_RESET); pinInit(MUX_S1, GPO_2MHZ); \
+    pinWrite(MUX_S2, GPIO_PIN_RESET); pinInit(MUX_S2, GPO_2MHZ); \
+    pinWrite(MUX_S3, GPIO_PIN_RESET); pinInit(MUX_S3, GPO_2MHZ); \
+}
+
+#define MUX_SELECT(CH) portWrite(PORTA, (portRead(PORTA) & ~(0xF<<4)) | CH << 4)
+
+/**
+ * Buzzer
+ * */
+#define BUZ_INIT
 
 /**
  * Delay and tick count
@@ -80,9 +124,15 @@ void SPI_Read(uint8_t *dst, uint32_t len);
 void SPI_WriteDMA(uint16_t *dst, uint32_t len);
 /**
  * Display
+ * PB14 -> RS
+ * PB4  -> BKL
+ * PB3  -> RST
+ * PB12 -> CS
+ * PB13 -> SCK
+ * PB15 -> SDO
  * */
-#define TFT_W 80
-#define TFT_H 160  // 162 on GRAM
+#define TFT_W               80
+#define TFT_H               160  // 162 on GRAM
 
 #define TFT_OFFSET_SOURCE	26
 #define TFT_OFFSET_GATE		1
@@ -90,10 +140,8 @@ void SPI_WriteDMA(uint16_t *dst, uint32_t len);
 
 #define LCD_CD_Pin          GPIO_PIN_14
 #define LCD_CD_GPIO_Port    GPIOB
-#define LCD_BKL_Pin         GPIO_PIN_4
+#define LCD_BKL_Pin         GPIO_PIN_3
 #define LCD_BKL_GPIO_Port   GPIOB
-#define LCD_RST_Pin         GPIO_PIN_3
-#define LCD_RST_GPIO_Port   GPIOB
 #define LCD_CS_Pin          GPIO_PIN_12
 #define LCD_CS_GPIO_Port    GPIOB
 
@@ -103,12 +151,8 @@ void SPI_WriteDMA(uint16_t *dst, uint32_t len);
 #define LCD_BKL1            LCD_BKL_GPIO_Port->BSRR = LCD_BKL_Pin
 #define LCD_CS0             LCD_CS_GPIO_Port->BRR = LCD_CS_Pin
 #define LCD_CS1             LCD_CS_GPIO_Port->BSRR = LCD_CS_Pin
-#define LCD_RST0            LCD_RST_GPIO_Port->BRR = LCD_RST_Pin
-#define LCD_RST1            LCD_RST_GPIO_Port->BSRR = LCD_RST_Pin
-
-//LCD_CD_GPIO_Port->CRH = (LCD_CD_GPIO_Port->CRH & ~(0xF << 4)) | (2 << 4);
-//GPIOB->CRL = (GPIOA->CRL & ~(0xF << (4<<2))) | (2 <<(4<<2));
-//GPIOB->CRL = (GPIOA->CRL & ~(0xF << (3<<2))) | (2 <<(3<<2));
+#define LCD_RST0
+#define LCD_RST1
 
 #define LCD_W LCD_GetWidth()
 #define LCD_H LCD_GetHeight()
@@ -198,7 +242,7 @@ static inline void reenumerate_usb(void){
 #define PWM_RESOLUTION      10UL
 #define PWM_MAX_VALUE       (1<<PWM_RESOLUTION)
 #define PWM_MIN_VALUE       0
-#define PWM_NUM_CH          4          // Number of channels
+#define PWM_NUM_CH          3          // Number of channels
 
 /**
  * Initialyse PWM signal on PB5-4 and PB1-0 pins
