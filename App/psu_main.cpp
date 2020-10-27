@@ -13,7 +13,7 @@ static Screen *modes[] = {
     &cpsu,
     &cpreset,
     &cload,
-    &ccharger,
+    //&ccharger,
 };
 
 static Console console;
@@ -52,12 +52,12 @@ pwmcal_t default_pwm_calibration[] = {
 };
 
 preset_t default_preset[] = {
-    {1.2f, 0.3f},
-    {1.8f, 0.1f},
-    {2.5f, 0.1f},
-    {3.3f, 1.6f},
-    {5.0f, 0.3f},
-    {9.6f, 0.05f}
+    {1200, 100},   // <mv, ma>
+    {1800, 100},
+    {2500, 100},
+    {3300, 1600},
+    {5000, 300},
+    {9600, 50}
 };
 
 // ch1, ch2, ......
@@ -76,16 +76,13 @@ extern "C" void psu_adc_cb(uint16_t *data){
 /**
  * PSU public control functions
  * */
-void psu_setOutputVoltage(float val){
-    mapAndSetPwm(val, MAX_VOLTAGE, MIN_VOLTAGE, PWM_CH_VOLTAGE);
+void psu_setOutputVoltage(uint32_t mv){    
 }
 
-void psu_setOutputCurrent(float val){
-    mapAndSetPwm(val, MAX_CURRENT, MIN_CURRENT, PWM_CH_CURRENT);
+void psu_setOutputCurrent(uint32_t ma){
 }
 
-void psu_setInputLoad(float val){
-    mapAndSetPwm(val, MAX_LOAD, MIN_LOAD, PWM_CH_LOAD);
+void psu_setInputLoad(uint32_t ma){
 }
 
 void psu_setOutputEnable(uint8_t en){    
@@ -108,11 +105,11 @@ void psu_setLoadEnable(uint8_t en){
     }
 }
 
-float psu_getVoltage(void){
+uint32_t psu_getVoltage(void){
     return *(uint16_t*)psu.ptr * VOLTAGE_PRECISION;
 }
 
-float psu_getCurrent(void){
+uint32_t psu_getCurrent(void){
     return *((uint16_t*)psu.ptr + 1) * CURRENT_PRECISION;
 }
 
@@ -128,11 +125,11 @@ uint8_t psu_AdcReady(void){
     return GET_AD_FLAG;
 }
 
-void psu_setLoadCurrent(float i){
+void psu_setLoadCurrent(uint32_t ma){
 
 }
 
-float psu_getLoadCurrent(void){
+uint32_t psu_getLoadCurrent(void){
     return psu_getCurrent();
 }
 
@@ -253,7 +250,7 @@ uint32_t *src = (uint32_t*)res;
  * ensures operation of lcd update and button handling
  * */
 void tskPsu(void *ptr){
-static TickType_t xLastWakeTime;    
+static TickType_t xLastWakeTime;
 uint8_t count = 0;
 
     app_selectMode(psu.cur_mode);

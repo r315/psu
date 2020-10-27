@@ -25,14 +25,14 @@ extern "C" {
 
 #define PRIORITY_LOW                3
 
-#define VOLTAGE_PRECISION           0.005f  //MAX_VOLTAGE / 2^ADC_RESOLUTION
-#define CURRENT_PRECISION           0.0008f
-#define MAX_VOLTAGE                 14.0f
-#define MIN_VOLTAGE                 1.2f
-#define MAX_CURRENT                 3.00f
-#define MIN_CURRENT                 0.00f
-#define MAX_LOAD                    3.00f
-#define MIN_LOAD                    0.00f
+#define VOLTAGE_PRECISION           5U
+#define CURRENT_PRECISION           8U
+#define MAX_VOLTAGE                 20000U
+#define MIN_VOLTAGE                 1200U
+#define MAX_CURRENT                 3000U
+#define MIN_CURRENT                 0U
+#define MAX_LOAD                    MAX_CURRENT
+#define MIN_LOAD                    MIN_CURRENT
 
 #define ADC_INTERVAL                100 //ms
 #define APP_INTERVAL                10
@@ -41,14 +41,14 @@ extern "C" {
 #define LOAD_ICON_POS               LCD_W - 36,3
 #define OUTPUT_ICON_POS             160-16,3
 
-#define MAX_MODES sizeof(modes)/sizeof(void*)
-#define SET_MAX_DIGITS              3 // Digits in each DRO
+#define MAX_MODES                   sizeof(modes)/sizeof(void*)
 
 #define BLINK_TIME_MASK             8
-#define NO_BLANK                    -1
+#define BLINK_ON                    1
+#define BLINK_OFF                   0
 
 #define CONSOLE_PROMPT              "PSU >"
-#define STATE_FLAG_DISPLAY          1   // LCD Init flag
+//#define STATE_FLAG_DISPLAY          1   // LCD Init flag
 
 #define MAX_PRESETS                 6
 
@@ -103,8 +103,8 @@ typedef struct pwmcal{
 }pwmcal_t;
 
 typedef struct preset{
-    float v;
-    float i;
+    uint32_t v;
+    uint32_t i;
 }preset_t;
 
 typedef struct psu{ 
@@ -124,17 +124,31 @@ typedef enum {
 
 class Screen{
 
+private:
+    void _addPow(uint32_t *value, int32_t pow);
+    void _printValue(uint16_t x, uint16_t y, font_t *font, const uint16_t *pal, uint8_t blink_digit, const char *str);
+
 protected:
-    float *set_value;
-    float set_max;
-    float set_min;
-    uint8_t digit;
-    int8_t base_place;
     screenstate_e _screen_state;
-    uint8_t count;
-    void selectDigit(int8_t sel);
-    void changeDigit(int8_t base);
+    uint8_t _count;
+    uint32_t _pow, _min_pow, _max_pow;
+    int32_t _min_set;
+    int32_t _max_set;
+    void divPow(void);
+    void mulPow(void);
+    void addPow(uint32_t *val);
+    void subPow(uint32_t *val);
+
+    void configSetting(uint32_t initial_pow, uint32_t min_pow, uint32_t max_pow, int32_t min_set, int32_t max_set){
+        _pow = initial_pow; _min_pow = min_pow; _max_pow = max_pow;
+        _min_set = min_set; _max_set = max_set;
+    }
+
+    void printCurrent(uint16_t x, uint16_t y, font_t *font, const uint16_t *pal, uint8_t blink_digit, uint32_t ma);
+    void printVoltage(uint16_t x, uint16_t y, font_t *font, const uint16_t *pal, uint8_t blink_digit, uint32_t mv);
+    void printPower(uint16_t x, uint16_t y, font_t *font, const uint16_t *pal, uint8_t blink_digit, uint32_t mw);
 public:
+
     Screen() {}
     /**
      * Redraws the mode screen with default values
@@ -152,14 +166,13 @@ public:
 
 class ScreenPsu: public Screen{
 private:    
-    float set_v;
-    float set_i;
-    Graph graph;
-    void printVoltage(float value, int8_t hide_place);
-    void printCurrent(float value, int8_t hide_place);
-    void printPower(float v, float i);
-    void printPresetIndex(void);    
-    void enterModeSet(void);
+    uint32_t _set_v;
+    uint32_t _set_i;
+    Graph _graph;
+    void updateCurrent(uint8_t hide_digit, uint32_t ma);
+    void updateVoltage(uint8_t hide_digit, uint32_t mv);
+    void updatePower(uint32_t pwr);
+    void updatePresetIndex(void);
 public:
     ScreenPsu() : Screen() {}	
     void process();
@@ -170,13 +183,13 @@ public:
 class ScreenLoad: public Screen{
     Graph _graph;
     loadmode_e _load_mode;
-    float _set_i;
+    uint32_t _set_i;
     uint32_t _start_ticks;
     void printMode(int8_t toggle_visible);
-    void printCurrent(float value, int8_t hide_digit);
-    void printVoltage(float value, int8_t hide_digit);
-    void printPower(float v, float i);
-    void printTime(void);
+    void updateCurrent(uint8_t hide_digit, uint32_t ma);
+    void updateVoltage(uint8_t hide_digit, uint32_t mv);
+    void updatePower(uint32_t pwr);
+    void updateTime(void);
 public:
     ScreenLoad() : Screen(){}	
     void process();
@@ -228,14 +241,14 @@ uint8_t psu_getOutputEnable(void);
 /**
  * @brief Set/Get PSU output voltage
  * */
-void psu_setOutputVoltage(float val);
-float psu_getVoltage(void);
+void psu_setOutputVoltage(uint32_t mv);
+uint32_t psu_getVoltage(void);
 
 /**
  * @brief Set/Get PSU output current
  * */
-void psu_setOutputCurrent(float val);
-float psu_getCurrent(void);
+void psu_setOutputCurrent(uint32_t ma);
+uint32_t psu_getCurrent(void);
 
 /**
  * @brief
@@ -246,8 +259,8 @@ uint8_t psu_getLoadEnabled(void);
 /**
  * @brief
  * */
-void psu_setLoadCurrent(float i);
-float psu_getLoadCurrent(void);
+void psu_setLoadCurrent(uint32_t ma);
+uint32_t psu_getLoadCurrent(void);
 
 /**
  * @brief

@@ -41,9 +41,9 @@ void ScreenCharger::process(){
 
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         if(_screen_state){
-            count = 0;
+            _count = 0;
             switch(BUTTON_VALUE){
-                case BUTTON_SET: count = BLINK_TIME_MASK; break;
+                case BUTTON_SET: _count = BLINK_TIME_MASK; break;
                 case BUTTON_UP:  changeBtSize(&bt_size, 1); break;
                 case BUTTON_DOWN: changeBtSize(&bt_size, -1); break;
                 case BUTTON_LEFT:  break;
@@ -65,7 +65,7 @@ void ScreenCharger::process(){
         //printCurrent(I_POS, st->adc_i1 * CURRENT_PRECISION);
     }else{
         //TEXT_SetFont(&lcdFont);
-        if((++count) & BLINK_TIME_MASK){
+        if((++_count) & BLINK_TIME_MASK){
             TEXT_Print(BT_SIZE_POS,"  ");
         }else{            
             TEXT_Print(BT_SIZE_POS, bat_type + bt_size * 3);

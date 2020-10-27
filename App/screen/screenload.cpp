@@ -18,6 +18,8 @@
 
 #define LOAD_LINE_COLOR     RGB565(5,10,5)
 
+#define LOAD_TEXT_FONT      &courierFont
+
 static const uint16_t graph_pal[] = {RGB565(5,10,5), RED, GREEN, YELLOW};
 static const char *load_mode_name[] = {"CC", "CP", "CR"};
 
@@ -37,9 +39,9 @@ void ScreenLoad::redraw(void){
 
     printMode(false);
     TEXT_SetPalette((const uint16_t[]){BLACK, PINK});
-    printPower(0.0f, 0.0f);
-    printCurrent(_set_i, NO_BLANK);
-    printVoltage(0.0f, NO_BLANK);
+    updatePower(0);
+    updateCurrent(BLINK_OFF, _set_i);
+    updateVoltage(BLINK_OFF, 0);
     
     _graph.redraw();
 }
@@ -47,7 +49,7 @@ void ScreenLoad::redraw(void){
 void ScreenLoad::printMode(int8_t toggle_visible){
     const char *str = "  ";
 
-    if(toggle_visible == false || (++count) & BLINK_TIME_MASK){
+    if(toggle_visible == false || (++_count) & BLINK_TIME_MASK){
         str = load_mode_name[(uint8_t)_load_mode];
     }
     
@@ -55,59 +57,19 @@ void ScreenLoad::printMode(int8_t toggle_visible){
     TEXT_Print(LOAD_MODE_POS, str);    
 }
 
-void ScreenLoad::printCurrent(float value, int8_t hide_digit){
-
-    if(value > MAX_CURRENT){
-        value = MAX_CURRENT;
-    }
-
-    xsprintf(gOut,"%.2fA", value);
-
-    if(hide_digit != NO_BLANK && (++count) & BLINK_TIME_MASK){
-        if(hide_digit > 0)
-            hide_digit++;
-        gOut[hide_digit] = ' ';
-    }
-
-    TEXT_SetPalette((const uint16_t[]){BLACK, YELLOW});
-    TEXT_Print(LOAD_INFO2_POS, gOut);
+void ScreenLoad::updateCurrent(uint8_t hide_digit, uint32_t ma){
+    printCurrent(LOAD_INFO2_POS, LOAD_TEXT_FONT, (const uint16_t[]){BLACK, YELLOW}, hide_digit, ma);
 }
 
-void ScreenLoad::printVoltage(float value, int8_t hide_digit){
-
-    if(value > MAX_VOLTAGE){
-        value = MAX_VOLTAGE;
-    }
-
-    if(value < 9.9f)
-        xsprintf(gOut,"0%.1fV", value);
-    else
-        xsprintf(gOut,"%.1fV", value);
-
-    if(hide_digit != NO_BLANK && (++count) & BLINK_TIME_MASK){
-        if(hide_digit > 1)
-            hide_digit++;
-        gOut[hide_digit] = ' ';
-    }
-
-    TEXT_SetPalette((const uint16_t[]){BLACK, GREEN});
-    TEXT_Print(LOAD_INFO3_POS, gOut);    
+void ScreenLoad::updateVoltage(uint8_t hide_digit, uint32_t mv){
+    printVoltage(LOAD_INFO3_POS, LOAD_TEXT_FONT, (const uint16_t[]){BLACK, GREEN}, hide_digit, mv);
 }
 
-void ScreenLoad::printPower(float v, float i){
-float p = i * v;
-    
-    if(p > MAX_CURRENT * MAX_VOLTAGE){
-        p = MAX_CURRENT * MAX_VOLTAGE;
-    }
-
-    xsprintf(gOut, "%.1fW ", p);    
-    
-    TEXT_SetPalette((const uint16_t[]){BLACK, SKYBLUE});
-    TEXT_Print(LOAD_POWER_POS, gOut);
+void ScreenLoad::updatePower(uint32_t pwr){
+    printPower(LOAD_POWER_POS, LOAD_TEXT_FONT, (const uint16_t[]){BLACK, SKYBLUE}, BLINK_OFF, pwr);
 }
 
-void ScreenLoad::printTime(){
+void ScreenLoad::updateTime(){
     uint32_t elapsed_ms = ElapsedTicks(_start_ticks);
     uint32_t hour = elapsed_ms / 3600000;
     uint32_t min = (elapsed_ms / 60000) % 60;
@@ -117,7 +79,9 @@ void ScreenLoad::printTime(){
 }
 
 void ScreenLoad::process(){
-float i, v;    
+uint32_t i, v;
+static uint8_t blink;
+
     switch(_screen_state){
         case SCR_MODE_IDLE:
             if(BUTTON_GetEvents() == BUTTON_PRESSED){
@@ -140,7 +104,7 @@ float i, v;
                     case BUTTON_MEM: 
                         // disable load and show set points
                         psu_setLoadEnable(false);
-                        printCurrent(_set_i, NO_BLANK);
+                        updateCurrent(BLINK_OFF, _set_i);
                         _screen_state = SCR_MODE_IDLE;
                         return;
 
@@ -155,10 +119,10 @@ float i, v;
             i = psu_getLoadCurrent();
             v = psu_getVoltage();
 
-            printCurrent(i, NO_BLANK);
-            printVoltage(v, NO_BLANK);
-            printPower(v, i);
-            printTime();
+            updateCurrent(BLINK_OFF, i);
+            updateVoltage(BLINK_OFF, v);
+            updatePower(v * i);
+            updateTime();
 
             _graph.addPoint((int)v, 0);
             _graph.addPoint((int)i, 1);
@@ -176,12 +140,10 @@ float i, v;
                 case BUTTON_SET:
                     switch(_load_mode){
                     case LOAD_MODE_CC: 
-                        _screen_state = SCR_MODE_SET_CC; 
-                        set_max = MAX_CURRENT;
-                        set_min = MIN_CURRENT;
-                        set_value = &_set_i; 
-                        digit = 1; 
-                        base_place = 1; 
+                        _screen_state = SCR_MODE_SET_CC;
+                        _set_i = 40;
+                        blink = BLINK_ON;
+                        configSetting(10, 10, 1000, MIN_CURRENT, MAX_CURRENT);                       
                         break;
                     case LOAD_MODE_CP: _screen_state = SCR_MODE_SET_CP; break;
                     case LOAD_MODE_CR: _screen_state = SCR_MODE_SET_CR; break;
@@ -224,18 +186,18 @@ float i, v;
                         }else{
                             _screen_state = SCR_MODE_IDLE;
                         }
-                        digit = NO_BLANK;
+                        blink = BLINK_OFF;
                         psu_setLoadCurrent(_set_i);
                         break;
 
-                    case BUTTON_UP: changeDigit(base_place); break;
-                    case BUTTON_DOWN: changeDigit(-base_place); break;
-                    case BUTTON_LEFT: selectDigit(-1); break;
-                    case BUTTON_RIGHT: selectDigit(1); break;
+                    case BUTTON_UP: addPow(&_set_i); break;
+                    case BUTTON_DOWN: subPow(&_set_i); break;
+                    case BUTTON_LEFT: mulPow(); break;
+                    case BUTTON_RIGHT: divPow(); break;
                 }
             }
 
-            printCurrent(_set_i, digit);
+            updateCurrent(blink, _set_i);
             break;
 
         default: 

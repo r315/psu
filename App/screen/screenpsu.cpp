@@ -29,9 +29,9 @@ static const uint16_t graph_pal[] = {RGB565(5,10,10), RED, GREEN, YELLOW};
 
 void ScreenPsu::init(void){
     preset_t *preset = app_getPreset();
-    set_v = preset->v;
-    set_i = preset->i;
-    graph.init(93, LCD_H - 32, LCD_W - 93, 30, graph_pal);
+    _set_v = preset->v;
+    _set_i = preset->i;
+    _graph.init(93, LCD_H - 32, LCD_W - 93, 30, graph_pal);
     _screen_state = SCR_MODE_IDLE;
     redraw();
 }
@@ -44,138 +44,89 @@ void ScreenPsu::redraw(void){
     DRAW_HLine(0, 15, LCD_W, PSU_LINE_COLOR);
     DRAW_VLine(92, 0, LCD_H, PSU_LINE_COLOR);
 
-    printVoltage(set_v, NO_BLANK);
-    printCurrent(set_i, NO_BLANK);
-    printPower(set_v, set_i);
-    graph.redraw();
+    updateVoltage(BLINK_OFF, _set_v);
+    updateCurrent(BLINK_OFF, _set_i);
+    //printPower(set_v, set_i);
+    _graph.redraw();
 
-    printPresetIndex();
+    updatePresetIndex();
 }
 
-void ScreenPsu::printPresetIndex(){
+void ScreenPsu::updatePresetIndex(){
     uint8_t index = app_getPreset() - app_getPresetList();
     xsprintf(gOut,"M%u", index + 1);
+
+    TEXT_SetFont(PSU_TEXT_FONT);
     TEXT_SetPalette(txt_pal);
     TEXT_Print(LCD_W - 64, 0, gOut);
 }
 
-void ScreenPsu::enterModeSet(void){
-preset_t *pre;
-
-    switch(_screen_state){
-        case SCR_MODE_IDLE:
-        case SCR_MODE_NORMAL:
-            _screen_state = SCR_MODE_SET_V;
-            set_value = &set_v;
-            set_max = MAX_VOLTAGE;
-            set_min = MIN_VOLTAGE;
-            digit = 1;
-            base_place = 10;
-            break;
-
-        case SCR_MODE_SET_V:
-            _screen_state = SCR_MODE_SET_I;
-            printVoltage(set_v, NO_BLANK);
-            set_max = MAX_CURRENT;
-            set_min = MIN_CURRENT;
-            set_value = &set_i;
-            digit = 1;
-            base_place = 1;
-            break;
-
-        case SCR_MODE_SET_I:
-            // Exit mode set state
-            _screen_state = SCR_MODE_NORMAL;
-            printCurrent(set_i, NO_BLANK);
-            pre = app_getPreset();
-            pre->v = set_v;
-            pre->i = set_i;
-            psu_setOutputVoltage(set_v);
-            psu_setOutputCurrent(set_i);
-            break;
-
-        default:    
-            break;
-
-    }
+void ScreenPsu::updateVoltage(uint8_t hide_digit, uint32_t mv){
+    printVoltage(VOLTAGE_DRO_POS, PSU_DRO_FONT, vdro_pal, hide_digit, mv);
 }
 
-void ScreenPsu::printVoltage(float value, int8_t hide_digit){
-    if(value > MAX_VOLTAGE){
-        value = MAX_VOLTAGE;
-    }
-
-    if(value < 9.9f)
-        xsprintf(gOut,"0%.1fV", value);
-    else
-        xsprintf(gOut,"%.1fV", value);
-
-    if(hide_digit != NO_BLANK){
-        if(hide_digit > 1)
-            hide_digit++;
-        gOut[hide_digit] = ' ';
-    }
-
-    TEXT_SetFont(PSU_DRO_FONT);
-    TEXT_SetPalette(vdro_pal);
-    TEXT_Print(VOLTAGE_DRO_POS, gOut);    
+void ScreenPsu::updateCurrent(uint8_t hide_digit, uint32_t ma){
+    printCurrent(CURRENT_DRO_POS, PSU_DRO_FONT, idro_pal, hide_digit, ma);
 }
 
-void ScreenPsu::printCurrent(float value, int8_t hide_digit){
-
-    if(value > MAX_CURRENT){
-        value = MAX_CURRENT;
-    }
-
-    xsprintf(gOut,"%.2fA", value);
-
-    if(hide_digit != NO_BLANK){
-        if(hide_digit > 0)
-            hide_digit++;
-        gOut[hide_digit] = ' ';
-    }
-
-    TEXT_SetFont(PSU_DRO_FONT);
-    TEXT_SetPalette(idro_pal);
-    TEXT_Print(CURRENT_DRO_POS, gOut);
-}
-
-void ScreenPsu::printPower(float v, float i){
-float p = i * v;
-    
-    if(p > MAX_CURRENT * MAX_VOLTAGE){
-        p = MAX_CURRENT * MAX_VOLTAGE;
-    }
-
-    xsprintf(gOut, "%.1fW ", p);    
-    
-    TEXT_SetFont(PSU_TEXT_FONT);
-    TEXT_SetPalette(pwr_pal);
-    TEXT_Print(POWER_DRO_POS, gOut);
+void ScreenPsu::updatePower(uint32_t pwr){
+    printPower(POWER_DRO_POS, PSU_TEXT_FONT, pwr_pal, BLINK_OFF, pwr);
 }
 
 void ScreenPsu::process(){
-float i, v;
+uint32_t i, v;
+preset_t *pre;
+static uint32_t *ptr_set;
+
 // TODO: Improve state machine
     if(BUTTON_GetEvents() == BUTTON_PRESSED){        
         if(BUTTON_VALUE == BUTTON_SET){
-            enterModeSet();
+            switch(_screen_state){
+                case SCR_MODE_IDLE:
+                case SCR_MODE_NORMAL:
+                    _screen_state = SCR_MODE_SET_V;
+                    configSetting(1000, 100, 10000, MIN_VOLTAGE, MAX_VOLTAGE);
+                    ptr_set = &_set_v;
+                    break;
+
+                case SCR_MODE_SET_V:
+                    _screen_state = SCR_MODE_SET_I;
+                    updateVoltage(BLINK_OFF, _set_v);
+                    configSetting(100, 10, 1000, MIN_CURRENT, MAX_CURRENT);
+                    ptr_set = &_set_i;
+                    break;
+
+                case SCR_MODE_SET_I:
+                    // Exit mode set state
+                    _screen_state = SCR_MODE_NORMAL;
+                    updateCurrent(BLINK_OFF, _set_i);
+                    pre = app_getPreset();
+                    pre->v = _set_v;
+                    pre->i = _set_i;
+                    psu_setOutputVoltage(_set_v);
+                    psu_setOutputCurrent(_set_i);
+                    break;
+
+                default:    
+                    break;
+
+            }
         }
         
         if(_screen_state == SCR_MODE_SET_V ||_screen_state == SCR_MODE_SET_I){
-            count = 0;
+            _count = 0;
             switch(BUTTON_VALUE){
-                case BUTTON_SET: count = BLINK_TIME_MASK; break;
-                case BUTTON_UP: changeDigit(base_place); break;
-                case BUTTON_DOWN: changeDigit(-base_place); break;
-                case BUTTON_LEFT: selectDigit(-1); break;
-                case BUTTON_RIGHT: selectDigit(1); break;
+                case BUTTON_SET: _count = BLINK_TIME_MASK; break;
+                case BUTTON_UP: addPow(ptr_set); break;
+                case BUTTON_DOWN: subPow(ptr_set); break;
+                case BUTTON_LEFT: mulPow(); break;
+                case BUTTON_RIGHT: divPow(); break;
                 case BUTTON_MEM: 
                     // Cancel set
                     _screen_state = SCR_MODE_NORMAL; 
                     preset_t *pre = app_getPresetList();
-                    set_v = pre->v;
-                    set_i = pre->i;
+                    _set_v = pre->v;
+                    _set_i = pre->i;
                     break;
             }
         }
@@ -186,38 +137,30 @@ float i, v;
             if(!psu_getOutputEnable()){
                 _screen_state = SCR_MODE_IDLE;
                 preset_t *pre = app_getPresetList();
-                printVoltage(pre->v, NO_BLANK);
-                printCurrent(pre->i, NO_BLANK);
+                updateVoltage(BLINK_OFF,pre->v);
+                updateCurrent(BLINK_OFF, pre->i);
                 break;
             }
 
             if(psu_AdcReady()){
                 v = psu_getVoltage();
                 i = psu_getCurrent();
-                printPower(v, i);        
-                printVoltage(v, NO_BLANK);
-                printCurrent(i, NO_BLANK);
-                graph.addPoint((int)v, 0);
-                graph.addPoint((int)i, 1);
-                graph.nextPoint();
-                graph.update();                
+                updatePower(v * i);        
+                updateVoltage(BLINK_OFF, v);
+                updateCurrent(BLINK_OFF, i);
+                _graph.addPoint((int)v, 0);
+                _graph.addPoint((int)i, 1);
+                _graph.nextPoint();
+                _graph.update();                
             }
             break;
         
         case SCR_MODE_SET_V:
-            if((++count) & BLINK_TIME_MASK){
-                printVoltage(set_v, digit);
-            }else{
-                printVoltage(set_v, NO_BLANK);
-            }
+            updateVoltage(BLINK_ON, _set_v);
             break;
 
         case SCR_MODE_SET_I:
-            if((++count) & BLINK_TIME_MASK){
-                printCurrent(set_i, digit);
-            }else{
-                printCurrent(set_i, NO_BLANK);
-            }
+            updateCurrent(BLINK_ON, _set_i);            
             break;
 
         case SCR_MODE_IDLE:
