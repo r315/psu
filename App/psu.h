@@ -8,6 +8,12 @@ extern "C" {
 
 #include "board.h"
 #include "text.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "nvdata.h"
+#include "dbg.h"
+
+#ifdef __cplusplus
 #include <console.h>
 #include "cmdhelp.h"
 #include "cmdadc.h"
@@ -17,11 +23,9 @@ extern "C" {
 #include "cmdio.h"
 #include "cmdset.h"
 #include "cmdstatus.h"
-#include "FreeRTOS.h"
-#include "task.h"
 #include "graph.h"
-#include "nvdata.h"
-#include "dbg.h"
+}
+#endif
 
 #define PRIORITY_LOW                3
 
@@ -84,6 +88,26 @@ extern "C" {
 #define CLR_LD_FLAG         CLR_FLAG(2)
 #define GET_LD_FLAG         GET_FLAG(2)
 
+// ADC Manager enable
+#define SET_ADCMGR_FLAG     SET_FLAG(3)
+#define CLR_ADCMGR_FLAG     CLR_FLAG(3)
+#define GET_ADCMGR_FLAG     GET_FLAG(3)
+
+
+#ifndef FALSE
+#define FALSE   (0)
+#endif
+#ifndef TRUE
+#define TRUE    (1)
+#endif
+#ifndef OFF
+#define OFF   (0)
+#endif
+
+#ifndef ON
+#define ON    (1)
+#endif
+
 typedef enum {
     SCR_MODE_IDLE = 0,
     SCR_MODE_NORMAL,
@@ -121,6 +145,9 @@ typedef enum {
     LOAD_MODE_CP,
     LOAD_MODE_CR
 }loadmode_e;
+
+#ifdef __cplusplus
+extern "C" {
 
 class Screen{
 
@@ -227,7 +254,7 @@ extern const uint8_t dro_unit_v[];
 extern const uint8_t dro_unit_a[];
 
 extern char gOut[];
-
+#endif /* __cplusplus */
 /**
  * @brief PSU control API
  * */

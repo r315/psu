@@ -46,6 +46,11 @@ uint16_t ADCMGR_Convert(uint8_t channel);
  * */
 float ADCMGR_GetChannelVoltage(uint8_t channel);
 
+/**
+ * @brief Select mux channel
+ * \param channel : channel to be selected
+ * */
+void ADCMGR_SetChannel(uint8_t channel);
 #ifdef __cplusplus
 }
 #endif

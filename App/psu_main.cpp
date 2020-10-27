@@ -60,17 +60,14 @@ preset_t default_preset[] = {
     {9600, 50}
 };
 
-// ch1, ch2, ......
-static const uint8_t adc_seq[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+extern "C" void psu_adc_cb(uint16_t *data){
+    psu.ptr = data;
+    SET_AD_FLAG;
+}
 
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
     uint16_t pwm_value = (x - in_min) * (psu.pwm_cal[ch].max - psu.pwm_cal[ch].min) / (in_max - in_min) + psu.pwm_cal[ch].min;
     PWM_Set(ch, pwm_value);
-}
-
-extern "C" void psu_adc_cb(uint16_t *data){
-    psu.ptr = data;
-    SET_AD_FLAG;
 }
 
 /**
@@ -303,7 +300,15 @@ extern "C" void app_setup(void){
     dbg_init(&stdio_ops);
     #endif
 
+    psu_setOutputEnable(FALSE);
+
+    EXPANDER_Init();
+
+    LCD_Init();
+    LCD_Rotation(LCD_LANDSCAPE);
+
     TEXT_Init();
+
     NV_Init();
 
     app_InitEEPROM();
@@ -312,9 +317,7 @@ extern "C" void app_setup(void){
 
     ADCMGR_Init();
 
-    ADCMGR_SetSequence((uint8_t*)adc_seq, sizeof(adc_seq), psu_adc_cb);
-
-    psu_setOutputEnable(FALSE);
+    ADCMGR_SetSequence(NULL,0 , psu_adc_cb);
 
     psu_setOutputVoltage(psu.preset->v);
 
