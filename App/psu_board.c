@@ -800,7 +800,7 @@ void I2C_Init(void){
     hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
     hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
     if(HAL_I2C_Init(&hi2c2) != HAL_OK) {
-        Error_Handler(__FILE__, __LINE__);
+        BOARD_Error_Handler(__FILE__, __LINE__);
     }
 }
 
@@ -854,7 +854,7 @@ uint32_t res;
 
 /**
  * */
-void Error_Handler(const char *file, int line){
+void BOARD_Error_Handler(const char *file, int line){
     while(1){
 
     }

@@ -33,7 +33,7 @@
 #include "usbd_def.h"
 
 /* USER CODE BEGIN INCLUDE */
-void Error_Handler(const char *file, int line);
+
 /* USER CODE END INCLUDE */
 
 /** @addtogroup USBD_OTG_DRIVER

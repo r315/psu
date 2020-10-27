@@ -359,7 +359,7 @@ void RTC_Init(void);
  * */
 void BOARD_Init(void);
 
-void Error_Handler(const char *file, int line);
+void BOARD_Error_Handler(const char *file, int line);
  
 #ifdef __cplusplus
 }
