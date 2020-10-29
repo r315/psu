@@ -57,7 +57,6 @@ $(wildcard $(APP_SRC_DIR)/components/*.c) \
 $(LIBEMB_PATH)/display/font.c \
 $(LIBEMB_PATH)/button/button.c \
 $(LIBEMB_PATH)/misc/strfunc.c \
-$(LIBEMB_PATH)/misc/nvdata.c \
 $(LIBEMB_PATH)/misc/debug.c \
 $(LIBEMB_PATH)/misc/pinName.c \
 $(LIBEMB_PATH)/drv/tft/st7735.c \

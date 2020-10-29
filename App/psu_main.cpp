@@ -24,6 +24,7 @@ static CmdPwr pwr;
 static CmdIo io;
 static CmdSet set;
 static CmdReset reset;
+static CmdEeprom eeprom;
 #ifdef ENABLE_DFU
 static CmdDfu dfu;
 #endif
@@ -41,6 +42,7 @@ static ConsoleCommand *commands[] = {
 #endif
     &reset,
     &status,
+    &eeprom,
     NULL
 };
 
@@ -309,7 +311,7 @@ extern "C" void app_setup(void){
 
     TEXT_Init();
 
-    NV_Init();
+    EEPROM_Init();
 
     app_InitEEPROM();
 

@@ -10,8 +10,6 @@ extern "C" {
 #include "text.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "nvdata.h"
-#include "dbg.h"
 
 #ifdef __cplusplus
 #include <console.h>
@@ -24,6 +22,7 @@ extern "C" {
 #include "cmdset.h"
 #include "cmdstatus.h"
 #include "graph.h"
+#include "cmdeeprom.h"
 }
 #endif
 
@@ -59,14 +58,6 @@ extern "C" {
 #define EEPROM_ID_OFFSET            
 #define EEPROM_PRESETS_OFFSET
 #define EEPROM_PWM_CAL_OFFSET            
-
-#if defined(ENABLE_DEBUG)
-    #define DBG_PRINT dbg_printf
-    #define DBG_DUMP_LINE dbg_HexDumpLine
-#else
-    #define DBG_PRINT(...)
-    #define DBG_DUMP_LINE(...)
-#endif
 
 #define _FLAGS              psu.flags
 #define SET_FLAG(f)         _FLAGS |= (1 << f)

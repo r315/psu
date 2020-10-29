@@ -14,6 +14,8 @@ extern "C" {
 #include "st7735.h"
 #include "adcmgr.h"
 #include "pinName.h"
+#include "dbg.h"
+#include "eeprom.h"
 
 
 /**
@@ -69,6 +71,14 @@ extern "C" {
 #define DBG_PIN_HIGH    pinWrite(LED_PIN, GPIO_PIN_SET)
 #define DBG_PIN_LOW     pinWrite(LED_PIN, GPIO_PIN_RESET)
 #define DBG_PIN_TOGGLE  pinToggle(DBG_PIN)
+
+#if defined(ENABLE_DEBUG)
+    #define DBG_PRINT dbg_printf
+    #define DBG_DUMP_LINE dbg_HexDumpLine
+#else
+    #define DBG_PRINT(...)
+    #define DBG_DUMP_LINE(...)
+#endif
 
 /**
  * Output enable pin
@@ -157,24 +167,6 @@ void SPI_WriteDMA(uint16_t *dst, uint32_t len);
 #define LCD_W LCD_GetWidth()
 #define LCD_H LCD_GetHeight()
 
-/**
- *  NVDATA 
- * */
-#define NVDATA_SECTOR_INIT      
-#define NVDATA_SECTOR_START     &_seeprom
-#define NVDATA_SECTOR_END       &_eeeprom
-#define NVDATA_SECTOR_READ      memcpy
-#define NVDATA_SECTOR_WRITE     flashWrite
-#define NVDATA_SECTOR_ERASE     flashPageErase
-#define EEPROM_Read             NV_Read
-#define EEPROM_Write(_A,_B,_C)  NV_Write(_A,_B,_C)
-#define EEPROM_Sync             NV_Sync
-#define EEPROM_SIZE             30
-extern uint32_t _seeprom, _eeeprom;     //declared on linker script
-uint32_t flashWrite(uint8_t *dst, uint8_t *data, uint16_t count);
-uint32_t flashPageErase(uint32_t PageAddress);
-void FLASH_PageErase(uint32_t PageAddress);       // HAL Function
-
 /** 
  * stdout
  * */
@@ -209,8 +201,8 @@ void I2C_Init(void);
 //#define I2C_Read(_A, _D, _S) HAL_I2C_Master_Receive(&hi2c2, _A << 1, _D, _S, 100)
 //#define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 100)
 //#define I2C_WriteDMA(_A, _D, _S) i2cSendDMA(_A << 1, _D, _S)
-void I2C_Write(uint8_t addr, uint8_t *data, uint32_t size);
-void I2C_Read(uint8_t addr, uint8_t *dst, uint32_t size);
+uint16_t I2C_Write(uint8_t addr, uint8_t *data, uint32_t size);
+uint16_t I2C_Read(uint8_t addr, uint8_t *dst, uint32_t size);
 
 
 /**
