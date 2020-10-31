@@ -13,7 +13,7 @@ extern "C" {
 char *getOptValue(const char *opt, uint32_t argc, char **argv);
 int readIntParameter(const char *opt, uint32_t argc, char **argv, uint16_t *dst, void (*func)(uint32_t));
 int readFloatParameter(const char *opt, uint32_t argc, char **argv, uint16_t *dst, void (*func)(float));
-
+char argcmp(const char *arg, char **args);
 
 #ifdef __cplusplus
 }

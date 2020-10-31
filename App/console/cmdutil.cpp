@@ -9,6 +9,21 @@ char *getOptValue(const char *opt, uint32_t argc, char **argv){
     return NULL;
 }
 
+char argcmp(const char *arg, char **args){
+    const char *str1 = arg, *str2 = args[0];
+
+    while (*str1) {
+		if (*str1 != *str2)
+	        return (*str1 - *str2);	
+		str1++;
+		str2++;
+	}
+
+    args[0] = nextWord(args[0]);
+    
+    return 0;
+}
+
 int readIntParameter(const char *opt, uint32_t argc, char **argv, uint16_t *dst, void (*func)(uint32_t)){
     char *param = getOptValue(opt, argc, argv);
     int32_t i;

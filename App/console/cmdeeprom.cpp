@@ -42,18 +42,15 @@ void CmdEeprom::help(void){
 }
 
 char CmdEeprom::execute(void *ptr){
-    uint8_t addr, data;
-    char *argv[4], *param;    
-    uint32_t argc;
-
-    argc = strToArray((char*)ptr, argv);
-
-    if(argc == 0){
+    int32_t addr, data;
+    char *args = (char*)ptr;  
+    
+    if(args == NULL){
         help();
         return CMD_OK;
     }
 
-    if((param = getOptValue("dump", argc, argv)) != NULL){
+    if(!argcmp("dump", &args)){
         console->print("\n");
 	    for(uint16_t i = 0; i < EEPROM_SIZE ; i += 16){
 		    dumpAddress(i);
@@ -62,21 +59,22 @@ char CmdEeprom::execute(void *ptr){
         return CMD_OK;
     }
 
-    if((param = getOptValue("init", argc, argv)) != NULL){        
+    if(!argcmp("init", &args)){
+        EEPROM_Erase();
         return CMD_OK;
     }
 
-    if((param = getOptValue("r", argc, argv)) != NULL){
-        if(nextHex(&param, (uint32_t*)&addr)){  // caution, this may cause memory overwrite
+    if(!argcmp("r", &args)){
+        if(nextHex(&args, (uint32_t*)&addr)){
             EEPROM_Read(addr, (uint8_t*)&data, 1);
             console->print("%02X\n", data);
             return CMD_OK;
         }
     }
 
-    if((param = getOptValue("w", argc, argv)) != NULL){
-        if(nextHex(&argv[1], (uint32_t*)&addr)){
-            if(nextHex(&argv[2], (uint32_t*)&data)){
+    if(!argcmp("w", &args)){
+        if(nextHex(&args, (uint32_t*)&addr)){
+            if(nextHex(&args, (uint32_t*)&data)){
                 EEPROM_Write(addr, (uint8_t*)&data, 1);            
                 return CMD_OK;
             }
