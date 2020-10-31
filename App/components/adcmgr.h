@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#define ADCMGR_NUM_CHANNELS     16
+#define AN_MUX_NUM_CH       16
 
 /**
  * @brief

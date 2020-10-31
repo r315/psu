@@ -2,30 +2,10 @@
 #include "board.h"
 #include "psu.h"
 
-static uint16_t adcmgr_ch_data[ADCMGR_NUM_CHANNELS];
+static uint16_t adcmgr_ch_data[AN_MUX_NUM_CH];
 static void (*adcmgr_eoc_cb)(uint16_t *seq);
 static uint8_t *seq;
 static uint8_t seq_len, seq_idx;
-
-// gain = 1/(R2/(R1+R2))
-static float adcmgr_ch_gain[ADCMGR_NUM_CHANNELS] = {
-    6.08f,  //V_1
-    1.0f,  //I_1
-    6.1f,  //V_2
-    1.0f,  //I_2
-    6.1f,  //V_3
-    0.0f,
-    0.0f,
-    0.0f,
-    1.0f,  //VB+
-    1.0f,  //VB3
-    1.0f,  //VB2
-    1.0f,  //VB1
-    1.0f,  //VB-
-    1.0f,  //I_USB
-    0.0f,
-    0.0f
-};
 
 static const uint8_t adcmgr_seq[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
@@ -125,16 +105,6 @@ void ADCMGR_Start(void){
     seq_idx = 0;
     ADCMGR_SetChannel(seq_idx);
     ADC_Start();
-}
-
-/**
- * @brief Get channel voltage
- * 
- * \param channel : Channel 
- * \return : voltage in mv
- * */
-float ADCMGR_GetChannelVoltage(uint8_t channel){
-    return adcmgr_ch_data[channel] * ADC_GetResolution() * ADCMGR_DEFAULT_GAIN[channel];
 }
 
 /**

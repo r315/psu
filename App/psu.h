@@ -18,14 +18,18 @@ extern "C" {
 
 #define PRIORITY_LOW                3
 
-#define VOLTAGE_PRECISION           5U
-#define CURRENT_PRECISION           8U
 #define MAX_VOLTAGE                 20000U
 #define MIN_VOLTAGE                 1200U
 #define MAX_CURRENT                 3000U
 #define MIN_CURRENT                 0U
 #define MAX_LOAD                    MAX_CURRENT
 #define MIN_LOAD                    MIN_CURRENT
+
+#define VOUT_MUX_CH                 0
+#define IOUT_MUX_CH                 1
+#define VLOAD_MUX_CH                2
+#define ILOAD_MUX_CH                3
+#define VIN_MUX_CH                  0
 
 #define ADC_INTERVAL                100 //ms
 #define APP_INTERVAL                10
@@ -118,7 +122,7 @@ typedef struct psu{
     uint16_t rs;
     uint8_t cur_mode;
     volatile uint8_t flags;
-    void *ptr;
+    uint16_t *adc_data;
 }psu_t;
 
 typedef enum {
@@ -251,6 +255,15 @@ uint8_t psu_getOutputEnable(void);
  * */
 void psu_setOutputVoltage(uint32_t mv);
 uint32_t psu_getVoltage(void);
+
+
+/**
+ * @brief Get channel voltage
+ * 
+ * \param channel : Channel 
+ * \return : voltage in mv
+ * */
+uint32_t psu_getChannelVoltage(uint8_t channel);
 
 /**
  * @brief Set/Get PSU output current

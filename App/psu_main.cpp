@@ -20,6 +20,9 @@ static ScreenPsu cpsu;
 static ScreenLoad cload;
 static ScreenCharger ccharger;
 static ScreenPreset cpreset;
+static preset_t preset_list[MAX_PRESETS];
+static pwmcal_t pwmcal[PWM_NUM_CH];
+static float an_channel_gain[AN_MUX_NUM_CH]; 
 
 static Screen *modes[] = {
     &cpsu,
@@ -58,14 +61,13 @@ static ConsoleCommand *commands[] = {
     NULL
 };
 
-pwmcal_t default_pwm_calibration[] = {
-    {0, (1<<PWM_RESOLUTION), 100},    // pwm1 calibration <min, max, start>
+const pwmcal_t default_pwm_calibration[] = {
+    {490, (1<<PWM_RESOLUTION), 1020},    // pwm1 calibration <min, max, start>
     {0, (1<<PWM_RESOLUTION), 100},    // pwm2 calibration
     {0, (1<<PWM_RESOLUTION), 100},    // pwm3 calibration
-    {0, (1<<PWM_RESOLUTION), 100},    // pwm4 calibration
 };
 
-preset_t default_preset[] = {
+const preset_t default_preset[] = {
     {1200, 100},   // <mv, ma>
     {1800, 100},
     {2500, 100},
@@ -74,8 +76,20 @@ preset_t default_preset[] = {
     {9600, 50}
 };
 
+const float default_an_channel_gain[] = {
+    6.1f,  // V1  gain = 1/(R300/(R300+R301))
+    1.0f,  // I1
+    1.0f,  // V2
+    1.0f,  // I2
+    1.0f,  // V3
+};
+
+/**
+ * PSU
+ * */
+
 extern "C" void psu_adc_cb(uint16_t *data){
-    psu.ptr = data;
+    psu.adc_data = data;
     SET_AD_FLAG;
 }
 
@@ -116,12 +130,21 @@ void psu_setLoadEnable(uint8_t en){
     }
 }
 
+/**
+ * @brief Get channel voltage
+ * 
+ * \param channel : Channel 
+ * \return : voltage in mv
+ * */
+uint32_t psu_getChannelVoltage(uint8_t channel){
+    return psu.adc_data[channel] * ADC_GetResolution() * an_channel_gain[channel];
+}
 uint32_t psu_getVoltage(void){
-    return *(uint16_t*)psu.ptr * VOLTAGE_PRECISION;
+    return psu_getChannelVoltage(VOUT_MUX_CH);
 }
 
 uint32_t psu_getCurrent(void){
-    return *((uint16_t*)psu.ptr + 1) * CURRENT_PRECISION;
+    return psu_getChannelVoltage(IOUT_MUX_CH);
 }
 
 uint8_t psu_getOutputEnable(void){
@@ -141,7 +164,7 @@ void psu_setLoadCurrent(uint32_t ma){
 }
 
 uint32_t psu_getLoadCurrent(void){
-    return psu_getCurrent();
+    return 0;
 }
 
 /**
@@ -152,11 +175,11 @@ preset_t *app_getPreset(void){
 }
 
 preset_t *app_getPresetList(void){
-    return (preset_t*)default_preset;
+    return (preset_t*)preset_list;
 }
 
-void app_setPreset(preset_t *preset){
-    psu.preset = preset;
+void app_setPreset(preset_t *pre){
+    psu.preset = pre;
 }
 
 void app_selectMode(uint8_t mode){
@@ -201,10 +224,13 @@ void app_checkButtons(){
  * */
 void app_InitEEPROM(void){
 
-    psu.pwm_cal = default_pwm_calibration;
-    psu.preset = default_preset;
-    
-    //DBG_DUMP_LINE((uint8_t*)&psu, sizeof(default_eeprom_data), 0);
+    memcpy(pwmcal, default_pwm_calibration, sizeof(default_pwm_calibration));
+    memcpy(preset_list, default_preset, sizeof(default_preset));
+    memcpy(an_channel_gain, default_an_channel_gain, sizeof(default_an_channel_gain));
+
+    psu.pwm_cal = pwmcal;
+    psu.preset = preset_list;
+
 /*
 uint8_t bind_flag;
     

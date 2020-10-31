@@ -25,7 +25,7 @@ void CmdAdc::printCalibrationData(void){
 }
 
 void CmdAdc::printChannelVoltage(uint8_t channel){
-    console->print("CH %u: %.2fmv\n", channel, ADCMGR_GetChannelVoltage(channel));
+    console->print("CH %u: %.2fmv\n", channel, psu_getChannelVoltage(channel));
 }
 
 char CmdAdc::execute(void *ptr){ 
@@ -60,7 +60,7 @@ int32_t intvalue;
         }
 
         if(!xstrcmp(param, "all")){
-            for (size_t i = 0; i < ADCMGR_NUM_CHANNELS; i++)
+            for (size_t i = 0; i < AN_MUX_NUM_CH; i++)
             {
                 printChannelVoltage(i);
             }
