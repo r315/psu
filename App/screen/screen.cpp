@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <strfunc.h>
 #include "psu.h"
 
 
@@ -41,14 +42,12 @@ void Screen::_printValue(uint16_t x, uint16_t y, font_t *font, const uint16_t *p
         blink_digit = 3;              // is located on index 3 of the string
 
         while(cur_dig < _pow){
-           blink_digit--;
-           cur_dig *= 10;
-        }
-
-        if(gOut[blink_digit] == '.'){
             blink_digit--;
+            if(gOut[blink_digit] == '.'){
+                blink_digit--;
+            }
+            cur_dig *= 10;
         }
-
         gOut[blink_digit] = ' ';
     }
 

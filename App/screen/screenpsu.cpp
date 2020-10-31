@@ -22,6 +22,9 @@
 
 #define PSU_LINE_COLOR              RGB565(5,10,5)
 
+#define PSU_GRAPH_HIGHT             30
+#define PSU_GRAPH_WIDTH             93
+
 static const uint16_t vdro_pal[2] = {BLACK, GREEN};
 static const uint16_t idro_pal[2] = {BLACK, YELLOW};
 static const uint16_t pwr_pal[2] = {BLACK, SKYBLUE};
@@ -32,7 +35,7 @@ void ScreenPsu::init(void){
     preset_t *preset = app_getPreset();
     _set_v = preset->v;
     _set_i = preset->i;
-    _graph.init(93, LCD_H - 32, LCD_W - 93, 30, graph_pal);
+    _graph.init(PSU_GRAPH_WIDTH, LCD_H - PSU_GRAPH_HIGHT - 2, LCD_W - PSU_GRAPH_WIDTH, PSU_GRAPH_HIGHT, graph_pal);
     _screen_state = SCR_MODE_IDLE;
     redraw();
 }
@@ -139,18 +142,19 @@ static uint32_t *ptr_set;
                 _screen_state = SCR_MODE_IDLE;
                 preset_t *pre = app_getPresetList();
                 updateVoltage(BLINK_OFF,pre->v);
-                updateCurrent(BLINK_OFF, pre->i);
-                break;
-            }
-
-            if(psu_AdcReady()){
+                updateCurrent(BLINK_OFF, pre->i);               
+            }else if(psu_AdcReady()){
                 v = psu_getVoltage();
                 i = psu_getCurrent();
-                updatePower(v * i);        
+                updatePower((v * i)/1000);        
                 updateVoltage(BLINK_OFF, v);
                 updateCurrent(BLINK_OFF, i);
-                _graph.addPoint((int)v, 0);
-                _graph.addPoint((int)i, 1);
+                v = v * PSU_GRAPH_HIGHT;
+                v = v / MAX_VOLTAGE;
+                i = i * PSU_GRAPH_HIGHT;
+                i = i / MAX_CURRENT;
+                _graph.addPoint(v, 0);      
+                _graph.addPoint(i, 1);
                 _graph.nextPoint();
                 _graph.update();                
             }
