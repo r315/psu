@@ -102,12 +102,15 @@ static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
  * PSU public control functions
  * */
 void psu_setOutputVoltage(uint32_t mv){    
+    mapAndSetPwm(mv, MIN_VOLTAGE, MAX_VOLTAGE, PWM_CH_VOLTAGE);
 }
 
 void psu_setOutputCurrent(uint32_t ma){
+    mapAndSetPwm(ma, MAX_CURRENT, MIN_CURRENT, PWM_CH_CURRENT);
 }
 
 void psu_setInputLoad(uint32_t ma){
+    mapAndSetPwm(ma, MAX_LOAD, MIN_LOAD, PWM_CH_LOAD);
 }
 
 void psu_setOutputEnable(uint8_t en){    
@@ -118,6 +121,8 @@ void psu_setOutputEnable(uint8_t en){
         CLR_OE_FLAG;
         DRAW_FillRect(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);        
     }
+
+    PSU_OE_SET(en);
 }
 
 void psu_setLoadEnable(uint8_t en){
