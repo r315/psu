@@ -107,8 +107,7 @@ static uint32_t *ptr_set;
                     pre = app_getPreset();
                     pre->v = _set_v;
                     pre->i = _set_i;
-                    psu_setOutputVoltage(_set_v);
-                    psu_setOutputCurrent(_set_i);
+                    app_setPreset(pre);                    
                     break;
 
                 default:    
@@ -140,7 +139,7 @@ static uint32_t *ptr_set;
         case SCR_MODE_NORMAL:
             if(!psu_getOutputEnable()){
                 _screen_state = SCR_MODE_IDLE;
-                preset_t *pre = app_getPresetList();
+                preset_t *pre = app_getPreset();
                 updateVoltage(BLINK_OFF,pre->v);
                 updateCurrent(BLINK_OFF, pre->i);               
             }else if(psu_AdcReady()){

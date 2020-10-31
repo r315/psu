@@ -180,6 +180,8 @@ preset_t *app_getPresetList(void){
 
 void app_setPreset(preset_t *pre){
     psu.preset = pre;
+    psu_setOutputVoltage(psu.preset->v);
+    psu_setOutputCurrent(psu.preset->i);
 }
 
 void app_selectMode(uint8_t mode){

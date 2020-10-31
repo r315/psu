@@ -20,9 +20,9 @@
 void ScreenPreset::selectPreset(uint8_t idx){
     if(idx == _selected){
         TEXT_SetPalette((const uint16_t []){BLACK, YELLOW});
-        xsprintf(gOut, "%.1fV ", _presets[idx].v);
+        xsprintf(gOut, "%.1fV ", _presets[idx].v/1000.0f);
         TEXT_Print(PRESET_INFO1_POS, gOut);
-        xsprintf(gOut, "%.2fA ", _presets[idx].i);
+        xsprintf(gOut, "%.2fA ", _presets[idx].i/1000.0f);
         TEXT_Print(PRESET_INFO2_POS, gOut);
         memset16(scratch, PRESET_SELECT, PRESET_SIZE);
         TEXT_SetPalette((const uint16_t []){PRESET_SELECT, WHITE});
