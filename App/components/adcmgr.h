@@ -28,11 +28,6 @@ void ADCMGR_SetSequence(uint8_t *seq, uint8_t len, void(*cb)(uint16_t *data));
 void ADCMGR_Start(void);
 
 /**
- * @brief Stop a sequence convertion
- * */
-void ADCMGR_StopSequence(void);
-
-/**
  * @brief Convert single channel. Blocking call
  * @param channel : channel to be converted
  * */
@@ -51,6 +46,8 @@ float ADCMGR_GetChannelVoltage(uint8_t channel);
  * \param channel : channel to be selected
  * */
 void ADCMGR_SetChannel(uint8_t channel);
+
+
 #ifdef __cplusplus
 }
 #endif

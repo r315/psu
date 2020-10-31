@@ -287,6 +287,12 @@ preset_t *app_getPreset(void);
 preset_t *app_getPresetList(void);
 void app_setPreset(preset_t *preset);
 
+
+/**
+ * @brief enables/disables adc manager
+ * Use for testing, inibits/allow tsk_psu of calling ADCMGR_Start
+ * */
+void app_enable_adcmgr(uint8_t en);
 #ifdef __cplusplus
 }
 #endif

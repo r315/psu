@@ -256,6 +256,20 @@ uint32_t *src = (uint32_t*)res;
 #endif
 
 /**
+ * @brief enables/disables adc manager
+ * Use for testing, inibits/allow tsk_psu of calling ADCMGR_Start
+ * */
+void app_enable_adcmgr(uint8_t en){
+    if(en){
+        ADCMGR_SetSequence(NULL,0 , psu_adc_cb);
+        SET_ADCMGR_FLAG;
+    }
+    else
+        CLR_ADCMGR_FLAG;
+    
+}
+
+/**
  * Called every 10ms by Timer4 interrupt, as console
  * may block the main thread, having a secondary loop
  * ensures operation of lcd update and button handling
@@ -268,6 +282,8 @@ uint8_t count = 0;
 
     ADCMGR_Start();
 
+    SET_ADCMGR_FLAG;
+
     LCD_Bkl(TRUE);
 
     while(1){
@@ -275,15 +291,17 @@ uint8_t count = 0;
         //DBG_PIN_HIGH;
         modes[psu.cur_mode]->process();
         //DBG_PIN_LOW;        
-        if(GET_AD_FLAG){
+        if(GET_AD_FLAG && GET_ADCMGR_FLAG){
             CLR_AD_FLAG;
             ADCMGR_Start();
         }
+
         if(((++count)&0x0f) == 0){
             LED_ON;
         }else{
             LED_OFF;
         }
+
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
 }

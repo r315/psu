@@ -1,5 +1,5 @@
-#ifndef _cmd_adc_h_
-#define _cmd_adc_h_
+#ifndef _cmdadc_h_
+#define _cmdadc_h_
 
 
 #ifdef __cplusplus
