@@ -12,17 +12,7 @@ extern "C" {
 #include "task.h"
 
 #ifdef __cplusplus
-#include <console.h>
-#include "cmdhelp.h"
-#include "cmdadc.h"
-#include "cmdpwm.h"
-#include "cmddfu.h"
-#include "cmdpwr.h"
-#include "cmdio.h"
-#include "cmdset.h"
-#include "cmdstatus.h"
 #include "graph.h"
-#include "cmdeeprom.h"
 }
 #endif
 

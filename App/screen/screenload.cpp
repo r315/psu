@@ -1,3 +1,4 @@
+#include <strfunc.h>
 #include "psu.h"
 #include "draw.h"
 

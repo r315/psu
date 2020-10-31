@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdio.h>
+#include <strfunc.h>
 #include "psu.h"
 #include "draw.h"
 #include "text.h"

@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include "graph.h"
 #include "draw.h"
 #include "psu.h"

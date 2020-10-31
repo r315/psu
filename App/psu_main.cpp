@@ -2,6 +2,18 @@
 #include "psu.h"
 #include "draw.h"
 
+#include <console.h>
+#include "cmdhelp.h"
+#include "cmdadc.h"
+#include "cmdpwm.h"
+#include "cmddfu.h"
+#include "cmdpwr.h"
+#include "cmdio.h"
+#include "cmdset.h"
+#include "cmdstatus.h"
+#include "graph.h"
+#include "cmdeeprom.h"
+
 char gOut[10];
 static psu_t psu;
 static ScreenPsu cpsu;
