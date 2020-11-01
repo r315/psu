@@ -805,18 +805,28 @@ void I2C_Init(void){
 }
 
 uint16_t I2C_Write(uint8_t addr, uint8_t *data, uint32_t size){
-    if(HAL_I2C_Master_Transmit(&hi2c2, addr << 1, data, size, 100) != HAL_OK){
-        DBG_PRINT("Fail write to I2C\n");
-        return 0;
+
+    taskENTER_CRITICAL();
+    {
+        if(HAL_I2C_Master_Transmit(&hi2c2, addr << 1, data, size, 100) != HAL_OK){
+            DBG_PRINT("Fail write to I2C\n");
+            return 0;
+        }
+    taskEXIT_CRITICAL();
     }
     return size;
 }
 
 uint16_t I2C_Read(uint8_t addr, uint8_t *data, uint32_t size){
-    if(HAL_I2C_Master_Receive(&hi2c2, addr << 1, data, size, 100) != HAL_OK){
-        DBG_PRINT("Fail Read I2C\n");
-        return 0;
+    
+    taskENTER_CRITICAL();
+    {
+        if(HAL_I2C_Master_Receive(&hi2c2, addr << 1, data, size, 100) != HAL_OK){
+            DBG_PRINT("Fail Read I2C\n");
+            return 0;
+        }
     }
+    taskEXIT_CRITICAL();
     return size;
 }
 
