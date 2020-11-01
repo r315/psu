@@ -32,9 +32,9 @@ static const uint16_t txt_pal[2] = {BLACK, WHITE};
 static const uint16_t graph_pal[] = {RGB565(5,10,10), RED, GREEN, YELLOW};
 
 void ScreenPsu::init(void){
-    preset_t *preset = app_getPreset();
-    _set_v = preset->v;
-    _set_i = preset->i;
+    preset_t preset = app_getPreset();
+    _set_v = preset.v;
+    _set_i = preset.i;
     _graph.init(PSU_GRAPH_WIDTH, LCD_H - PSU_GRAPH_HIGHT - 2, LCD_W - PSU_GRAPH_WIDTH, PSU_GRAPH_HIGHT, graph_pal);
     _screen_state = SCR_MODE_IDLE;
     redraw();
@@ -57,7 +57,7 @@ void ScreenPsu::redraw(void){
 }
 
 void ScreenPsu::updatePresetIndex(){
-    uint8_t index = app_getPreset() - app_getPresetList();
+    uint8_t index = app_getPresetIdx();
     xsprintf(gOut,"M%u", index + 1);
 
     TEXT_SetFont(PSU_TEXT_FONT);
@@ -79,7 +79,7 @@ void ScreenPsu::updatePower(uint32_t pwr){
 
 void ScreenPsu::process(){
 uint32_t i, v;
-preset_t *pre;
+preset_t pre;
 static uint32_t *ptr_set;
 
 // TODO: Improve state machine
@@ -104,9 +104,8 @@ static uint32_t *ptr_set;
                     // Exit mode set state
                     _screen_state = SCR_MODE_NORMAL;
                     updateCurrent(BLINK_OFF, _set_i);
-                    pre = app_getPreset();
-                    pre->v = _set_v;
-                    pre->i = _set_i;
+                    pre.v = _set_v;
+                    pre.i = _set_i;
                     app_setPreset(pre);                    
                     break;
 
@@ -139,9 +138,9 @@ static uint32_t *ptr_set;
         case SCR_MODE_NORMAL:
             if(!psu_getOutputEnable()){
                 _screen_state = SCR_MODE_IDLE;
-                preset_t *pre = app_getPreset();
-                updateVoltage(BLINK_OFF,pre->v);
-                updateCurrent(BLINK_OFF, pre->i);               
+                pre = app_getPreset();
+                updateVoltage(BLINK_OFF,pre.v);
+                updateCurrent(BLINK_OFF, pre.i);               
             }else if(psu_AdcReady()){
                 v = psu_getVoltage();
                 i = psu_getCurrent();

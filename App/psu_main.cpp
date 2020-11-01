@@ -19,12 +19,9 @@ static psu_t psu;
 static ScreenPsu cpsu;
 static ScreenLoad cload;
 static ScreenCharger ccharger;
-static ScreenPreset cpreset;
-static preset_t preset_list[MAX_PRESETS];
-static pwmcal_t pwmcal[PWM_NUM_CH];
-static float an_channel_gain[AN_MUX_NUM_CH]; 
+static ScreenPreset cpreset; 
 
-static Screen *modes[] = {
+static Screen *screens[] = {
     &cpsu,
     &cpreset,
     &cload,
@@ -78,7 +75,7 @@ const preset_t default_preset[] = {
 
 const float default_an_channel_gain[] = {
     6.1f,  // V1  gain = 1/(R300/(R300+R301))
-    1.0f,  // I1
+    0.9f,  // I1
     1.0f,  // V2
     1.0f,  // I2
     1.0f,  // V3
@@ -142,7 +139,7 @@ void psu_setLoadEnable(uint8_t en){
  * \return : voltage in mv
  * */
 uint32_t psu_getChannelVoltage(uint8_t channel){
-    return psu.adc_data[channel] * ADC_GetResolution() * an_channel_gain[channel];
+    return psu.adc_data[channel] * ADC_GetResolution() * psu.an_channel_gain[channel];
 }
 uint32_t psu_getVoltage(void){
     return psu_getChannelVoltage(VOUT_MUX_CH);
@@ -175,41 +172,54 @@ uint32_t psu_getLoadCurrent(void){
 /**
  * Application api
  * */
-preset_t *app_getPreset(void){
-    return psu.preset;
+preset_t app_getPreset(void){
+    return psu.preset_list[psu.preset_idx];
+}
+
+uint8_t app_getPresetIdx(void){
+    return psu.preset_idx;
 }
 
 preset_t *app_getPresetList(void){
-    return (preset_t*)preset_list;
+    return psu.preset_list;
 }
 
-void app_setPreset(preset_t *pre){
-    psu.preset = pre;
-    psu_setOutputVoltage(psu.preset->v);
-    psu_setOutputCurrent(psu.preset->i);
+static void app_applyPreset(){
+    psu_setOutputVoltage(psu.preset_list[psu.preset_idx].v);
+    psu_setOutputCurrent(psu.preset_list[psu.preset_idx].i);
 }
 
-void app_selectMode(uint8_t mode){
+void app_setPreset(preset_t pre){
+    memcpy(&psu.preset_list[psu.preset_idx], &pre, sizeof(preset_t));
+    app_applyPreset();
+}
+
+void app_setPresetIdx(uint8_t idx){
+    psu.preset_idx = idx;
+    app_applyPreset();
+}
+
+void app_selectScreen(uint8_t screen_idx){
     
-    if(mode >= MAX_MODES){
+    if(screen_idx >= SCREEN_NUM){
         return;
     }
-    psu.cur_mode = mode;    
-    (modes[mode])->init();
+    psu.screen_idx = screen_idx;    
+    (screens[screen_idx])->init();
     // Mode clears screen, so must redraw output icon,
     // only if active
     psu_setOutputEnable(GET_OE_FLAG);
     psu_setLoadEnable(GET_LD_FLAG);
 }
 
-void app_cycleMode(void){
-uint8_t mode = psu.cur_mode + 1;
+static void app_cycleMode(void){
+    uint8_t screen_idx = psu.screen_idx + 1;
     
-    if(mode == MAX_MODES ){
-        mode = 0;
+    if(screen_idx == SCREEN_NUM ){
+        screen_idx = 0;
     }
     
-    app_selectMode(mode);
+    app_selectScreen(screen_idx);
 }
 
 /**
@@ -231,12 +241,14 @@ void app_checkButtons(){
  * */
 void app_InitEEPROM(void){
 
-    memcpy(pwmcal, default_pwm_calibration, sizeof(default_pwm_calibration));
-    memcpy(preset_list, default_preset, sizeof(default_preset));
-    memcpy(an_channel_gain, default_an_channel_gain, sizeof(default_an_channel_gain));
+    memcpy(psu.pwm_cal, default_pwm_calibration, sizeof(default_pwm_calibration));
+    memcpy(psu.preset_list, default_preset, sizeof(default_preset));
+    memcpy(psu.an_channel_gain, default_an_channel_gain, sizeof(default_an_channel_gain));
+    
+    psu.preset_idx = 0;
+    psu.screen_idx = 0;
+    psu.flags = 0;
 
-    psu.pwm_cal = pwmcal;
-    psu.preset = preset_list;
 
 /*
 uint8_t bind_flag;
@@ -311,7 +323,8 @@ void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;
 uint8_t count = 0;
 
-    app_selectMode(psu.cur_mode);
+    app_selectScreen(psu.screen_idx);
+    app_setPreset(psu.preset_list[psu.preset_idx]);
 
     ADCMGR_Start();
 
@@ -322,7 +335,7 @@ uint8_t count = 0;
     while(1){
         app_checkButtons();
         //DBG_PIN_HIGH;
-        modes[psu.cur_mode]->process();
+        screens[psu.screen_idx]->process();
         //DBG_PIN_LOW;        
         if(GET_AD_FLAG && GET_ADCMGR_FLAG){
             CLR_AD_FLAG;
@@ -383,10 +396,6 @@ extern "C" void app_setup(void){
     ADCMGR_Init();
 
     ADCMGR_SetSequence(NULL,0 , psu_adc_cb);
-
-    psu_setOutputVoltage(psu.preset->v);
-
-    psu_setOutputCurrent(psu.preset->i);
 
     xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, &stdio_ops, PRIORITY_LOW, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, PRIORITY_LOW + 1, NULL );

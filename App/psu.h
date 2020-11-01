@@ -38,7 +38,7 @@ extern "C" {
 #define LOAD_ICON_POS               LCD_W - 36,3
 #define OUTPUT_ICON_POS             160-16,3
 
-#define MAX_MODES                   sizeof(modes)/sizeof(void*)
+#define SCREEN_NUM                   sizeof(screens)/sizeof(void*)
 
 #define BLINK_TIME_MASK             8
 #define BLINK_ON                    1
@@ -117,10 +117,11 @@ typedef struct preset{
 }preset_t;
 
 typedef struct psu{ 
-    pwmcal_t *pwm_cal;
-    preset_t *preset;
-    uint16_t rs;
-    uint8_t cur_mode;
+    uint8_t preset_idx;
+    uint8_t screen_idx;
+    preset_t preset_list[MAX_PRESETS];
+    pwmcal_t pwm_cal[PWM_NUM_CH];
+    float an_channel_gain[AN_MUX_NUM_CH]; 
     volatile uint8_t flags;
     uint16_t *adc_data;
 }psu_t;
@@ -289,16 +290,46 @@ uint32_t psu_getLoadCurrent(void);
 uint8_t psu_AdcReady(void);
 
 /**
- * @brief
+ * @brief Change screen
+ * 
+ * \param screen_idx : new screen index
  * */
-void app_selectMode(uint8_t mode);
+void app_selectScreen(uint8_t screen_idx);
 
 /**
- * @brief
+ * @brief Get current preset
+ * 
+ * \return : preset_t with current and voltage setting
  * */
-preset_t *app_getPreset(void);
+preset_t app_getPreset(void);
+
+/** 
+ * @brief Get current preset index
+ * 
+ * \return : index
+ * */
+uint8_t app_getPresetIdx(void);
+
+/**
+ * @brief Get list of all presets
+ * 
+ * \return pointer to preset array
+ * */
 preset_t *app_getPresetList(void);
-void app_setPreset(preset_t *preset);
+
+/**
+ * @brief Update current preset
+ * 
+ * \param preset : preset with new values
+ * */
+
+void app_setPreset(preset_t preset);
+/**
+ * @brief Change current preset using index
+ * 
+ * \param idx : new index
+ * */
+void app_setPresetIdx(uint8_t idx);
 
 
 /**

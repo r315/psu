@@ -72,8 +72,8 @@ void ScreenPreset::process(){
                 break;
 
             case BUTTON_SET:
-                app_setPreset(&_presets[_selected]);
-                app_selectMode(0); // screen psu
+                app_setPresetIdx(_selected);
+                app_selectScreen(0); // screen psu
                 return;
         }
 
