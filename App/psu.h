@@ -6,15 +6,22 @@
 extern "C" {
 #endif
 
-#include "board.h"
-#include "text.h"
+#include <stdint.h>
+
 #include "FreeRTOS.h"
 #include "task.h"
+
+#include "board.h"
+#include "text.h"
 
 #ifdef __cplusplus
 #include "graph.h"
 }
 #endif
+
+#define PSU_VERSION_MAJOR           0
+#define PSU_VERSION_MINOR           0
+#define PSU_VERSIO_PATCH            0
 
 #define PRIORITY_LOW                3
 
@@ -78,6 +85,11 @@ extern "C" {
 #define CLR_ADCMGR_FLAG     CLR_FLAG(3)
 #define GET_ADCMGR_FLAG     GET_FLAG(3)
 
+// EEPROM load result
+#define SET_EEPROM_FLAG     SET_FLAG(4)
+#define CLR_EEPROM_FLAG     CLR_FLAG(4)
+#define GET_EEPROM_FLAG     GET_FLAG(4)
+
 
 #ifndef FALSE
 #define FALSE   (0)
@@ -117,12 +129,13 @@ typedef struct preset{
 }preset_t;
 
 typedef struct psu{ 
-    uint8_t preset_idx;
+    uint8_t preset_idx;                 
     uint8_t screen_idx;
     preset_t preset_list[MAX_PRESETS];
     pwmcal_t pwm_cal[PWM_NUM_CH];
-    float an_channel_gain[AN_MUX_NUM_CH]; 
-    volatile uint8_t flags;
+    float an_channel_gain[AN_MUX_NUM_CH];
+    uint8_t cksum;
+    volatile uint8_t flags;         // Above fields are saved to eeprom
     uint16_t *adc_data;
 }psu_t;
 
@@ -331,12 +344,43 @@ void app_setPreset(preset_t preset);
  * */
 void app_setPresetIdx(uint8_t idx);
 
-
 /**
  * @brief enables/disables adc manager
  * Use for testing, inibits/allow tsk_psu of calling ADCMGR_Start
  * */
 void app_enable_adcmgr(uint8_t en);
+
+/**
+ * @brief Saves app state to eeprom
+ * 
+ * The value of presets, pwm calibration, adc gains, current preset selected...
+ * are saved to eeprom. 
+ * 
+ * \return : 1 if successful, 0 other wise
+ * */
+uint8_t app_saveState(void);
+
+
+/**
+ * @brief Restore app state from eeprom
+ * 
+ * The value of presets, pwm calibration, adc gains, current preset selected...
+ * are restored from eeprom. 
+ * 
+ * \return : 1 if successful, 0 loaded default values
+ * */
+uint8_t app_restoreState(void);
+
+
+/**
+ * @brief Restore app default state
+ * 
+ * The value of presets, pwm calibration, adc gains, current preset selected...
+ * are set to defaults
+ * 
+ * */
+void app_defaultState(void);
+
 #ifdef __cplusplus
 }
 #endif

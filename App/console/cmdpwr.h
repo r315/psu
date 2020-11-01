@@ -6,8 +6,9 @@
 extern "C" {
 #endif
 
-#include "board.h"
 #include <console.h>
+#include "board.h"
+#include "psu.h"
 
 
 class CmdPwr : public ConsoleCommand{
@@ -16,7 +17,8 @@ public:
     void init(void *params) { console = static_cast<Console*>(params); }
     CmdPwr () : ConsoleCommand("pwroff") { }
     char execute(void *ptr){
-            SPOWER_OFF;            
+            app_saveState();
+            SPOWER_OFF;
             return CMD_OK;
     }
     void help(void){}

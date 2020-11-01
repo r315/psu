@@ -1,8 +1,14 @@
 
+#include <console.h>
+
+#include "FreeRTOS.h"
+#include "task.h"
+
 #include "psu.h"
 #include "draw.h"
+#include "graph.h"
+#include "text.h"
 
-#include <console.h>
 #include "cmdhelp.h"
 #include "cmdadc.h"
 #include "cmdpwm.h"
@@ -11,7 +17,6 @@
 #include "cmdio.h"
 #include "cmdset.h"
 #include "cmdstatus.h"
-#include "graph.h"
 #include "cmdeeprom.h"
 
 char gOut[10];
@@ -93,6 +98,17 @@ extern "C" void psu_adc_cb(uint16_t *data){
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
     uint16_t pwm_value = (x - in_min) * (psu.pwm_cal[ch].max - psu.pwm_cal[ch].min) / (in_max - in_min) + psu.pwm_cal[ch].min;
     PWM_Set(ch, pwm_value);
+    DBG_PRINT("Set pwm %d %u\n",ch, pwm_value);
+}
+
+static uint8_t app_calcCksum(uint8_t *src, uint16_t len){
+    uint8_t sum = 0;
+
+    while(len--){
+        sum += *src++;
+    }
+
+    return 256 - sum;
 }
 
 /**
@@ -236,69 +252,49 @@ void app_checkButtons(){
 }
 
 /**
- * @brief
- * 
+ * @brief Load default values in to EEPROM
  * */
-void app_InitEEPROM(void){
-
+void app_defaultState(void){
     memcpy(psu.pwm_cal, default_pwm_calibration, sizeof(default_pwm_calibration));
     memcpy(psu.preset_list, default_preset, sizeof(default_preset));
     memcpy(psu.an_channel_gain, default_an_channel_gain, sizeof(default_an_channel_gain));
-    
     psu.preset_idx = 0;
     psu.screen_idx = 0;
     psu.flags = 0;
-
-
-/*
-uint8_t bind_flag;
-    
-    if(EEPROM_Read(EEPROM_BIND_FLAG, &bind_flag, 1) != 1){
-        DBG_PRINT("Error reading EEPROM\n");
-        return;
-    }
-        
-    if(bind_flag == BIND_FLAG_VALUE){    
-        if(NV_Restore(dst, EEPROM_SIZE) != EEPROM_SIZE){
-            DBG_PRINT("Error reading EEPROM\n");
-            return;
-        }
-        DBG_PRINT("Data loaded from EEPROM\n");
-    }
-*/
 }
 
 /**
- * @brief Save the ram eeprom content to flash memory
- * Note: In order to save eeprom
+ * @brief
  * 
  * */
-void app_SaveEEPROM(void){
+uint8_t app_restoreState(void){
 
-   /*  // FIXME: Really should implement CRC
-    *((uint8_t*)eeprom_data+EEPROM_BIND_FLAG) = BIND_FLAG_VALUE;
+    uint16_t size = (uint8_t*)&psu.cksum - (uint8_t*)&psu;
 
-    EEPROM_Write(EEPROM_ID_OFFSET, (uint8_t*)eeprom_data, EEPROM_SIZE);
-
-    if(!EEPROM_Sync()){
-        DBG_PRINT("!! Fail to sync EEPROM !!\n");
-    }else{
-        DBG_PRINT("EEPROM Saved\n");
-    } */
-}
-
-#ifndef USE_ADCMGR
-/**
- * ADC End of convertion callback
- * */
-static void app_adcEocCb(uint16_t *res){
-uint32_t *src = (uint32_t*)res;
-    for (uint32_t i = 0; i < ADC_SEQ_LEN; i++, src++)
-    {
-        psu.adcvalues[i] = *src;
+    EEPROM_Read(EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1);
+    
+    uint8_t cksum = app_calcCksum((uint8_t*)&psu, size);
+    if( psu.cksum != cksum){
+        //DBG_PRINT("Invalid data on EEPROM\n");
+        app_defaultState();
+        CLR_EEPROM_FLAG;
+        return 0;
     }
+    SET_EEPROM_FLAG;
+    return 1;
 }
-#endif
+
+uint8_t app_saveState(void){
+    uint16_t size;
+    size = (uint8_t*)&psu.cksum - (uint8_t*)&psu;
+    psu.cksum = app_calcCksum((uint8_t*)&psu, size);
+    DBG_PRINT("Saving %u bytes cksum 0x%2X\n", size, psu.cksum);
+    if(!EEPROM_Write(EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1)){
+        return 0;
+    }
+    DBG_PRINT("done\n");
+    return 1;
+}
 
 /**
  * @brief enables/disables adc manager
@@ -310,8 +306,7 @@ void app_enable_adcmgr(uint8_t en){
         SET_ADCMGR_FLAG;
     }
     else
-        CLR_ADCMGR_FLAG;
-    
+        CLR_ADCMGR_FLAG;   
 }
 
 /**
@@ -364,6 +359,10 @@ void tskCmdLine(void *ptr){
 
     console.cls();
 
+    console.print("PSU v%u.%u.%u\n", PSU_VERSION_MAJOR, PSU_VERSION_MINOR, PSU_VERSIO_PATCH);
+    console.print("FreeRTOS %s\n", tskKERNEL_VERSION_NUMBER);
+    console.print("\n");
+
     while(1){
         console.process();
     }
@@ -389,7 +388,7 @@ extern "C" void app_setup(void){
 
     EEPROM_Init();
 
-    app_InitEEPROM();
+    app_restoreState();
 
     PWM_Init();
 

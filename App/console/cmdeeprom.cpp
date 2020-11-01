@@ -1,6 +1,7 @@
 #include "cmdeeprom.h"
 #include "cmdutil.h"
 #include "eeprom.h"
+#include "psu.h"
 
 void CmdEeprom::dumpAddress(uint16_t addr){
     uint8_t buf[16];
@@ -45,7 +46,7 @@ char CmdEeprom::execute(void *ptr){
     int32_t addr, data;
     char *args = (char*)ptr;  
     
-    if(args == NULL){
+    if(*args == '\0'){
         help();
         return CMD_OK;
     }
@@ -79,7 +80,12 @@ char CmdEeprom::execute(void *ptr){
                 return CMD_OK;
             }
         }
-    }  
+    }
+    
+    if(!argcmp("save", &args)){
+        app_saveState();
+        return CMD_OK;
+    }
 
     return CMD_BAD_PARAM;
 }

@@ -12,6 +12,8 @@ extern "C" {
 #define EEPROM_PAGE_SIZE        8
 #define EEPROM_TWR              5       // ms
 
+#define EEPROM_APP_OFFSET       0x00
+
 void EEPROM_Init(void);
 
 uint16_t EEPROM_Read(uint16_t address, uint8_t *dst, uint16_t count);
