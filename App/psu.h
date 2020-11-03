@@ -36,7 +36,8 @@ extern "C" {
 #define IOUT_MUX_CH                 1
 #define VLOAD_MUX_CH                2
 #define ILOAD_MUX_CH                3
-#define VIN_MUX_CH                  0
+#define VIN_MUX_CH                  4
+#define IUSB_MUX_CH                 13
 
 #define ADC_INTERVAL                100 //ms
 #define APP_INTERVAL                10
@@ -269,6 +270,7 @@ uint8_t psu_getOutputEnable(void);
  * */
 void psu_setOutputVoltage(uint32_t mv);
 uint32_t psu_getVoltage(void);
+uint32_t psu_getVin(void);
 
 
 /**
@@ -284,6 +286,7 @@ uint32_t psu_getChannelVoltage(uint8_t channel);
  * */
 void psu_setOutputCurrent(uint32_t ma);
 uint32_t psu_getCurrent(void);
+uint32_t psu_getCurrentUSB(void);
 
 /**
  * @brief

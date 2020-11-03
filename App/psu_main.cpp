@@ -83,7 +83,19 @@ const float default_an_channel_gain[] = {
     0.9f,  // I1
     1.0f,  // V2
     1.0f,  // I2
-    1.0f,  // V3
+    6.1f,  // V3  gain = 1/(R205/(R205+R203))
+    1.0f,
+    1.0f,
+    1.0f,
+    1.0f,
+    1.0f,
+    1.0f,
+    1.0f,
+    1.0f,
+    1.0f,  // IUSB
+    1.0f,
+    1.0f,
+    1.0f
 };
 
 /**
@@ -161,8 +173,16 @@ uint32_t psu_getVoltage(void){
     return psu_getChannelVoltage(VOUT_MUX_CH);
 }
 
+uint32_t psu_getVin(void){
+    return psu_getChannelVoltage(VIN_MUX_CH);
+}
+
 uint32_t psu_getCurrent(void){
     return psu_getChannelVoltage(IOUT_MUX_CH);
+}
+
+uint32_t psu_getCurrentUSB(void){
+    return psu_getChannelVoltage(IUSB_MUX_CH);
 }
 
 uint8_t psu_getOutputEnable(void){
