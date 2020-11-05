@@ -9,12 +9,11 @@
 #include "graph.h"
 #include "text.h"
 
+#include "misc.h"
 #include "cmdhelp.h"
 #include "cmdadc.h"
 #include "cmdpwm.h"
 #include "cmddfu.h"
-#include "cmdpwr.h"
-#include "cmdio.h"
 #include "cmdset.h"
 #include "cmdstatus.h"
 #include "cmdeeprom.h"

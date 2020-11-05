@@ -116,6 +116,7 @@ C_INCLUDES =  \
 -I$(APP_SRC_DIR) \
 -I$(APP_SRC_DIR)/components \
 -I$(APP_SRC_DIR)/console \
+-I$(APP_SRC_DIR)/screen \
 -I"$(LIBEMB_PATH)"/include \
 -I$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Inc \
 -I$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
@@ -196,7 +197,7 @@ CPPFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = startup/STM32F103C8Tx_FLASH.ld
+LDSCRIPT =startup/STM32F103C8Tx_FLASH.ld
 #LDSCRIPT =startup/f103c8tx_dfu.ld
 
 # libraries
