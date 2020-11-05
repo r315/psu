@@ -81,7 +81,7 @@ const preset_t default_preset[] = {
 const float default_an_channel_gain[] = {
     6.1f,  // V1  gain = 1/(R300/(R300+R301))
     0.9f,  // I1
-    1.0f,  // V2
+    6.1f,  // V2  gain = 1/(R402/(R402+R403))
     1.0f,  // I2
     6.1f,  // V3  gain = 1/(R205/(R205+R203))
     1.0f,
@@ -169,12 +169,17 @@ void psu_setLoadEnable(uint8_t en){
 uint32_t psu_getChannelVoltage(uint8_t channel){
     return psu.adc_data[channel] * ADC_GetResolution() * psu.an_channel_gain[channel];
 }
+
 uint32_t psu_getVoltage(void){
     return psu_getChannelVoltage(VOUT_MUX_CH);
 }
 
 uint32_t psu_getVin(void){
     return psu_getChannelVoltage(VIN_MUX_CH);
+}
+
+uint32_t psu_getLoadVoltage(void){
+    return psu_getChannelVoltage(VLOAD_MUX_CH);
 }
 
 uint32_t psu_getCurrent(void){
@@ -202,7 +207,7 @@ void psu_setLoadCurrent(uint32_t ma){
 }
 
 uint32_t psu_getLoadCurrent(void){
-    return 0;
+    return psu_getChannelVoltage(ILOAD_MUX_CH);;
 }
 
 /**

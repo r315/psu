@@ -265,6 +265,7 @@ uint8_t psu_getOutputEnable(void);
 void psu_setOutputVoltage(uint32_t mv);
 uint32_t psu_getVoltage(void);
 uint32_t psu_getVin(void);
+uint32_t psu_getLoadVoltage(void);
 
 
 /**
@@ -356,7 +357,6 @@ void app_enable_adcmgr(uint8_t en);
  * \return : 1 if successful, 0 other wise
  * */
 uint8_t app_saveState(void);
-
 
 /**
  * @brief Restore app state from eeprom
