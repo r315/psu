@@ -125,18 +125,6 @@ static uint8_t app_calcCksum(uint8_t *src, uint16_t len){
 /**
  * PSU public control functions
  * */
-void psu_setOutputVoltage(uint32_t mv){    
-    mapAndSetPwm(mv, MIN_VOLTAGE, MAX_VOLTAGE, PWM_CH_VOLTAGE);
-}
-
-void psu_setOutputCurrent(uint32_t ma){
-    mapAndSetPwm(ma, MAX_CURRENT, MIN_CURRENT, PWM_CH_CURRENT);
-}
-
-void psu_setInputLoad(uint32_t ma){
-    mapAndSetPwm(ma, MAX_LOAD, MIN_LOAD, PWM_CH_LOAD);
-}
-
 void psu_setOutputEnable(uint8_t en){    
     if(en){
         SET_OE_FLAG;
@@ -169,11 +157,31 @@ uint32_t psu_getChannelVoltage(uint8_t channel){
     return psu.adc_data[channel] * ADC_GetResolution() * psu.an_channel_gain[channel];
 }
 
-uint32_t psu_getVoltage(void){
+uint32_t psu_getOutputVoltage(void){
     return psu_getChannelVoltage(VOUT_MUX_CH);
 }
 
-uint32_t psu_getVin(void){
+void psu_setOutputVoltage(uint32_t mv){    
+    mapAndSetPwm(mv, MIN_VOLTAGE, MAX_VOLTAGE, PWM_CH_VOLTAGE);
+}
+
+uint32_t psu_getOutputCurrent(void){
+    return psu_getChannelVoltage(IOUT_MUX_CH);
+}
+
+void psu_setOutputCurrent(uint32_t ma){
+    mapAndSetPwm(ma, MAX_CURRENT, MIN_CURRENT, PWM_CH_CURRENT);
+}
+
+uint32_t psu_getLoadCurrent(void){
+    return psu_getChannelVoltage(ILOAD_MUX_CH);;
+}
+
+void psu_setLoadCurrent(uint32_t ma){
+    mapAndSetPwm(ma, MAX_ILOAD, MIN_ILOAD, PWM_CH_LOAD);
+}
+
+uint32_t psu_getInputVoltage(void){
     return psu_getChannelVoltage(VIN_MUX_CH);
 }
 
@@ -181,32 +189,8 @@ uint32_t psu_getLoadVoltage(void){
     return psu_getChannelVoltage(VLOAD_MUX_CH);
 }
 
-uint32_t psu_getCurrent(void){
-    return psu_getChannelVoltage(IOUT_MUX_CH);
-}
-
-uint32_t psu_getCurrentUSB(void){
+uint32_t psu_getUsbCurrent(void){
     return psu_getChannelVoltage(IUSB_MUX_CH);
-}
-
-uint8_t psu_getOutputEnable(void){
-    return  GET_OE_FLAG;
-}
-
-uint8_t psu_getLoadEnabled(void){
-    return GET_LD_FLAG;
-}
-
-uint8_t psu_AdcReady(void){
-    return GET_AD_FLAG;
-}
-
-void psu_setLoadCurrent(uint32_t ma){
-
-}
-
-uint32_t psu_getLoadCurrent(void){
-    return psu_getChannelVoltage(ILOAD_MUX_CH);;
 }
 
 /**
@@ -221,6 +205,19 @@ void app_poweroff(void){
     vTaskDelay(pdMS_TO_TICKS(POWER_OFF_DELAY));
     SOFT_POWER_OFF;
 }
+
+uint8_t app_isLoadEnabled(void){
+    return GET_LD_FLAG;
+}
+
+uint8_t app_isAdcDone(void){
+    return GET_AD_FLAG;
+}
+
+uint8_t app_isOutputEnabled(void){
+    return  GET_OE_FLAG;
+}
+
 preset_t app_getPreset(void){
     return psu.preset_list[psu.preset_idx];
 }

@@ -31,7 +31,7 @@ char CmdSet::execute(void *ptr){
         }else if(xstrcmp("off", param) == 0){
             psu_setOutputEnable(false);            
         }else{
-            console->print("output: %s\n", psu_getOutputEnable()?"on":"off");
+            console->print("output: %s\n", app_isOutputEnabled()?"on":"off");
         }
         return CMD_OK;
     }

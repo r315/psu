@@ -29,8 +29,8 @@ extern "C" {
 #define MIN_VOLTAGE                 1200U
 #define MAX_CURRENT                 3000U
 #define MIN_CURRENT                 0U
-#define MAX_LOAD                    MAX_CURRENT
-#define MIN_LOAD                    MIN_CURRENT
+#define MAX_ILOAD                   1000U
+#define MIN_ILOAD                   0U
 
 #define ADC_INTERVAL                100 //ms
 #define APP_INTERVAL                10
@@ -253,21 +253,6 @@ extern char gOut[];
  * */
 
 /**
- * @brief Set/Get output enable status
- * */
-void psu_setOutputEnable(uint8_t en);
-uint8_t psu_getOutputEnable(void);
-
-/**
- * @brief Set/Get PSU output voltage
- * */
-void psu_setOutputVoltage(uint32_t mv);
-uint32_t psu_getVoltage(void);
-uint32_t psu_getVin(void);
-uint32_t psu_getLoadVoltage(void);
-
-
-/**
  * @brief Get channel voltage
  * 
  * \param channel : Channel 
@@ -276,28 +261,56 @@ uint32_t psu_getLoadVoltage(void);
 uint32_t psu_getChannelVoltage(uint8_t channel);
 
 /**
+ * @brief Set/Get output enable status
+ * */
+uint8_t app_isOutputEnabled(void);
+void psu_setOutputEnable(uint8_t en);
+
+/**
+ * @brief Set/Get PSU output voltage
+ * */
+uint32_t psu_getOutputVoltage(void);
+void psu_setOutputVoltage(uint32_t mv);
+
+/**
  * @brief Set/Get PSU output current
  * */
+uint32_t psu_getOutputCurrent(void);
 void psu_setOutputCurrent(uint32_t ma);
-uint32_t psu_getCurrent(void);
-uint32_t psu_getCurrentUSB(void);
+
 
 /**
- * @brief
+ * @brief Get Load voltage
  * */
+uint32_t psu_getLoadVoltage(void);
+
+/**
+ * @brief Set/Get PSU Load Enable
+ * */
+uint8_t app_isLoadEnabled(void);
 void psu_setLoadEnable(uint8_t en);
-uint8_t psu_getLoadEnabled(void);
 
 /**
- * @brief
+ * @brief Set/Get PSU Load Current
  * */
-void psu_setLoadCurrent(uint32_t ma);
 uint32_t psu_getLoadCurrent(void);
+void psu_setLoadCurrent(uint32_t ma);
+
+/**
+ * @brief Get USB port current
+ * */
+uint32_t psu_getUsbCurrent(void);
+
+/**
+ * @brief Get input voltage at 
+ * Buck converter
+ * */
+uint32_t psu_getInputVoltage(void);
 
 /**
  * @brief
  * */
-uint8_t psu_AdcReady(void);
+uint8_t app_isAdcDone(void);
 
 /**
  * @brief Change screen

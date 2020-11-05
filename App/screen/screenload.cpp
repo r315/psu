@@ -26,7 +26,7 @@ static const char *load_mode_name[] = {"CC", "CP", "CR"};
 
 void ScreenLoad::init(){
     _graph.init(LOAD_GRAPH_POS, LOAD_GRAPH_W, LOAD_GRAPH_H, graph_pal);
-    _screen_state = psu_getLoadEnabled() ? SCR_MODE_NORMAL : SCR_MODE_IDLE;
+    _screen_state = app_isLoadEnabled() ? SCR_MODE_NORMAL : SCR_MODE_IDLE;
     _load_mode = LOAD_MODE_CC;
     _set_i = 0.1f;
     redraw();
@@ -118,7 +118,7 @@ static uint8_t blink;
 
             // update display
             i = psu_getLoadCurrent();
-            v = psu_getVoltage();
+            v = psu_getLoadVoltage();
 
             updateCurrent(BLINK_OFF, i);
             updateVoltage(BLINK_OFF, v);
@@ -182,7 +182,7 @@ static uint8_t blink;
                 switch(BUTTON_VALUE){
                     case BUTTON_SET:
                         // Exit CC set mode
-                        if(psu_getLoadEnabled()){
+                        if(app_isLoadEnabled()){
                             _screen_state = SCR_MODE_NORMAL;
                         }else{
                             _screen_state = SCR_MODE_IDLE;

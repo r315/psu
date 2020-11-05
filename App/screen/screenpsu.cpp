@@ -136,14 +136,14 @@ static uint32_t *ptr_set;
 
     switch(_screen_state){
         case SCR_MODE_NORMAL:
-            if(!psu_getOutputEnable()){
+            if(!app_isOutputEnabled()){
                 _screen_state = SCR_MODE_IDLE;
                 pre = app_getPreset();
                 updateVoltage(BLINK_OFF,pre.v);
                 updateCurrent(BLINK_OFF, pre.i);               
-            }else if(psu_AdcReady()){
-                v = psu_getVoltage();
-                i = psu_getCurrent();
+            }else if(app_isAdcDone()){
+                v = psu_getOutputVoltage();
+                i = psu_getOutputCurrent();
                 updatePower((v * i)/1000);        
                 updateVoltage(BLINK_OFF, v);
                 updateCurrent(BLINK_OFF, i);
@@ -167,7 +167,7 @@ static uint32_t *ptr_set;
             break;
 
         case SCR_MODE_IDLE:
-            if(psu_getOutputEnable()){
+            if(app_isOutputEnabled()){
                 _screen_state = SCR_MODE_NORMAL;
             }            
             break;
