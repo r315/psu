@@ -347,6 +347,12 @@ uint16_t ADC_GetCalibration(void);
 void RTC_Init(void);
 
 /**
+ * Watchdog
+ * */
+void enableWatchDog(uint32_t interval);
+void reloadWatchDog(void);
+
+/**
  * General
  * */
 void BOARD_Init(void);

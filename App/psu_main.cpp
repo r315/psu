@@ -308,7 +308,7 @@ uint8_t app_saveState(void){
     uint16_t size;
     size = (uint8_t*)&psu.cksum - (uint8_t*)&psu;
     psu.cksum = app_calcCksum((uint8_t*)&psu, size);
-    DBG_PRINT("Saving %u bytes cksum 0x%2X\n", size, psu.cksum);
+    DBG_PRINT("Writting %u bytes to eeprom, cksum 0x%2X\n", size, psu.cksum);
     if(!EEPROM_Write(EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1)){
         return 0;
     }
@@ -347,6 +347,9 @@ uint8_t count = 0;
 
     LCD_Bkl(TRUE);
 
+    // Configure watchdog
+    enableWatchDog(WATCHDOG_TIME);
+
     while(1){
         app_checkButtons();
         //DBG_PIN_HIGH;
@@ -362,7 +365,8 @@ uint8_t count = 0;
         }else{
             LED_OFF;
         }
-
+        
+        reloadWatchDog();
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
 }

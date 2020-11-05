@@ -61,6 +61,7 @@ extern "C" {
 #define EEPROM_PRESETS_OFFSET
 #define EEPROM_PWM_CAL_OFFSET            
 
+#define WATCHDOG_TIME               3000U   // ms
 #define _FLAGS              psu.flags
 #define SET_FLAG(f)         _FLAGS |= (1 << f)
 #define CLR_FLAG(f)         _FLAGS &= ~(1 << f)
