@@ -48,13 +48,12 @@ extern "C" {
 #define CONSOLE_PROMPT              "PSU >"
 //#define STATE_FLAG_DISPLAY          1   // LCD Init flag
 
-#define MAX_PRESETS                 6
-
-#define EEPROM_ID_OFFSET            
-#define EEPROM_PRESETS_OFFSET
-#define EEPROM_PWM_CAL_OFFSET            
+#define MAX_PRESETS                 6   
 
 #define WATCHDOG_TIME               3000U   // ms
+#define POWER_OFF_COUNT             20      // Iterations before calling power off
+#define POWER_OFF_DELAY             700     // ms Delay before setting HW off
+
 #define _FLAGS              psu.flags
 #define SET_FLAG(f)         _FLAGS |= (1 << f)
 #define CLR_FLAG(f)         _FLAGS &= ~(1 << f)
@@ -377,6 +376,11 @@ uint8_t app_restoreState(void);
  * 
  * */
 void app_defaultState(void);
+
+/**
+ * @brief
+ * */
+void app_poweroff(void);
 
 #ifdef __cplusplus
 }

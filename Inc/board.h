@@ -45,17 +45,25 @@ extern "C" {
  *       poweroff
  * */
 
-#define SPOWER_PIN      PA_2
-// TODO: Properly disable all peripherals (clock and pwr) and then power off
-#define SPOWER_OFF  \
-    pinWrite(SPOWER_PIN, GPIO_PIN_RESET); \
-    pinInit(SPOWER_PIN, GPO_2MHZ); \
-    while(1);
+#define PWR_BTN_OFF_TH       0x300
+#define PWR_BTN_ON_TH        0x400
 
-#define SPOWER_INIT                  \
-{                                    \
-    pinInit(SPOWER_PIN, GPI_ANALOG); \
+#define PWR_BTN_PIN          PA_2
+
+#define SOFT_POWER_OFF                     \
+{                                          \
+    pinWrite(PWR_BTN_PIN, GPIO_PIN_RESET); \
+    pinInit(PWR_BTN_PIN, GPO_2MHZ);        \
+    while(1);                              \
 }
+
+#define SPOWER_INIT                   \
+{                                     \
+    pinInit(PWR_BTN_PIN, GPI_ANALOG); \
+}
+
+#define GET_PWR_BTN         (ADC2_Read(ADC_PWR_SW_CH) > PWR_BTN_ON_TH)
+
 
 /**
  * LEDS and debug pin
@@ -349,6 +357,8 @@ void ADC_Calibrate(void);
 
 float ADC_GetResolution(void);
 uint16_t ADC_GetCalibration(void);
+
+uint32_t ADC2_Read(uint8_t ch);
 #endif
 
 /**

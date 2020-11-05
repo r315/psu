@@ -263,6 +263,7 @@ StdOut stdio_ops = {
 #define ADC_CR2_EXTSEL_SWSTART               (15 << 17)
 
 typedef struct {
+    ADC_TypeDef *adc;
     struct {
         uint8_t cal : 1;
         uint8_t res : 1;
@@ -272,37 +273,37 @@ typedef struct {
     void (*cb)(uint16_t);
 }adchandle_t;
 
-static adchandle_t hadc;
+static adchandle_t hadc1, hadc2;
 
 /**
  * @brief
  * */
 uint16_t ADC_GetCalibration(void){
-    return hadc.calibration_code;
+    return hadc1.calibration_code;
 }
 
 /**
  * @brief
  * */
 float ADC_GetResolution(void){
-    return hadc.resolution;
+    return hadc1.resolution;
 }
 
 
 /**
  * @brief Configure sample time for a channel
  * */
-static void adcSampleTime(uint16_t ch, uint16_t time){
+static void adcSampleTime(ADC_TypeDef *adc, uint16_t ch, uint16_t time){
     if(ch > 17){  // Max 17 channels
         return;
     }
 
     if(ch < 10){
         // Sample time for channels AN9-0
-        ADC1->SMPR2 =  (ADC1->SMPR2 & (7 << (3 * ch))) | (time << (3 * ch));
+        adc->SMPR2 =  (adc->SMPR2 & (7 << (3 * ch))) | (time << (3 * ch));
     }else{
         // Sample time for channels AN17-10
-        ADC1->SMPR1 =  (ADC1->SMPR1 & (7 << (3 * (ch % 10)))) | (time << (3 * (ch % 10)));
+        adc->SMPR1 =  (adc->SMPR1 & (7 << (3 * (ch % 10)))) | (time << (3 * (ch % 10)));
     }
 }
 /**
@@ -310,50 +311,54 @@ static void adcSampleTime(uint16_t ch, uint16_t time){
  * calculate resolution based on the 1.20V 
  * internal reference
  * */
-void ADC_Calibrate(void){
+static void adc_calibrate(adchandle_t *hadc){
 uint32_t cr1, sqr1, sqr3;
 
     //Backup registers
-    sqr3 = ADC1->SQR3;
-    sqr1 = ADC1->SQR1;
-    cr1 = ADC1->CR1;
+    sqr3 = hadc->adc->SQR3;
+    sqr1 = hadc->adc->SQR1;
+    cr1 = hadc->adc->CR1;
     // Clear Interrupts
-    ADC1->CR1 = 0;
+    hadc->adc->CR1 = 0;
 
     // Perform ADC calibration
-    ADC1->CR2 |= ADC_CR2_CAL;
-    while(ADC1->CR2 & ADC_CR2_CAL){               
+    hadc->adc->CR2 |= ADC_CR2_CAL;
+    while(hadc->adc->CR2 & ADC_CR2_CAL){               
         __asm volatile("nop");
     }
 
-    hadc.calibration_code = ADC1->DR;
+    hadc->calibration_code = hadc->adc->DR;
     // Set calibration flag
-    hadc.flags.cal = 1;    
+    hadc->flags.cal = 1;    
     // select VREFINT channel for first conversion
-    ADC1->SQR3 = (ADC_VREFINT_CHANNEL << 0);
+    hadc->adc->SQR3 = (ADC_VREFINT_CHANNEL << 0);
     // Ensure one conversion
-    ADC1->SQR1 = 0; 
+    hadc->adc->SQR1 = 0; 
     // wake up Vrefint 
-    ADC1->CR2 |= ADC_CR2_TSVREFE;
+    hadc->adc->CR2 |= ADC_CR2_TSVREFE;
     // wait power up
     for(int t = 1000; t > 0; t--){
         __asm volatile("nop");
     }
     // Start conversion
-    ADC1->CR2 |= ADC_CR2_SWSTART;
-    while(!(ADC1->SR & ADC_SR_EOC)){
+    hadc->adc->CR2 |= ADC_CR2_SWSTART;
+    while(!(hadc->adc->SR & ADC_SR_EOC)){
         __asm volatile("nop");
     }
     // Compute resolution
-    hadc.resolution = ADC_VREFINT_VALUE / ADC1->DR;
+    hadc->resolution = ADC_VREFINT_VALUE / hadc->adc->DR;
     // power down VREFINT
-    ADC1->CR2 &= ~ADC_CR2_TSVREFE;
+    hadc->adc->CR2 &= ~ADC_CR2_TSVREFE;
     //restore registers
-    ADC1->SQR3 = sqr3;
-    ADC1->SQR1 = sqr1;
-    ADC1->CR1 = cr1;
+    hadc->adc->SQR3 = sqr3;
+    hadc->adc->SQR1 = sqr1;
+    hadc->adc->CR1 = cr1;
     // Set resolution flag
-    hadc.flags.res = 1;
+    hadc->flags.res = 1;
+}
+
+void ADC_Calibrate(void){
+    adc_calibrate(&hadc1);
 }
 #ifndef USE_ADCMGR
 static void (*eotcb)(uint16_t*);
@@ -548,30 +553,50 @@ void ADC_Init(uint16_t ms){
     RCC->APB2RSTR |= RCC_APB2ENR_ADC1EN;
     RCC->APB2RSTR &= ~RCC_APB2ENR_ADC1EN;
 
-    ADC1->CR2  = ADC_CR2_ADON;                  // Turn on ADC1
+    hadc1.adc = ADC1;
+
+    ADC1->CR2  = ADC_CR2_ADON;                  // Turn on ADC
     ADC1->CR2 |= ADC_CR2_EXTTRIG  |             // required for sw start
                  ADC_CR2_EXTSEL_SWSTART;        // Software start
                 
-    adcSampleTime(ADC_VREFINT_CHANNEL, 3);      // Sample time 3 => 28.5 cycles.
-    adcSampleTime(ADCMUX_CHANNEL, 7);           // set sample time to 239.5 cycles
+    adcSampleTime(hadc1.adc, ADC_VREFINT_CHANNEL, 3);      // Sample time 3 => 28.5 cycles.
+    adcSampleTime(hadc1.adc, ADC_MUX_CH, 7);           // set sample time to 239.5 cycles
 
     // Perform start up calibration
-    ADC_Calibrate();
+    adc_calibrate(&hadc1);
     
     ADC1->CR1 = ADC_CR1_EOCIE;                  // Enable end of convertion interrupt
 
     ADC1->SQR1 = ADC_SQR1_L_(1 - 1);            // number of channels on sequence
-    ADC1->SQR3 = ADC_SQR3_SQ1_(ADCMUX_CHANNEL); // Set channel to be converted                
+    ADC1->SQR3 = ADC_SQR3_SQ1_(ADC_MUX_CH);     // Set channel to be converted                
     
-    hadc.cb = NULL;                             // No callback configured
+    hadc1.cb = NULL;                             // No callback configured    
 
     NVIC_EnableIRQ(ADC1_2_IRQn);
+
+
+    /* ADC2 Init for reading power button */
+    RCC->APB2ENR  |= RCC_APB2ENR_ADC2EN;
+    RCC->APB2RSTR |= RCC_APB2ENR_ADC2EN;
+    RCC->APB2RSTR &= ~RCC_APB2ENR_ADC2EN;
+
+    ADC2->CR2  = ADC_CR2_ADON;                  // Turn on ADC
+    ADC2->CR2 |= ADC_CR2_EXTTRIG  |             // required for sw start
+                 ADC_CR2_EXTSEL_SWSTART;        // Software start
+
+    hadc2.adc = ADC2;
+
+    adcSampleTime(hadc2.adc, ADC_PWR_SW_CH, 7);    // set sample time to 239.5 cycles
+
+    ADC2->SQR1 = ADC_SQR1_L_(1 - 1);            // number of channels on sequence
+    ADC2->SQR3 = ADC_SQR3_SQ1_(ADC_PWR_SW_CH);  // Set channel to be converted              
+
     #endif
 }
 
 void ADC_SetCallBack(void (*cb)(uint16_t)){
     while(ADC1->SR & ADC_SR_EOC);
-    hadc.cb = cb;
+    hadc1.cb = cb;
 }
 
 void ADC_Start(void){
@@ -584,12 +609,23 @@ void ADC_Start(void){
 void ADC1_2_IRQHandler(void){
     if(ADC1->SR & ADC_SR_EOC){
         uint16_t result = ADC1->DR;
-        if(hadc.cb != NULL)
-            hadc.cb(result);
+        if(hadc1.cb != NULL)
+            hadc1.cb(result);
     }
     //DBG_PIN_TOGGLE;
 }
 #endif /* USE_ADCMUX */
+
+uint32_t ADC2_Read(uint8_t ch){
+    ADC2->SQR3 = ADC_SQR3_SQ1_(ch);  // Set channel to be converted
+    ADC2->CR2 |= ADC_CR2_SWSTART;
+
+    while(!(ADC2->SR & ADC_SR_EOC));
+
+    return ADC2->DR;
+}
+
+
 /**
  * RTC
  * 

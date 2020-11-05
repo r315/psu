@@ -213,6 +213,15 @@ uint32_t psu_getLoadCurrent(void){
 /**
  * Application api
  * */
+void app_poweroff(void){
+    // TODO: Properly disable all peripherals (clock and pwr) and then power off
+    psu_setOutputEnable(FALSE);
+    psu_setLoadCurrent(0);
+    app_saveState();
+    LCD_Bkl(OFF);
+    vTaskDelay(pdMS_TO_TICKS(POWER_OFF_DELAY));
+    SOFT_POWER_OFF;
+}
 preset_t app_getPreset(void){
     return psu.preset_list[psu.preset_idx];
 }
@@ -267,11 +276,21 @@ static void app_cycleMode(void){
  * @brief Read buttons connected to I2C io expander
  * */
 void app_checkButtons(){
+    static uint16_t pwr_off_counter = POWER_OFF_COUNT;
     BUTTON_Read();
+
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         switch(BUTTON_VALUE){
             case BUTTON_MODE: app_cycleMode(); break;
             case BUTTON_OUT: psu_setOutputEnable(!GET_OE_FLAG); break;
+        }
+    }else{
+        if(GET_PWR_BTN){
+            if(--pwr_off_counter == 0){
+                app_poweroff();
+            }
+        }else{
+            pwr_off_counter = POWER_OFF_COUNT;
         }
     }
 }
