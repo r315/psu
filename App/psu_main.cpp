@@ -64,9 +64,9 @@ static ConsoleCommand *commands[] = {
 };
 
 const pwmcal_t default_pwm_calibration[] = {
-    {490, (1<<PWM_RESOLUTION), 1020},    // pwm1 calibration <min, max, start>
-    {0, (1<<PWM_RESOLUTION), 100},    // pwm2 calibration
-    {0, (1<<PWM_RESOLUTION), 100},    // pwm3 calibration
+    {490, (1<<PWM_RESOLUTION), 1020},   // pwm1 (VOUT) calibration <min, max, start>
+    {0, (1<<PWM_RESOLUTION), 100},      // pwm2 (IOUT) calibration
+    {0, (1<<PWM_RESOLUTION), 0},        // pwm3 (ILOAD) calibration MUST be 0
 };
 
 const preset_t default_preset[] = {
@@ -414,7 +414,7 @@ extern "C" void app_setup(void){
 
     app_restoreState();
 
-    PWM_Init();
+    PWM_Init(psu.pwm_cal[0].init, psu.pwm_cal[1].init, psu.pwm_cal[2].init);
 
     ADCMGR_Init();
 

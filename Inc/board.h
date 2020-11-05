@@ -237,13 +237,15 @@ static inline void reenumerate_usb(void){
 #define PWM_NUM_CH          3          // Number of channels
 
 /**
- * Initialyse PWM signal on PB5-4 and PB1-0 pins
+ * Initialize PWM signal on PB5-4 and PB0 pins
  * Timer 3 is used to generate pwm signals with 10bit resolution,
  * which using a 72MHz system frequency results in a 35,156KHz frequency
  * 
- * \param  none
+ * \param  pwm1 : PWM1 initial value
+ * \param  pwm2 : PWM2 initial value
+ * \param  pwm3 : PWM3 initial value
  * */ 
-void PWM_Init(void);
+void PWM_Init(uint16_t pwm1, uint16_t pwm2, uint16_t pwm3);
 
 /**
  * Sets duty cycle for the given channel
@@ -286,7 +288,15 @@ uint16_t PWM_Get(uint8_t);
 /**
  * ADC Channel for adc mux
  * */
-#define ADCMUX_CHANNEL      0
+#define ADC_MUX_CH                  0
+#define ADC_PWR_SW_CH               2
+
+#define VOUT_MUX_CH                 0
+#define IOUT_MUX_CH                 1
+#define VLOAD_MUX_CH                2
+#define ILOAD_MUX_CH                3
+#define VIN_MUX_CH                  4
+#define IUSB_MUX_CH                 13
 
 #endif
 

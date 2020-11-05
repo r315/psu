@@ -32,13 +32,6 @@ extern "C" {
 #define MAX_LOAD                    MAX_CURRENT
 #define MIN_LOAD                    MIN_CURRENT
 
-#define VOUT_MUX_CH                 0
-#define IOUT_MUX_CH                 1
-#define VLOAD_MUX_CH                2
-#define ILOAD_MUX_CH                3
-#define VIN_MUX_CH                  4
-#define IUSB_MUX_CH                 13
-
 #define ADC_INTERVAL                100 //ms
 #define APP_INTERVAL                10
 #define UPDATE_INTERVAL             100
