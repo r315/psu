@@ -27,9 +27,9 @@ char CmdSet::execute(void *ptr){
 
     if((param = getOptValue("output", argc, argv)) != NULL){
         if(xstrcmp("on", param) == 0){
-            psu_setOutputEnable(true);
+            app_setOutputEnable(true);
         }else if(xstrcmp("off", param) == 0){
-            psu_setOutputEnable(false);            
+            app_setOutputEnable(false);            
         }else{
             console->print("output: %s\n", app_isOutputEnabled()?"on":"off");
         }
@@ -42,8 +42,6 @@ char CmdSet::execute(void *ptr){
         return CMD_OK;
     if(readIntParameter("load", argc, argv, &value, psu_setLoadCurrent) == CMD_OK)
         return CMD_OK;
-    //if(readFloatParameter("rs", argc, argv, &value, dummy) == CMD_OK)
-    //    return CMD_OK;
 
     return CMD_BAD_PARAM;
 }

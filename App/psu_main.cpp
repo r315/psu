@@ -125,7 +125,11 @@ static uint8_t app_calcCksum(uint8_t *src, uint16_t len){
 /**
  * PSU public control functions
  * */
-void psu_setOutputEnable(uint8_t en){    
+void psu_setOutputEnable(uint8_t en){
+    PSU_OE_SET(en);
+}
+
+void app_setOutputEnable(uint8_t en){
     if(en){
         SET_OE_FLAG;
         DRAW_Icon(OUTPUT_ICON_POS, (uint8_t *)icon_out, RED);
@@ -133,11 +137,10 @@ void psu_setOutputEnable(uint8_t en){
         CLR_OE_FLAG;
         DRAW_FillRect(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);        
     }
-
-    PSU_OE_SET(en);
+    psu_setOutputEnable(en);
 }
 
-void psu_setLoadEnable(uint8_t en){
+void app_setLoadEnable(uint8_t en){
     if(en){
         SET_LD_FLAG;
         DRAW_Icon(LOAD_ICON_POS, (uint8_t *)icon_load, GREEN);
@@ -254,8 +257,8 @@ void app_selectScreen(uint8_t screen_idx){
     (screens[screen_idx])->init();
     // Mode clears screen, so must redraw output icon,
     // only if active
-    psu_setOutputEnable(GET_OE_FLAG);
-    psu_setLoadEnable(GET_LD_FLAG);
+    app_setOutputEnable(GET_OE_FLAG);
+    app_setLoadEnable(GET_LD_FLAG);
 }
 
 static void app_cycleMode(void){
@@ -278,12 +281,12 @@ void app_checkButtons(){
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         switch(BUTTON_VALUE){
             case BUTTON_MODE: app_cycleMode(); break;
-            case BUTTON_OUT: psu_setOutputEnable(!GET_OE_FLAG); break;
+            case BUTTON_OUT: app_setOutputEnable(!GET_OE_FLAG); break;
         }
     }else{
         if(GET_PWR_BTN){
             if(--pwr_off_counter == 0){
-                app_poweroff();
+                //app_poweroff();
             }
         }else{
             pwr_off_counter = POWER_OFF_COUNT;

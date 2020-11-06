@@ -264,6 +264,7 @@ uint32_t psu_getChannelVoltage(uint8_t channel);
  * @brief Set/Get output enable status
  * */
 uint8_t app_isOutputEnabled(void);
+void app_setOutputEnable(uint8_t en);
 void psu_setOutputEnable(uint8_t en);
 
 /**
@@ -285,10 +286,10 @@ void psu_setOutputCurrent(uint32_t ma);
 uint32_t psu_getLoadVoltage(void);
 
 /**
- * @brief Set/Get PSU Load Enable
+ * @brief Set/Get Application Load Enable
  * */
 uint8_t app_isLoadEnabled(void);
-void psu_setLoadEnable(uint8_t en);
+void app_setLoadEnable(uint8_t en);
 
 /**
  * @brief Set/Get PSU Load Current
