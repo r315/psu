@@ -99,7 +99,7 @@ static uint8_t blink;
             }
             break;
 
-        case SCR_MODE_NORMAL:
+        case SCR_MODE_WORKING:
             if(BUTTON_GetEvents() == BUTTON_PRESSED){
                 switch(BUTTON_VALUE){
                     case BUTTON_MEM: 

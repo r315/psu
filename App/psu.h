@@ -101,7 +101,7 @@ extern "C" {
 
 typedef enum {
     SCR_MODE_IDLE = 0,
-    SCR_MODE_NORMAL,
+    SCR_MODE_WORKING,
     SCR_MODE_SET_V, 
     SCR_MODE_SET_I, 
     SCR_MODE_SAVE,
@@ -109,6 +109,7 @@ typedef enum {
     SCR_MODE_SET_CC,
     SCR_MODE_SET_CP,
     SCR_MODE_SET_CR,
+    SCR_MODE_SET_BC,
 }screenstate_e;
 
 typedef struct pwmcal{

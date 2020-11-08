@@ -87,7 +87,7 @@ static uint32_t *ptr_set;
         if(BUTTON_VALUE == BUTTON_SET){
             switch(_screen_state){
                 case SCR_MODE_IDLE:
-                case SCR_MODE_NORMAL:
+                case SCR_MODE_WORKING:
                     _screen_state = SCR_MODE_SET_V;
                     configSetting(1000, 100, 10000, MIN_VOLTAGE, MAX_VOLTAGE);
                     ptr_set = &_set_v;
@@ -102,7 +102,7 @@ static uint32_t *ptr_set;
 
                 case SCR_MODE_SET_I:
                     // Exit mode set state
-                    _screen_state = SCR_MODE_NORMAL;
+                    _screen_state = SCR_MODE_WORKING;
                     updateCurrent(BLINK_OFF, _set_i);
                     pre.v = _set_v;
                     pre.i = _set_i;
@@ -125,7 +125,7 @@ static uint32_t *ptr_set;
                 case BUTTON_RIGHT: divPow(); break;
                 case BUTTON_MEM: 
                     // Cancel set
-                    _screen_state = SCR_MODE_NORMAL; 
+                    _screen_state = SCR_MODE_WORKING; 
                     preset_t *pre = app_getPresetList();
                     _set_v = pre->v;
                     _set_i = pre->i;
@@ -135,7 +135,7 @@ static uint32_t *ptr_set;
     }
 
     switch(_screen_state){
-        case SCR_MODE_NORMAL:
+        case SCR_MODE_WORKING:
             if(!app_isOutputEnabled()){
                 _screen_state = SCR_MODE_IDLE;
                 pre = app_getPreset();
@@ -168,7 +168,7 @@ static uint32_t *ptr_set;
 
         case SCR_MODE_IDLE:
             if(app_isOutputEnabled()){
-                _screen_state = SCR_MODE_NORMAL;
+                _screen_state = SCR_MODE_WORKING;
             }            
             break;
 
