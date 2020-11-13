@@ -29,8 +29,9 @@ extern "C" {
 #define MIN_VOLTAGE                 1200U
 #define MAX_CURRENT                 3000U
 #define MIN_CURRENT                 0U
-#define MAX_ILOAD                   1000U
+#define MAX_ILOAD                   1000U  // TODO: LIMIT in HW to 500mA
 #define MIN_ILOAD                   0U
+#define MAX_VLOAD                   20000U
 
 #define ADC_INTERVAL                100 //ms
 #define APP_INTERVAL                10
@@ -205,12 +206,14 @@ class ScreenLoad: public Screen{
     Graph _graph;
     loadmode_e _load_mode;
     uint32_t _set_i;
-    uint32_t _start_ticks;
+    uint32_t _elapsed_ms;
+    float _mah;
     void printMode(int8_t toggle_visible);
     void updateCurrent(uint8_t hide_digit, uint32_t ma);
     void updateVoltage(uint8_t hide_digit, uint32_t mv);
     void updatePower(uint32_t pwr);
-    void updateTime(void);
+    void updateTime(uint32_t delta_ms);
+    void updateAh(uint32_t delta_ms, uint32_t ma);
 public:
     ScreenLoad() : Screen(){}	
     void process();
