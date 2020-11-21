@@ -43,6 +43,7 @@ PERIFLIB_PATH =
 # Build path
 BUILD_DIR :=build
 
+BUI_DIR :=./lib/bui
 ######################################
 # sources
 ######################################
@@ -80,6 +81,7 @@ $(FREERTOS_DIR)/queue.c \
 $(FREERTOS_DIR)/tasks.c \
 $(FREERTOS_DIR)/timers.c \
 $(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
+$(BUI_DIR)/bui_draw.c \
 
 # USB lib
 #C_SOURCES += \
@@ -93,10 +95,11 @@ Src/usbd_conf.c \
 Src/usb_device.c \
 
 CPP_SOURCES = \
+$(LIBEMB_PATH)/console/console.cpp \
 $(wildcard $(APP_SRC_DIR)/*.cpp) \
 $(wildcard $(APP_SRC_DIR)/screen/*.cpp) \
 $(wildcard $(APP_SRC_DIR)/console/*.cpp) \
-$(LIBEMB_PATH)/console/console.cpp \
+$(wildcard $(BUI_DIR)/*.cpp) \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -127,6 +130,7 @@ C_INCLUDES =  \
 -I$(FREERTOS_DIR)/include \
 -I$(FREERTOS_DIR)/CMSIS_RTOS \
 -I$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
+-I$(BUI_DIR)
 
 ######################################
 # firmware library
@@ -172,7 +176,6 @@ C_DEFS =  \
 -DSTM32F103xB \
 -DUSE_ADCMGR \
 -DCONSOLE_BLOCKING \
--DUSE_MULTIPLE_FONTS \
 -DUSE_COURIER_FONT \
 -DUSE_GROTESKBOLD_FONT \
 -D_ENABLE_USB_CDC \
@@ -183,7 +186,7 @@ ifeq ($(DEBUG), 1)
 OPT =-Og -g -gdwarf-2
 C_DEFS +=-DENABLE_DEBUG
 else
-OPT =-Os
+OPT =-O3
 endif
 
 ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections

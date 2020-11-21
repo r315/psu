@@ -18,6 +18,9 @@
 #include "cmdstatus.h"
 #include "cmdeeprom.h"
 
+#include "bui.h"
+#include "scr_psu.h"
+
 char gOut[10];
 static psu_t psu;
 static ScreenPsu cpsu;
@@ -209,6 +212,17 @@ void app_poweroff(void){
     SOFT_POWER_OFF;
 }
 
+void app_processPowerButton(void){
+    static uint16_t pwr_off_counter = POWER_OFF_COUNT;
+    if(GET_PWR_BTN){
+        if(--pwr_off_counter == 0){
+            app_poweroff();
+    }
+    }else{
+        pwr_off_counter = POWER_OFF_COUNT;
+    }
+}
+
 uint8_t app_isLoadEnabled(void){
     return GET_LD_FLAG;
 }
@@ -275,21 +289,11 @@ static void app_cycleMode(void){
  * @brief Read buttons connected to I2C io expander
  * */
 void app_checkButtons(){
-    static uint16_t pwr_off_counter = POWER_OFF_COUNT;
     BUTTON_Read();
-
     if(BUTTON_GetEvents() == BUTTON_PRESSED){
         switch(BUTTON_VALUE){
             case BUTTON_MODE: app_cycleMode(); break;
             case BUTTON_OUT: app_setOutputEnable(!GET_OE_FLAG); break;
-        }
-    }else{
-        if(GET_PWR_BTN){
-            if(--pwr_off_counter == 0){
-                //app_poweroff();
-            }
-        }else{
-            pwr_off_counter = POWER_OFF_COUNT;
         }
     }
 }
@@ -353,30 +357,45 @@ void app_enable_adcmgr(uint8_t en){
 }
 
 /**
- * Called every 10ms by Timer4 interrupt, as console
- * may block the main thread, having a secondary loop
- * ensures operation of lcd update and button handling
  * */
-void tskPsu(void *ptr){
-static TickType_t xLastWakeTime;
-uint8_t count = 0;
+void tskBui(void *ptr){
+    static TickType_t xLastWakeTime;
+    
+    //app_selectScreen(psu.screen_idx);
+    //app_setPreset(psu.preset_list[psu.preset_idx]);    
+    
+    BUI bui;
+    SCRpsu scrpsu;
 
-    app_selectScreen(psu.screen_idx);
-    app_setPreset(psu.preset_list[psu.preset_idx]);
-
-    ADCMGR_Start();
-
-    SET_ADCMGR_FLAG;
+    bui.init();
+    bui.addScreen((BUIScreen*)&scrpsu);
 
     LCD_Bkl(TRUE);
 
-    // Configure watchdog
-    enableWatchDog(WATCHDOG_TIME);
+    while(1){
+        bui.handler(NULL);
+        vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
+    }
+}
+
+/**
+ * 
+ * */
+void tskPsu(void *ptr){
+static TickType_t xLastWakeTime;
+uint8_t count = 0;   
+
+    app_restoreState();
+
+    ADCMGR_Start();
+
+    SET_ADCMGR_FLAG;   
 
     while(1){
-        app_checkButtons();
+        //app_checkButtons();
+        app_processPowerButton();
         //DBG_PIN_HIGH;
-        screens[psu.screen_idx]->process();
+        //screens[psu.screen_idx]->process();
         //DBG_PIN_LOW;        
         if(GET_AD_FLAG && GET_ADCMGR_FLAG){
             CLR_AD_FLAG;
@@ -389,25 +408,32 @@ uint8_t count = 0;
             LED_OFF;
         }
         
-        reloadWatchDog();
+        //reloadWatchDog();
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
 }
 
 void tskCmdLine(void *ptr){
     
-    stdout_t *stdio_port = (stdout_t*)ptr;    
+    stdout_t *stdio_port = (stdout_t*)ptr;
+
+    stdio_port->init();
+
+    #ifdef ENABLE_DEBUG
+    dbg_init(stdio_port);
+    #endif
 
     console.init(stdio_port, CONSOLE_PROMPT);
     console.registerCommandList(commands);
 
     // wait for usb to start if connected
-    vTaskDelay(pdMS_TO_TICKS(500));
+    //vTaskDelay(pdMS_TO_TICKS(500));
 
     console.cls();
 
     console.print("PSU v%u.%u.%u\n", PSU_VERSION_MAJOR, PSU_VERSION_MINOR, PSU_VERSIO_PATCH);
     console.print("FreeRTOS %s\n", tskKERNEL_VERSION_NUMBER);
+    console.print("Free mem: %u bytes\n", xPortGetFreeHeapSize());
     console.print("\n");
 
     while(1){
@@ -416,13 +442,7 @@ void tskCmdLine(void *ptr){
 }
 
 extern "C" void app_setup(void){  
-    BOARD_Init();
-
-    stdio_ops.init();
-
-    #ifdef ENABLE_DEBUG
-    dbg_init(&stdio_ops);
-    #endif
+    BOARD_Init();  
 
     psu_setOutputEnable(FALSE);
 
@@ -435,16 +455,18 @@ extern "C" void app_setup(void){
 
     EEPROM_Init();
 
-    app_restoreState();
-
     PWM_Init(psu.pwm_cal[0].init, psu.pwm_cal[1].init, psu.pwm_cal[2].init);
 
     ADCMGR_Init();
 
     ADCMGR_SetSequence(NULL,0 , psu_adc_cb);
 
-    xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, &stdio_ops, PRIORITY_LOW, NULL );
-    xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE * 4, NULL, PRIORITY_LOW + 1, NULL );
+    // Configure watchdog
+    //enableWatchDog(WATCHDOG_TIME);
+    
+    xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 2, &stdio_ops, PRIORITY_LOW, NULL );
+    xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE, NULL, PRIORITY_LOW + 1, NULL );
+    xTaskCreate( tskBui, "BUI", configMINIMAL_STACK_SIZE * 6, NULL, PRIORITY_LOW + 1, NULL );
 }
 
 

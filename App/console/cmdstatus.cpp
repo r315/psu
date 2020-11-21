@@ -7,6 +7,8 @@ void CmdStatus::help(void){
 
 char CmdStatus::execute(void *ptr){
     console->print("\n----------------------------------\n");
+    console->print("Free mem:\t%u bytes\n", xPortGetFreeHeapSize());
+    console->print("----------------------------------\n");
     console->print("Input Voltage:\t%umV\n", psu_getInputVoltage());
     console->print("----------------------------------\n");
     console->print("Output voltage:\t%umV\n", psu_getOutputVoltage());

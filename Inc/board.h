@@ -46,7 +46,7 @@ extern "C" {
  * */
 
 #define PWR_BTN_OFF_TH       0x300
-#define PWR_BTN_ON_TH        0x400
+#define PWR_BTN_ON_TH        0xd00 
 
 #define PWR_BTN_PIN          PA_2
 
@@ -62,7 +62,7 @@ extern "C" {
     pinInit(PWR_BTN_PIN, GPI_ANALOG); \
 }
 
-#define GET_PWR_BTN         (ADC2_Read(ADC_PWR_SW_CH) > PWR_BTN_ON_TH)
+#define GET_PWR_BTN         (ADC2_Read(ADC_PWR_SW_CH) < PWR_BTN_ON_TH)
 
 
 /**

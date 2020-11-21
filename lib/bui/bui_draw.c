@@ -18,27 +18,16 @@ void spi_eot(void){
 }
 
 /**
- * @brief Draws bitmap on display, data has format {w,h,data...}
+ * @brief Draws buffer in to the lcd, blocking if the last transfer has not finished yet.
+ * Other access lcd access should be avoided.
  * 
  * @param x : x position
  * @param y : y position
- * @param data : bitmap data
+ * @param data : data buffer
+ * @param w : area width
+ * @param h : area height
  */
-void DRAW_Bitmap(uint16_t x, uint16_t y, uint16_t *data){
-    DRAW_Tile(x, y, data+2, data[0], data[1]);
-}
-
-/**
- * @brief Draws tile, blocking if the last transfer not finished.
- * other access lcd access should be avoided .
- * 
- * @param x : x position
- * @param y : y position
- * @param data : tile data, usually the scratch pointer 
- * @param w : tile width
- * @param h : tile height
- */
-void DRAW_Tile(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, uint16_t h){
+void drawBufferll(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, uint16_t h){
     while(lcd_busy);
     lcd_busy = 1;
     LCD_Window(x, y, w, h);
@@ -92,6 +81,17 @@ void DRAW_HLine(uint16_t x, uint16_t y, uint16_t w, uint16_t color){
 void DRAW_Pixel(uint16_t x, uint16_t y, uint16_t color){
     while(lcd_busy);
     LCD_Pixel(x, y, color);
+}
+
+/**
+ * @brief Draws bitmap on display, data has format {w,h,data...}
+ * 
+ * @param x : x position
+ * @param y : y position
+ * @param data : bitmap data
+ */
+void DRAW_Bitmap(uint16_t x, uint16_t y, uint16_t *data){
+    drawBufferll(x, y, data+2, data[0], data[1]);
 }
 
 /**
@@ -153,3 +153,69 @@ void DRAW_Icon2(uint16_t x, uint16_t y, uint8_t *ico, uint16_t fcolor, uint16_t 
     DRAW_Bitmap(x, y, scratch);
 }
 
+/**
+ * @brief Draws character bitmap into buffer
+ * 
+ * \param buffer : pointer to destination tile buffer
+ * \param c : Character to print
+ * \param fnt : font to be used
+ * \param pal : color palette
+ * */
+static void blitChar(uint16_t *buffer, uint8_t c, font_t *fnt, const uint16_t *pal){
+    const uint8_t *pd;
+    
+    c -= fnt->offset;
+    pd = fnt->data + (c * fnt->h * fnt->bpl);
+
+    // Check out of bound character
+    if(pd > fnt->data + fnt->data_len)
+        return;
+
+    for(uint16_t h = 0; h < fnt->h; h++, pd++){
+        uint8_t bmap = *pd;
+        uint8_t mask = 0x80;
+
+        for(uint16_t w = 0; w < fnt->w; w++, mask >>= 1, buffer++){
+            if(mask == 0){
+                mask = 0x80;
+                bmap = *(++pd);
+            }
+            *buffer = pal[!!(bmap & mask)];
+        }
+    }
+}
+
+/**
+ * draws a character using a font table.
+ * the font table must be 1bpp
+ */
+/**
+ * @brief Draws a character into the display
+ * 
+ * \param x : x coordinate
+ * \param y : y coordinate
+ * \param c : Character to print
+ * \param fnt : font to be used
+ * \param pal : color palette
+ * \return : x coordinate for next character
+ * */
+uint16_t drawChar(uint16_t x, uint16_t y, uint8_t c, font_t *fnt, const uint16_t *pal){
+    //Check if character fits temporary buffer
+    if(fnt->w * fnt->h > SCRATCH_BUF_SIZE){
+        return 0;
+    }
+
+    blitChar(scratch, c, fnt, pal);
+    drawBufferll(x, y, scratch, fnt->w, fnt->h);
+    
+    return x + fnt->w + fnt->spacing;
+}
+
+/**
+ * */
+uint16_t drawString(uint16_t x, uint16_t y, const char* str, font_t *fnt, const uint16_t *pal){
+    while(*str){
+        x = drawChar(x, y, *str++, fnt, pal);
+    }
+    return x;
+}
