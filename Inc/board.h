@@ -142,11 +142,10 @@ void SPI_Read(uint8_t *dst, uint32_t len);
 void SPI_WriteDMA(uint16_t *dst, uint32_t len);
 /**
  * Display
- * PB14 -> RS
- * PB4  -> BKL
- * PB3  -> RST
+ * PB3  -> BKL
  * PB12 -> CS
  * PB13 -> SCK
+ * PB14 -> RS
  * PB15 -> SDO
  * */
 #define TFT_W               80

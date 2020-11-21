@@ -692,8 +692,11 @@ void SPI_Init(void){
      * PB14 GPO
      * PB13 AF
      * PB12 GPO
-     * PB3  BKL
+     * PB3  GPO
      * */
+    GPIOB->BSRR = (5 << 12); // CS, RS
+    GPIOB->BRR  = (1 << 3);  // BKL
+
     GPIOB->CRH &= (0x0000FFFF);
     GPIOB->CRH |= (0xA2A20000);
 
