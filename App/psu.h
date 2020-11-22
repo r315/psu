@@ -269,6 +269,7 @@ uint32_t psu_getChannelVoltage(uint8_t channel);
  * */
 uint8_t app_isOutputEnabled(void);
 void app_setOutputEnable(uint8_t en);
+void app_toggleOutputEnable(void);
 void psu_setOutputEnable(uint8_t en);
 
 /**

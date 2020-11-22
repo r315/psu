@@ -143,6 +143,10 @@ void app_setOutputEnable(uint8_t en){
     psu_setOutputEnable(en);
 }
 
+void app_toggleOutputEnable(void){
+    app_setOutputEnable(!GET_OE_FLAG); 
+}
+
 void app_setLoadEnable(uint8_t en){
     if(en){
         SET_LD_FLAG;
@@ -357,6 +361,7 @@ void app_enable_adcmgr(uint8_t en){
 }
 
 /**
+ * 
  * */
 void tskBui(void *ptr){
     static TickType_t xLastWakeTime;
@@ -464,9 +469,12 @@ extern "C" void app_setup(void){
     // Configure watchdog
     //enableWatchDog(WATCHDOG_TIME);
     
-    xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 2, &stdio_ops, PRIORITY_LOW, NULL );
+    xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, &stdio_ops, PRIORITY_LOW, NULL );
     xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE, NULL, PRIORITY_LOW + 1, NULL );
-    xTaskCreate( tskBui, "BUI", configMINIMAL_STACK_SIZE * 6, NULL, PRIORITY_LOW + 1, NULL );
+    xTaskCreate( tskBui, "BUI", configMINIMAL_STACK_SIZE * 8, NULL, PRIORITY_LOW + 1, NULL );
 }
 
+extern "C" void vApplicationMallocFailedHook( void ){
+    dbg_printf("Memory allocation fail\n");
+}
 
