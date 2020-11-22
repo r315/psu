@@ -16,13 +16,16 @@ BUIText::~BUIText(void){
 }
 
 void BUIText::setText(const char *text){
-    if(_text != NULL){
-        bui_free(_text);
-    }
-    
-    _len = strlen(text);
-    
-    _text = (char*)bui_malloc(_len);
+
+    uint8_t tmp_len = strlen(text);
+
+    if(tmp_len != _len){
+        _len = tmp_len;
+        if(_text != NULL){
+            bui_free(_text);
+        }
+        _text = (char*)bui_malloc(_len);
+    }    
     
     if(_text != NULL){
         strcpy(_text, (char *)text);
