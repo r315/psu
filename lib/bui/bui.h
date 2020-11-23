@@ -24,63 +24,52 @@ extern "C" {
 #define bui_createTask              xTaskCreate
 #define BUI_HEAP                    512
 
-#define BUI_WI_INVALID              (1 << 1)
-#define BUI_WI_VISIBLE              (1 << 0)
+#define BUI_FLAG_INVALID            (1 << 1)
+#define BUI_FLAG_VISIBLE            (1 << 0)
+#define BUI_FLAG_SUSPEND            (1 << 2)
+#define BUI_FLAG_EDIT           (1 << 3)
 
-#define BUI_WI_SET_FLAG_VISIBLE     this->_flags |= BUI_WI_VISIBLE
-#define BUI_WI_CLR_FLAG_VISIBLE     this->_flags &= ~BUI_WI_VISIBLE
-#define BUI_WI_SET_FLAG_INVALID     this->_flags |= BUI_WI_INVALID
-#define BUI_WI_CLR_FLAG_INVALID     this->_flags &= ~BUI_WI_INVALID
-
-struct bui_node{
+struct list_node{
     void *elem;
-    struct bui_node *next;
+    struct list_node *next;
 };
+
+typedef struct buievt{
+    uint8_t key;
+    uint8_t type;
+}buievt_t;
+
 
 class BUIWidget{
 private:
     uint8_t _flags;
 protected:
     uint16_t _x, _y;
+    void setFlag(uint8_t flag){this->_flags |= flag;}
+    void clrFlag(uint8_t flag){this->_flags &= ~flag;}
 public:
-    BUIWidget(uint16_t x, uint16_t y){ _x = x; _y = y; _flags = BUI_WI_VISIBLE;}
-
-    void setVisible(uint8_t vi){
-        if(vi){
-            BUI_WI_SET_FLAG_VISIBLE;
-        }else{
-            BUI_WI_CLR_FLAG_VISIBLE;
-        }
-        BUI_WI_SET_FLAG_INVALID;
-    }
-
-    void setInvalid(uint8_t inv){ 
-        if(inv){
-            BUI_WI_SET_FLAG_INVALID;
-        }else{
-            BUI_WI_CLR_FLAG_INVALID;
-        }
-    }
-
-    uint8_t isVisible(){ return !!(this->_flags & BUI_WI_VISIBLE); }
-    uint8_t isInvalid(){ return !!(this->_flags & BUI_WI_INVALID); }
+    BUIWidget(uint16_t x, uint16_t y){ _x = x; _y = y; _flags = BUI_FLAG_VISIBLE;}
+    uint8_t isVisible(){ return !!(this->_flags & BUI_FLAG_VISIBLE); }
+    uint8_t isInvalid(){ return !!(this->_flags & BUI_FLAG_INVALID); }
+    uint8_t isFlagSet(uint8_t flag){return !!(this->_flags & flag);}
+    void setInvalid(uint8_t inv){ if(inv) setFlag(BUI_FLAG_INVALID); else clrFlag(BUI_FLAG_INVALID);}
     virtual void draw(void){}
 };
 
 class BUIText : public BUIWidget {
+public:
+    BUIText() : BUIText(0,0){}
+    BUIText(uint16_t x, uint16_t y);
+    ~BUIText();
+    virtual void draw(void);
+    void setText(const char *text);
+    void setPal(const uint16_t *pal);
+    void setFont(font_t *font);
+protected:
     font_t *_font;
     const uint16_t *_pal;
     char *_text;
     uint8_t _len;
-
-public:
-    BUIText() : BUIText(0,0){}
-    BUIText(uint16_t x, uint16_t y);
-    void draw(void);
-    void setText(const char *text);
-    void setPal(const uint16_t *pal);
-    void setFont(font_t *font);
-    ~BUIText();
 };
 
 class BUIGraph : public BUIWidget {
@@ -109,7 +98,7 @@ public:
      * \param value : y value
      * \param flags : bits 7:4 not used, bits 3:0 trace
      * */
-    void addPoint(uint8_t value, uint8_t flags);
+    void addPoint(uint8_t *value, uint8_t ntrace);
     void nextPoint();
     void update();
     void reset();
@@ -123,48 +112,66 @@ private:
 };
 /**
  * */
-class BUIScreen{
-private:    
-    struct bui_node _widget;
-protected:
-    
+
+uint16_t listInsert(struct list_node *head, void *elem);
+
+class BUIView{
 public:
-    BUIScreen();
-    /**
-     * Redraws the mode screen with default values
-     * called when mode is selected
-     * */
-    virtual void redraw(){}
+    BUIView(){ 
+        _widget.elem = NULL;  
+        _widget.next = NULL;
+    }
+    virtual void init(){}    
+    uint8_t addWidget(BUIWidget *wi){ return listInsert(&_widget, (void *)wi);}
+    list_node *getWidgets(void){ return &_widget; }
+    uint8_t isVisible(){ return !!(this->_flags & BUI_FLAG_VISIBLE); }
+    uint8_t isInvalid(){ return !!(this->_flags & BUI_FLAG_INVALID); }
+    uint8_t isSuspending(){ return !!(this->_flags & BUI_FLAG_SUSPEND); }
 
-    virtual void process(){}
+    void setFlag(uint8_t flag){this->_flags |= flag;}
+    void clrFlag(uint8_t flag){this->_flags &= ~flag;}
 
-    virtual void init(){}
-
-    virtual void keyPressed(uint32_t key){}
-    virtual void keyReleased(uint32_t key){}
-
-    uint8_t addWidget(BUIWidget *wi);
-    bui_node *getWidgets(void){ return &_widget; }
+private:    
+    struct list_node _widget;
+    uint8_t _flags;
+protected:
 };
+
+class BUIModel; 
+
+class BUIPresenter{
+public:
+    virtual void notify(void);
+    virtual void eventHandler(buievt_t *evt);
+    virtual void setModel(BUIModel *m);
+    virtual void setView(BUIView *v);
+};
+
+class BUIModel{
+public:
+    void setPresenter(BUIPresenter *pre){ _presenter = pre;}
+protected:
+    BUIPresenter *_presenter;
+};
+
+typedef struct bui_screen{
+    BUIView *view;
+    BUIPresenter *presenter;
+}buiscreen_t;
 
 class BUI{    
 public:
-    void init(void);
-    uint8_t addScreen(BUIScreen *scr);
-    BUIScreen *getActiveScreen(void);
-    BUIScreen *getScreen(uint8_t idx);
+    BUI(BUIModel &m);
+    uint8_t createScreen(BUIView *view, BUIPresenter *pre);
     void setActiveScreen(uint8_t idx);
-    void nextScreen(void);
+    void ActivateNextScreen(void);
     void handler(void *ptr);
 protected:
 private:
-    struct bui_node _scrlist;
-    BUIScreen *_act_scr;
+    struct list_node _scrlist;
+    buiscreen_t *_screen;
+    BUIModel &_model;
 };
-
-void buiInit(void);
-void buiAddScreen(BUIScreen *scr);
-uint8_t buiAddNode(struct bui_node *list, void *elem);
 
 #ifdef __cplusplus
 }

@@ -19,21 +19,11 @@
 #include "cmdeeprom.h"
 
 #include "bui.h"
-#include "scr_psu.h"
+#include "view_psu.h"
+#include "model_psu.h"
+#include "presenter_psu.h"
 
-char gOut[10];
 static psu_t psu;
-static ScreenPsu cpsu;
-static ScreenLoad cload;
-static ScreenCharger ccharger;
-static ScreenPreset cpreset; 
-
-static Screen *screens[] = {
-    &cpsu,
-    &cpreset,
-    &cload,
-    //&ccharger,
-};
 
 static Console console;
 static CmdHelp help;
@@ -104,6 +94,13 @@ const float default_an_channel_gain[] = {
  * PSU
  * */
 
+/**
+ * @brief Callback from adc manager
+ * 
+ * \param data : pointer to raw adc data. The number of results is equal 
+ * to the size of the conversion sequence, and only valid until the next call tp ADCMGR_Start()
+ *
+ * */
 extern "C" void psu_adc_cb(uint16_t *data){
     psu.adc_data = data;
     SET_AD_FLAG;
@@ -143,8 +140,9 @@ void app_setOutputEnable(uint8_t en){
     psu_setOutputEnable(en);
 }
 
-void app_toggleOutputEnable(void){
-    app_setOutputEnable(!GET_OE_FLAG); 
+uint8_t app_toggleOutputEnable(void){
+    app_setOutputEnable(!GET_OE_FLAG);
+    return !GET_OE_FLAG;
 }
 
 void app_setLoadEnable(uint8_t en){
@@ -272,7 +270,7 @@ void app_selectScreen(uint8_t screen_idx){
         return;
     }
     psu.screen_idx = screen_idx;    
-    (screens[screen_idx])->init();
+    //(screens[screen_idx])->init();
     // Mode clears screen, so must redraw output icon,
     // only if active
     app_setOutputEnable(GET_OE_FLAG);
@@ -359,22 +357,23 @@ void app_enable_adcmgr(uint8_t en){
     else
         CLR_ADCMGR_FLAG;   
 }
+/**
+ * Model
+ * */
+ModelPsu model_psu;
 
 /**
  * 
  * */
 void tskBui(void *ptr){
     static TickType_t xLastWakeTime;
-    
-    //app_selectScreen(psu.screen_idx);
-    //app_setPreset(psu.preset_list[psu.preset_idx]);    
-    
-    BUI bui;
-    SCRpsu scrpsu;
 
-    bui.init();
-    bui.addScreen((BUIScreen*)&scrpsu);
-
+    ViewPsu view_psu;
+    PresenterPsu presenter_psu;
+    BUI bui(model_psu);
+   
+    bui.createScreen((BUIView*)&view_psu, (BUIPresenter*)&presenter_psu);
+    
     LCD_Bkl(TRUE);
 
     while(1){
@@ -390,19 +389,21 @@ void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;
 uint8_t count = 0;   
 
-    app_restoreState();
-
     ADCMGR_Start();
 
-    SET_ADCMGR_FLAG;   
+    SET_ADCMGR_FLAG;
+
+    model_psu.updateOutPreset(app_getPreset());
 
     while(1){
         //app_checkButtons();
         app_processPowerButton();
         //DBG_PIN_HIGH;
-        //screens[psu.screen_idx]->process();
+        
         //DBG_PIN_LOW;        
         if(GET_AD_FLAG && GET_ADCMGR_FLAG){
+            //model_update((model_t*)&psu.adc_data);
+            model_psu.update();
             CLR_AD_FLAG;
             ADCMGR_Start();
         }
@@ -413,7 +414,9 @@ uint8_t count = 0;
             LED_OFF;
         }
         
-        //reloadWatchDog();
+        #ifndef ENABLE_DEBUG
+        reloadWatchDog();
+        #endif
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
 }
@@ -446,6 +449,12 @@ void tskCmdLine(void *ptr){
     }
 }
 
+static void startTask(void(*task)(void*), const char *name, void *args, uint32_t stack, int priority){
+    if(xTaskCreate( task, name, stack, args, priority, NULL ) != pdPASS){
+        dbg_printf("FAIL: to start task %s\n", name);    
+    }
+}
+
 extern "C" void app_setup(void){  
     BOARD_Init();  
 
@@ -460,6 +469,8 @@ extern "C" void app_setup(void){
 
     EEPROM_Init();
 
+    app_restoreState();
+
     PWM_Init(psu.pwm_cal[0].init, psu.pwm_cal[1].init, psu.pwm_cal[2].init);
 
     ADCMGR_Init();
@@ -467,11 +478,13 @@ extern "C" void app_setup(void){
     ADCMGR_SetSequence(NULL,0 , psu_adc_cb);
 
     // Configure watchdog
-    //enableWatchDog(WATCHDOG_TIME);
+    #ifndef ENABLE_DEBUG
+    enableWatchDog(WATCHDOG_TIME);
+    #endif
     
-    xTaskCreate( tskCmdLine, "CLI", configMINIMAL_STACK_SIZE * 4, &stdio_ops, PRIORITY_LOW, NULL );
-    xTaskCreate( tskPsu, "PSU", configMINIMAL_STACK_SIZE, NULL, PRIORITY_LOW + 1, NULL );
-    xTaskCreate( tskBui, "BUI", configMINIMAL_STACK_SIZE * 8, NULL, PRIORITY_LOW + 1, NULL );
+    startTask(tskCmdLine, "CLI", &stdio_ops, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
+    startTask(tskPsu, "PSU", NULL, configMINIMAL_STACK_SIZE, PRIORITY_LOW + 1);
+    startTask(tskBui, "BUI", NULL, configMINIMAL_STACK_SIZE * 8, PRIORITY_LOW);
 }
 
 extern "C" void vApplicationMallocFailedHook( void ){

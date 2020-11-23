@@ -40,7 +40,7 @@ extern "C" {
 #define LOAD_ICON_POS               LCD_W - 36,3
 #define OUTPUT_ICON_POS             160-16,3
 
-#define SCREEN_NUM                   sizeof(screens)/sizeof(void*)
+#define SCREEN_NUM                   0 //sizeof(screens)/sizeof(void*)
 
 #define BLINK_TIME_MASK             8
 #define BLINK_ON                    1
@@ -269,7 +269,7 @@ uint32_t psu_getChannelVoltage(uint8_t channel);
  * */
 uint8_t app_isOutputEnabled(void);
 void app_setOutputEnable(uint8_t en);
-void app_toggleOutputEnable(void);
+uint8_t app_toggleOutputEnable(void);
 void psu_setOutputEnable(uint8_t en);
 
 /**

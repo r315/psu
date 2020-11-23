@@ -44,6 +44,8 @@ PERIFLIB_PATH =
 BUILD_DIR :=build
 
 BUI_DIR :=./lib/bui
+
+UI_DIR :=./ui
 ######################################
 # sources
 ######################################
@@ -97,10 +99,9 @@ Src/usb_device.c \
 CPP_SOURCES = \
 $(LIBEMB_PATH)/console/console.cpp \
 $(wildcard $(APP_SRC_DIR)/*.cpp) \
-$(wildcard $(APP_SRC_DIR)/screen/*.cpp) \
 $(wildcard $(APP_SRC_DIR)/console/*.cpp) \
 $(wildcard $(BUI_DIR)/*.cpp) \
-
+$(wildcard $(UI_DIR)/**/*.cpp) \
 # ASM sources
 ASM_SOURCES =  \
 startup/startup_stm32f103xb.s
@@ -130,7 +131,9 @@ C_INCLUDES =  \
 -I$(FREERTOS_DIR)/include \
 -I$(FREERTOS_DIR)/CMSIS_RTOS \
 -I$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
--I$(BUI_DIR)
+-I$(BUI_DIR) \
+-I$(UI_DIR)/model \
+-I$(UI_DIR)/screen_psu \
 
 ######################################
 # firmware library
@@ -186,7 +189,7 @@ ifeq ($(DEBUG), 1)
 OPT =-Og -g -gdwarf-2
 C_DEFS +=-DENABLE_DEBUG
 else
-OPT =-O3
+OPT =-Os
 endif
 
 ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections

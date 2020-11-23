@@ -44,33 +44,34 @@ void BUIGraph::clear(){
 /**
  * @brief Redraws full graph and plots current graph data
  * */
-void BUIGraph::draw(){
-    drawGraphAxis();
+void BUIGraph::draw(){    
   
-    uint8_t tt = _tail;
+    if(isInvalid()){
+        uint8_t tt = _tail;
+        uint8_t npoints;
 
-    uint8_t npoints;
-
-    if(_scroll){
-        npoints = _xsize;
-    }else{
-        npoints = (_head > _tail) ? _head - _tail : _xsize - _tail + _head;
-    }
-
-    for(uint8_t i = 0; i < npoints; i++){
-        // Erase graph data for current point
-        DRAW_VLine(_x + i, _y + 1, _ysize, _pal[0]);
-
-        for(uint8_t trace = 0; trace < _ntraces; trace++){
-            uint8_t data = _graph_data[(trace * _xsize) + tt];
-            if(data < _ysize){
-                DRAW_Pixel(_x + i, _y + _ysize - data, _pal[trace + 2]);
-            }
-        }        
-        
-        if( (++tt) >= _xsize){
-            tt = 0;
+        if(_scroll){
+            npoints = _xsize;
+        }else{
+            npoints = (_head > _tail) ? _head - _tail : _xsize - _tail + _head;
         }
+
+        for(uint8_t i = 0; i < npoints; i++){
+            // Erase graph data for current point
+            DRAW_VLine(_x + i, _y + 1, _ysize, _pal[0]);
+
+            for(uint8_t trace = 0; trace < _ntraces; trace++){
+                uint8_t data = _graph_data[(trace * _xsize) + tt];
+                if(data < _ysize){
+                    DRAW_Pixel(_x + i, _y + _ysize - data, _pal[trace + 2]);
+                }
+            }        
+            
+            if( (++tt) >= _xsize){
+                tt = 0;
+            }
+        }
+        setInvalid(false);
     }
 }
 
@@ -87,12 +88,16 @@ void BUIGraph::drawGraphAxis(void){
  * \param value : y value
  * \param flags : bits 7:4 not used, bits 3:0 trace index
  * */
-void BUIGraph::addPoint(uint8_t value, uint8_t flags){
-    uint8_t trace = flags & 0x0F;
-    if(value > _ysize){
-        value = _ysize;
+void BUIGraph::addPoint(uint8_t *value, uint8_t ntrace){
+    
+    for(uint8_t i = 0; i < ntrace; i++, value++){
+        if(*value > _ysize){
+            *value = _ysize;
+        }
+        _graph_data[(i * _xsize) + _head] = *value;
     }
-    _graph_data[(trace * _xsize) + _head] = value;
+    nextPoint();
+    setInvalid(true);
 }
 
 void BUIGraph::nextPoint(){
@@ -121,5 +126,6 @@ void BUIGraph::reset(){
     _tail = _head = 0;
     _scroll = false;
     memset(_graph_data, 0xCC , _xsize * _ntraces);
+    drawGraphAxis();
     setInvalid(true);
 }
