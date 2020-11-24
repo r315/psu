@@ -31,8 +31,8 @@ ViewPsu::ViewPsu():
              (const uint16_t[]){0x18E3, RED, GREEN, YELLOW})
 {
 
-    _wi_voltage.init(10, 100, MIN_VOLTAGE, MAX_VOLTAGE, voltageFormat);
-    _wi_current.init(100, 1000, MIN_CURRENT, MAX_CURRENT, currentFormat);
+    _wi_voltage.init(100, 100, MIN_VOLTAGE, MAX_VOLTAGE, voltageFormat);
+    _wi_current.init(10, 100, MIN_CURRENT, MAX_CURRENT, currentFormat);
     
     addWidget(&_wi_power);
     addWidget(&_wi_voltage);
@@ -70,9 +70,18 @@ void ViewPsu::updateGraph(void){
 }
 
 void ViewPsu::editVoltage(uint8_t dig){
-    _wi_voltage.edit(dig);
+    _wi_voltage.editValue(dig);
 }
 
 void ViewPsu::editCurrent(uint8_t dig){
-    _wi_current.edit(dig);
+    _wi_current.editValue(dig);
 }
+
+void ViewPsu::changeVoltage(uint8_t d){
+    _wi_voltage.changeValue(d);
+}
+
+void ViewPsu::changeCurrent(uint8_t d){
+    _wi_current.changeValue(d);
+}
+

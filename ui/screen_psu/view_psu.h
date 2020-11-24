@@ -19,6 +19,10 @@ public:
     void updateGraph(void);
     void editVoltage(uint8_t dig);
     void editCurrent(uint8_t dig);
+    void changeVoltage(uint8_t d);
+    void changeCurrent(uint8_t d);
+    uint32_t getVoltage(void){ return _wi_voltage.getValue();}
+    uint32_t getCurrent(void){ return _wi_current.getValue(); }
 private:
     BUIText _wi_power;
     BUIdro _wi_current;

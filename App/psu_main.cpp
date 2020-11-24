@@ -365,7 +365,7 @@ uint8_t count = 0;
 
     SET_ADCMGR_FLAG;
 
-    model_psu.updateOutPreset(app_getPreset());
+    model_psu.setOutPreset(app_getPreset());
 
     while(1){
         //app_checkButtons();

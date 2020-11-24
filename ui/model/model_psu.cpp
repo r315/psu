@@ -31,10 +31,6 @@ uint8_t ModelPsu::toggleOutputEnable(void){
     return app_toggleOutputEnable();
 }
 
-uint32_t ModelPsu::getOutVoltagePreset(void){
-    return _out_current_preset;
-}
-
-uint32_t ModelPsu::getOutCurrentPreset(void){
-    return _out_current_preset;
+uint8_t ModelPsu::getOutputEnable(void){
+    return app_isOutputEnabled();
 }

@@ -11,23 +11,29 @@ extern "C" {
 #include "model_psu.h"
 
 typedef enum{
-    PSU_IDLE = 0,
-    PSU_ENABLED,
+    PSU_INIT = 0,
     PSU_ENTER_IDLE,
-    PSU_INIT
+    PSU_IDLE,
+    PSU_ENABLED,
+    PSU_SET_V,
+    PSU_SET_I
 }statepsu_e;
 
 class PresenterPsu : public BUIPresenter{
-private:
-    ViewPsu *_view;
-    ModelPsu *_model;
-    statepsu_e _state;
 public:
     PresenterPsu() : _view(0){ _state = PSU_INIT;}
     void notify(void);
     void eventHandler(buievt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}
     void setView(BUIView *v){_view = (ViewPsu*)v;}
+private:
+    ViewPsu *_view;
+    ModelPsu *_model;
+    statepsu_e _state;
+    void stateEnabled(buievt_t *evt);
+    void stateIdle(buievt_t *evt);
+    void stateSetV(buievt_t *evt);
+    void stateSetI(buievt_t *evt);
 };
 
 #ifdef __cplusplus
