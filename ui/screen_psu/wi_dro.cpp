@@ -36,11 +36,16 @@ void BUIdro::update(void){
     }
 }
 
-void BUIdro::edit(int8_t dig){
-    if(dig == 0){
-        if(isFlagSet(BUI_FLAG_EDIT)){
-            clrFlag(BUI_FLAG_EDIT);
-        }
+/**
+ * @brief Enter/Exit edit value mode
+ * 
+ * \param dig : 0 exit edit mode
+ *              1 select next left digit
+ *             -1 select next right digit
+ * */
+void BUIdro::editValue(int8_t dig){
+    if(dig == 0){        
+        clrFlag(BUI_FLAG_EDIT);
         return;
     }
 
@@ -58,7 +63,11 @@ void BUIdro::edit(int8_t dig){
     }
 }
 
-void BUIdro::changeDigit(int8_t dt){        
+/**
+ * @brief Change current selected value digit
+ * \param dt : change amount
+ * */
+void BUIdro::changeValue(int8_t dt){        
     int32_t tmp = _value + (dt < 0 ?  -_pow : _pow);
 
     if(tmp <= _max_value && tmp >= _min_value){

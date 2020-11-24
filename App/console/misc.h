@@ -17,7 +17,8 @@ public:
     void init(void *params) { console = static_cast<Console*>(params); }
     CmdPwr () : ConsoleCommand("pwroff") { }
     char execute(void *ptr){
-        app_poweroff();
+        //app_saveState();
+        psu_poweroff();
         return CMD_OK;
     }
     void help(void){}

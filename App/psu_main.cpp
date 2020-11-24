@@ -39,6 +39,14 @@ static CmdDfu dfu;
 #endif
 static CmdStatus status;
 
+extern const uint8_t icon_out[];
+extern const uint8_t icon_psu[];
+extern const uint8_t icon_load[];
+extern const uint8_t icon_chr[];
+extern const uint8_t dro_unit_v[];
+extern const uint8_t dro_unit_a[];
+
+
 static ConsoleCommand *commands[] = {
     &help,
     &adc1,
@@ -125,6 +133,15 @@ static uint8_t app_calcCksum(uint8_t *src, uint16_t len){
 /**
  * PSU public control functions
  * */
+void psu_poweroff(void){
+    // TODO: Properly disable all peripherals (clock and pwr) and then power off
+    psu_setOutputEnable(FALSE);
+    psu_setLoadCurrent(0);
+    LCD_Bkl(OFF);
+    vTaskDelay(pdMS_TO_TICKS(POWER_OFF_DELAY));
+    SOFT_POWER_OFF;
+}
+
 void psu_setOutputEnable(uint8_t en){
     PSU_OE_SET(en);
 }
@@ -142,7 +159,7 @@ void app_setOutputEnable(uint8_t en){
 
 uint8_t app_toggleOutputEnable(void){
     app_setOutputEnable(!GET_OE_FLAG);
-    return !GET_OE_FLAG;
+    return GET_OE_FLAG;
 }
 
 void app_setLoadEnable(uint8_t en){
@@ -204,21 +221,12 @@ uint32_t psu_getUsbCurrent(void){
 /**
  * Application api
  * */
-void app_poweroff(void){
-    // TODO: Properly disable all peripherals (clock and pwr) and then power off
-    psu_setOutputEnable(FALSE);
-    psu_setLoadCurrent(0);
-    app_saveState();
-    LCD_Bkl(OFF);
-    vTaskDelay(pdMS_TO_TICKS(POWER_OFF_DELAY));
-    SOFT_POWER_OFF;
-}
-
 void app_processPowerButton(void){
     static uint16_t pwr_off_counter = POWER_OFF_COUNT;
     if(GET_PWR_BTN){
         if(--pwr_off_counter == 0){
-            app_poweroff();
+            app_saveState();
+            psu_poweroff();
     }
     }else{
         pwr_off_counter = POWER_OFF_COUNT;
@@ -262,42 +270,6 @@ void app_setPreset(preset_t pre){
 void app_setPresetIdx(uint8_t idx){
     psu.preset_idx = idx;
     app_applyPreset();
-}
-
-void app_selectScreen(uint8_t screen_idx){
-    
-    if(screen_idx >= SCREEN_NUM){
-        return;
-    }
-    psu.screen_idx = screen_idx;    
-    //(screens[screen_idx])->init();
-    // Mode clears screen, so must redraw output icon,
-    // only if active
-    app_setOutputEnable(GET_OE_FLAG);
-    app_setLoadEnable(GET_LD_FLAG);
-}
-
-static void app_cycleMode(void){
-    uint8_t screen_idx = psu.screen_idx + 1;
-    
-    if(screen_idx == SCREEN_NUM ){
-        screen_idx = 0;
-    }
-    
-    app_selectScreen(screen_idx);
-}
-
-/**
- * @brief Read buttons connected to I2C io expander
- * */
-void app_checkButtons(){
-    BUTTON_Read();
-    if(BUTTON_GetEvents() == BUTTON_PRESSED){
-        switch(BUTTON_VALUE){
-            case BUTTON_MODE: app_cycleMode(); break;
-            case BUTTON_OUT: app_setOutputEnable(!GET_OE_FLAG); break;
-        }
-    }
 }
 
 /**
