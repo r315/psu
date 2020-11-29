@@ -16,10 +16,11 @@
 #include "cmdeeprom.h"
 
 #include "bui.h"
-#include "view_psu.h"
 #include "model_psu.h"
 #include "presenter_psu.h"
 #include "presenter_preset.h"
+#include "presenter_charger.h"
+#include "presenter_load.h"
 
 static psu_t psu;
 
@@ -348,14 +349,20 @@ void tskBui(void *ptr){
 
     ViewPsu view_psu;
     ViewPreset view_preset;
+    ViewCharger view_charger;
+    ViewLoad view_load;
 
     PresenterPsu presenter_psu(view_psu);
     PresenterPreset presenter_preset(view_preset);
+    PresenterCharger presenter_charger(view_charger);
+    PresenterLoad presenter_load(view_load);
 
     BUI bui(model_psu);
    
     bui.createScreen((BUIPresenter*)&presenter_psu);
     bui.createScreen((BUIPresenter*)&presenter_preset);
+    bui.createScreen((BUIPresenter*)&presenter_charger);
+    bui.createScreen((BUIPresenter*)&presenter_load);
     
     LCD_Bkl(TRUE);
 

@@ -11,11 +11,11 @@ extern "C" {
 #include "model_psu.h"
 
 typedef enum{
-    INIT = 0,
-    ENTER_IDLE,
-    IDLE,
-    EXIT,
-    UPD,
+    PRE_INIT = 0,
+    PRE_ENTER_IDLE,
+    PRE_IDLE,
+    PRE_EXIT,
+    PRE_UPD,
 }statepreset_e;
 
 
@@ -23,7 +23,7 @@ class ViewPreset;
 
 class PresenterPreset : public BUIPresenter{
 public:
-    PresenterPreset(ViewPreset &v) : _view(v),_state(INIT){}
+    PresenterPreset(ViewPreset &v) : _view(v),_state(PRE_INIT){}
     void update(void);
     void eventHandler(buievt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}

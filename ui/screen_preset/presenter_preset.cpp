@@ -7,24 +7,24 @@
 
 void PresenterPreset::update(void){
     switch(_state){
-        case INIT:
+        case PRE_INIT:
             _view.select(_model->getPresetIdx());
             _view.showPreset(_model->getPreset(_view.getSelected()));
-            _state = IDLE;
+            _state = PRE_IDLE;
             break;
 
-        case IDLE:
+        case PRE_IDLE:
             break;       
         
-        case EXIT:
+        case PRE_EXIT:
             _model->setOutPresetIdx(_view.getSelected());
             _view.suspend();
-            _state = INIT;
+            _state = PRE_INIT;
             break;
 
-        case UPD:
+        case PRE_UPD:
             _view.showPreset(_model->getPreset(_view.getSelected()));
-            _state = IDLE;
+            _state = PRE_IDLE;
             break;
 
         default:
@@ -38,13 +38,13 @@ void PresenterPreset::eventHandler(buievt_t *evt){
         return;
     }
 
-    _state = UPD;
+    _state = PRE_UPD;
 
     switch(evt->key){
         case BUTTON_MODE:
             // switch screen
             _view.suspend();
-            _state = IDLE;
+            _state = PRE_INIT;
             break;
 
         case BUTTON_UP:
@@ -64,7 +64,7 @@ void PresenterPreset::eventHandler(buievt_t *evt){
             break;
 
         case BUTTON_SET:
-            _state = EXIT;
+            _state = PRE_EXIT;
             break;
 
         default:
