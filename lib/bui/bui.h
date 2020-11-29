@@ -183,6 +183,7 @@ public:
     void handler(void *ptr);
 protected:
 private:
+    void activateScreen(buiscreen_t *scr);
     struct list_node _scrlist;
     buiscreen_t *_screen;
     BUIModel &_model;

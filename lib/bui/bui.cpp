@@ -86,13 +86,25 @@ uint8_t BUI::createScreen(BUIPresenter *presenter){
     return idx;
 }
 
+void BUI::activateScreen(buiscreen_t *scr){
+    scr->view->init();
+    scr->presenter->setModel(&_model);
+    _model.setPresenter(scr->presenter);
+}
+
 void BUI::setActiveScreen(uint8_t idx){
-    /*struct list_node *head = &_scrlist;
+    struct list_node *head = &_scrlist;
+
     while(idx--){
         head = head->next;
+        if(head == NULL){
+            return;
+        }
     }
 
-    _screen = (buiscreen_t*)head->elem;*/
+    _screen = (buiscreen_t *)head->elem;
+
+    activateScreen(_screen);
 }
 
 void BUI::ActivateNextScreen(void){
@@ -112,9 +124,7 @@ void BUI::ActivateNextScreen(void){
         _screen = (buiscreen_t *)_scrlist.elem;
     }
 
-    _screen->view->init();
-    _screen->presenter->setModel(&_model);
-    _model.setPresenter(_screen->presenter);
+    activateScreen(_screen);
 }
 
 uint16_t listInsert(struct list_node *head, void *elem){
