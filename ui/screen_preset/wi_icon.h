@@ -17,6 +17,8 @@ public:
     void draw(void);
     uint8_t isSelected(void){ return isFlagSet(BUI_FLAG_SELECTED); }
     void setPal(const uint16_t *pal){ _pal = pal;}
+
+    void select(uint8_t sel){ if(sel) setFlag(BUI_FLAG_SELECTED); else clrFlag(BUI_FLAG_SELECTED); setInvalid(true);}
 private:
     const uint16_t *_pal;
 };
