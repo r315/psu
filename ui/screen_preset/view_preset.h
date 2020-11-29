@@ -16,10 +16,14 @@ public:
     ~ViewPreset(){}
     void init(void);
     void draw(void);
+    void select(uint8_t idx);
+    uint8_t getSelected(void);
+    void showPreset(preset_t pre);
 private:
     BUIicon _wi_ico[MAX_PRESETS];
     BUIText _wi_pre_v;
     BUIText _wi_pre_i;
+    uint8_t _selected;
 };
 
 #ifdef __cplusplus

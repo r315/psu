@@ -20,6 +20,9 @@ ViewPreset::ViewPreset(): _wi_pre_v(PRESET_INFO1_POS), _wi_pre_i(PRESET_INFO2_PO
 
     addWidget(&_wi_pre_v);
     addWidget(&_wi_pre_i);
+    _wi_pre_v.setPal((const uint16_t []){BLACK, YELLOW});
+    _wi_pre_i.setPal((const uint16_t []){BLACK, YELLOW});
+    _selected = 0;
 }
 
 void ViewPreset::init(void){
@@ -31,7 +34,25 @@ void ViewPreset::init(void){
 
 void ViewPreset::draw(void){
     if(isInvalid()){
-        DRAW_FillRect(0, 0, LCD_W, LCD_H, GREEN);
+        DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
         setInvalid(false);
     }
+}
+
+void ViewPreset::select(uint8_t idx){
+    _wi_ico[_selected].select(false);
+    _selected = idx;
+    _wi_ico[_selected].select(true);
+}
+
+uint8_t ViewPreset::getSelected(void){
+    return _selected;
+}
+
+void ViewPreset::showPreset(preset_t pre){
+    char out[5];
+    xsprintf(out, "%.1fV ", pre.v/1000.0f);
+    _wi_pre_v.setText(out);
+    xsprintf(out, "%.2fA ", pre.i/1000.0f);
+    _wi_pre_i.setText(out);
 }
