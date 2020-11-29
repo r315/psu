@@ -25,15 +25,16 @@ void BUI::handler(void *ptr){
     }
 
     if(view->isSuspending()){
-        ActivateNextScreen();
-        view->clrFlag(BUI_FLAG_SUSPEND);
         dbg_printf("Suspending\n");
-
-        //change presenter on model
+        view->clrFlag(BUI_FLAG_SUSPEND);
+        ActivateNextScreen();
         return;
     }
 
-    // Check invalidated elements
+    // Draw view elements
+    view->draw();
+
+    // Draw invalidated elements
     struct list_node *node = view->getWidgets();
 
     while(node != NULL){
@@ -43,7 +44,8 @@ void BUI::handler(void *ptr){
         }
         node = node->next;            
     }
-    // update display    
+    // update model
+    _model.tick();
 }
 
 BUI::BUI(BUIModel &m) : _model(m){
@@ -59,7 +61,7 @@ BUI::BUI(BUIModel &m) : _model(m){
  * \param screen : poiter to screen to be addded
  * \return : index given to the screen
  * */
-uint8_t BUI::createScreen(BUIView *view, BUIPresenter *presenter){
+uint8_t BUI::createScreen(BUIPresenter *presenter){
 
     buiscreen_t *scr = (buiscreen_t*)bui_malloc(sizeof(buiscreen_t));
 
@@ -67,10 +69,9 @@ uint8_t BUI::createScreen(BUIView *view, BUIPresenter *presenter){
         return -1;
     }
 
-    scr->view = view;
+    scr->view = &presenter->getView();
     scr->presenter = presenter;
 
-    presenter->setView(view);
     presenter->setModel(&_model);
     
     uint8_t idx = listInsert(&_scrlist, (void *)scr);
@@ -79,6 +80,7 @@ uint8_t BUI::createScreen(BUIView *view, BUIPresenter *presenter){
     if(_screen == NULL){
         _model.setPresenter(presenter);
         _screen = scr;
+        _screen->view->init();
     }
 
     return idx;
@@ -94,12 +96,25 @@ void BUI::setActiveScreen(uint8_t idx){
 }
 
 void BUI::ActivateNextScreen(void){
+
+    // Search node
+    struct list_node *head = &_scrlist;
+    while(head->elem != _screen){
+        if(head->next == NULL){
+            return;
+        }
+        head = head->next;
+    }
     
-    /*if(_screen->next != NULL){
-        _screen = _screen->next;
+    if(head->next != NULL){
+        _screen = (buiscreen_t *)head->next->elem;
     }else{
-        _screen = &_scrlist;
-    }*/
+        _screen = (buiscreen_t *)_scrlist.elem;
+    }
+
+    _screen->view->init();
+    _screen->presenter->setModel(&_model);
+    _model.setPresenter(_screen->presenter);
 }
 
 uint16_t listInsert(struct list_node *head, void *elem){

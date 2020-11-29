@@ -43,19 +43,28 @@ typedef struct buievt{
 
 
 class BUIWidget{
-private:
-    uint8_t _flags;
-protected:
-    uint16_t _x, _y;
-    void setFlag(uint8_t flag){this->_flags |= flag;}
-    void clrFlag(uint8_t flag){this->_flags &= ~flag;}
 public:
     BUIWidget(uint16_t x, uint16_t y){ _x = x; _y = y; _flags = BUI_FLAG_VISIBLE;}
-    uint8_t isVisible(){ return !!(this->_flags & BUI_FLAG_VISIBLE); }
-    uint8_t isInvalid(){ return !!(this->_flags & BUI_FLAG_INVALID); }
     uint8_t isFlagSet(uint8_t flag){return !!(this->_flags & flag);}
+    uint8_t isVisible(){ return isFlagSet(BUI_FLAG_VISIBLE); }
+    uint8_t isInvalid(){ return isFlagSet(BUI_FLAG_INVALID); }
     void setInvalid(uint8_t inv){ if(inv) setFlag(BUI_FLAG_INVALID); else clrFlag(BUI_FLAG_INVALID);}
+    void setFlag(uint8_t flag){this->_flags |= flag;}
+    void clrFlag(uint8_t flag){this->_flags &= ~flag;}
+    
     virtual void draw(void){}
+    static void invalidateList(list_node *head){
+        while(head != NULL){
+            ((BUIWidget*)head->elem)->setInvalid(true);
+            head = head->next;
+        }
+    }
+
+    void setPos(uint16_t x, uint16_t y){_x = x; _y = y;}
+protected:
+    uint16_t _x, _y;
+private:
+    uint8_t _flags;
 };
 
 class BUIText : public BUIWidget {
@@ -123,16 +132,18 @@ public:
         _widget.elem = NULL;  
         _widget.next = NULL;
     }
-    virtual void init(){}    
+    virtual void init(void){}
+    virtual void draw(void){}
     uint8_t addWidget(BUIWidget *wi){ return listInsert(&_widget, (void *)wi);}
     list_node *getWidgets(void){ return &_widget; }
-    uint8_t isVisible(){ return !!(this->_flags & BUI_FLAG_VISIBLE); }
-    uint8_t isInvalid(){ return !!(this->_flags & BUI_FLAG_INVALID); }
-    uint8_t isSuspending(){ return !!(this->_flags & BUI_FLAG_SUSPEND); }
+    uint8_t isFlagSet(uint8_t flag){return !!(this->_flags & flag);}
+    uint8_t isInvalid(){ return isFlagSet(BUI_FLAG_INVALID); }
+    uint8_t isSuspending(){ return isFlagSet(BUI_FLAG_SUSPEND); }
+    void setInvalid(uint8_t inv){ if(inv) setFlag(BUI_FLAG_INVALID); else clrFlag(BUI_FLAG_INVALID);}
 
     void setFlag(uint8_t flag){this->_flags |= flag;}
     void clrFlag(uint8_t flag){this->_flags &= ~flag;}
-
+    void suspend(void){setFlag(BUI_FLAG_SUSPEND);}
 private:    
     struct list_node _widget;
     uint8_t _flags;
@@ -143,14 +154,15 @@ class BUIModel;
 
 class BUIPresenter{
 public:
-    virtual void notify(void);
+    virtual void update(void);
     virtual void eventHandler(buievt_t *evt);
     virtual void setModel(BUIModel *m);
-    virtual void setView(BUIView *v);
+    virtual BUIView &getView(void);
 };
 
 class BUIModel{
 public:
+    virtual void tick(void){}
     void setPresenter(BUIPresenter *pre){ _presenter = pre;}
 protected:
     BUIPresenter *_presenter;
@@ -164,7 +176,7 @@ typedef struct bui_screen{
 class BUI{    
 public:
     BUI(BUIModel &m);
-    uint8_t createScreen(BUIView *view, BUIPresenter *pre);
+    uint8_t createScreen(BUIPresenter *pre);
     void setActiveScreen(uint8_t idx);
     void ActivateNextScreen(void);
     void handler(void *ptr);
