@@ -23,15 +23,18 @@ void PresenterPsu::update(void){
 
         case PSU_ENABLED:
         {
-            uint16_t v = _model->getOutVoltage();
-            uint16_t i = _model->getOutCurrent();
-            uint32_t p = (v/1000) * i;
-            _view.updateVoltage(v);
-            _view.updateCurrent(i);
-            _view.updatePower(p);
-            _view.updateGraph();
+            if(_model->isFlagSet(MODEL_FLAG_APP)){
+                uint16_t v = _model->getOutVoltage();
+                uint16_t i = _model->getOutCurrent();
+                uint32_t p = (v/1000) * i;
+                _view.updateVoltage(v);
+                _view.updateCurrent(i);
+                _view.updatePower(p);
+                _view.updateGraph();
+            }
             break;
         }
+        
         default:
             break;
     }
@@ -71,6 +74,7 @@ void PresenterPsu::stateIdle(buievt_t *evt){
         case BUTTON_MODE:
             // switch screen
             _view.suspend();
+            _state = PSU_INIT;
             break;
 
         case BUTTON_UP:
@@ -137,6 +141,7 @@ void PresenterPsu::stateSetV(buievt_t *evt){
             break;
 
         case BUTTON_SET:
+            // this call is not thread safe
             _model->setOutVoltagePreset(_view.getVoltage());
         case BUTTON_MODE:
             _view.editVoltage(0);
