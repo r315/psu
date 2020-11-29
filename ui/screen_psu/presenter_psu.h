@@ -19,15 +19,17 @@ typedef enum{
     PSU_SET_I
 }statepsu_e;
 
+class ViewPsu;
+
 class PresenterPsu : public BUIPresenter{
 public:
-    PresenterPsu() : _view(0){ _state = PSU_INIT;}
-    void notify(void);
+    PresenterPsu(ViewPsu &v) : _view(v){ _state = PSU_INIT;}
+    void update(void);
     void eventHandler(buievt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}
-    void setView(BUIView *v){_view = (ViewPsu*)v;}
+    BUIView &getView(void){ return (BUIView&)_view;}
 private:
-    ViewPsu *_view;
+    ViewPsu &_view;
     ModelPsu *_model;
     statepsu_e _state;
     void stateEnabled(buievt_t *evt);

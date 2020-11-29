@@ -40,8 +40,19 @@ ViewPsu::ViewPsu():
     addWidget(&_wi_graph);
 }
 
-ViewPsu::~ViewPsu(){
-    
+void ViewPsu::init(void){
+    _wi_graph.setFlag(BUI_FLAG_REDRAW);
+    // Invalidate view
+    setInvalid(true);
+    // Invalidate widgets
+    BUIWidget::invalidateList(getWidgets());
+}
+
+void ViewPsu::draw(){
+    if(isInvalid()){
+        DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
+        setInvalid(false);
+    }
 }
 
 void ViewPsu::updateVoltage(uint32_t mv){    
@@ -54,7 +65,7 @@ void ViewPsu::updateCurrent(uint32_t ma){
 
 void ViewPsu::updatePower(int32_t mw){
     char out[5];
-    if(mw >= 0){
+    if(mw >= 0 && mw < 100000){
         xsprintf(out,"%02u.%uW", mw/1000, (mw/100)%10);
     }else{
         xsprintf(out,"--.-W");

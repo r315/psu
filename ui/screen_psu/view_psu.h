@@ -13,6 +13,8 @@ class ViewPsu : public BUIView{
 public:
     ViewPsu();
     ~ViewPsu();
+    void init(void);
+    void draw(void);
     void updateVoltage(uint32_t mv);
     void updateCurrent(uint32_t ma);
     void updatePower(int32_t mw);
