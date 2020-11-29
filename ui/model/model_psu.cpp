@@ -14,17 +14,18 @@ ModelPsu::ModelPsu(){
     }
 }
 
+void ModelPsu::init(void){
+    _out_preset = app_getCurrentPreset();
+    _preset_idx = app_getCurrentPresetIdx();
+}
+
 /**
  * called from bui task after every frame
  * */
 void ModelPsu::tick(void){
     if(xSemaphoreTake(access_data, 0) == pdPASS){
-        // check if app updated data
-        if(_flags & MODEL_FLAG_APP){
-            _presenter->update();
-            _flags &= ~MODEL_FLAG_APP;
-        }
-        // call presenter methods
+        // Thread safe call
+        _presenter->update();
         xSemaphoreGive(access_data);
     }
 }
@@ -43,13 +44,21 @@ void ModelPsu::update(){
         // Notify for new data
         _flags |= MODEL_FLAG_APP;
 
-        // Check if data to app has changed
-        // and update
-        if(_flags & MODEL_FLAG_PRE){
+        // Check if preset value has changed
+        if(_flags & MODEL_FLAG_PRESET){
             app_setPreset(_out_preset);
-            _flags &= ~MODEL_FLAG_PRE;
+            _flags &= ~MODEL_FLAG_PRESET;
         }
-        // Clear flags
+
+        // Check if preset index has changed
+        if(_flags & MODEL_FLAG_PRESET_IDX){
+            // update local preset
+            _out_preset = app_getPreset(_preset_idx);
+            // Set new preset
+            app_setPresetByIdx(_preset_idx);
+            _flags &= ~MODEL_FLAG_PRESET_IDX;
+        }
+
         xSemaphoreGive(access_data);
     }
 }
@@ -74,7 +83,29 @@ uint32_t ModelPsu::getUsbCurrent(void){
 uint8_t ModelPsu::toggleOutputEnable(void){
     return app_toggleOutputEnable();
 }
-
 uint8_t ModelPsu::getOutputEnable(void){
     return app_isOutputEnabled();
+}
+
+uint8_t ModelPsu::getPresetIdx(void){    
+    return _preset_idx;
+}
+preset_t ModelPsu::getPreset(uint8_t idx){
+    return app_getPreset(idx);
+}
+void ModelPsu::setOutPreset(preset_t pre){
+    _out_preset = pre;
+    _flags |= MODEL_FLAG_PRESET;
+}
+void ModelPsu::setOutVoltagePreset(uint32_t v){
+    _out_preset.v = v; 
+    _flags |= MODEL_FLAG_PRESET;
+}
+void ModelPsu::setOutCurrentPreset(uint32_t i){
+    _out_preset.i = i; 
+    _flags |= MODEL_FLAG_PRESET;
+}
+void ModelPsu::setOutPresetIdx(uint8_t idx){
+    _preset_idx = idx;
+    _flags |= MODEL_FLAG_PRESET_IDX;
 }

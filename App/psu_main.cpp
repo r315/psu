@@ -5,9 +5,6 @@
 #include "task.h"
 
 #include "psu.h"
-#include "draw.h"
-#include "graph.h"
-#include "text.h"
 
 #include "misc.h"
 #include "cmdhelp.h"
@@ -250,11 +247,15 @@ uint8_t app_isOutputEnabled(void){
     return  GET_OE_FLAG;
 }
 
-preset_t app_getPreset(void){
+preset_t app_getCurrentPreset(void){
     return psu.preset_list[psu.preset_idx];
 }
 
-uint8_t app_getPresetIdx(void){
+preset_t app_getPreset(uint8_t idx){
+    return psu.preset_list[idx];
+}
+
+uint8_t app_getCurrentPresetIdx(void){
     return psu.preset_idx;
 }
 
@@ -272,7 +273,7 @@ void app_setPreset(preset_t pre){
     app_applyPreset();
 }
 
-void app_setPresetIdx(uint8_t idx){
+void app_setPresetByIdx(uint8_t idx){
     psu.preset_idx = idx;
     app_applyPreset();
 }
@@ -375,7 +376,7 @@ uint8_t count = 0;
 
     SET_ADCMGR_FLAG;
 
-    model_psu.setOutPreset(app_getPreset());
+    model_psu.init();
 
     while(1){
         //app_checkButtons();

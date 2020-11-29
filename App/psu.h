@@ -194,14 +194,22 @@ void app_selectScreen(uint8_t screen_idx);
  * 
  * \return : preset_t with current and voltage setting
  * */
-preset_t app_getPreset(void);
+preset_t app_getCurrentPreset(void);
 
 /** 
  * @brief Get current preset index
  * 
  * \return : index
  * */
-uint8_t app_getPresetIdx(void);
+uint8_t app_getCurrentPresetIdx(void);
+
+/**
+ * @brief Get preset at index
+ * 
+ * \param idx : index of preset
+ * \return : preset_t 
+ * */
+preset_t app_getPreset(uint8_t idx);
 
 /**
  * @brief Get list of all presets
@@ -211,7 +219,7 @@ uint8_t app_getPresetIdx(void);
 preset_t *app_getPresetList(void);
 
 /**
- * @brief Update current preset
+ * @brief Update current selected preset
  * 
  * \param preset : preset with new values
  * */
@@ -222,7 +230,7 @@ void app_setPreset(preset_t preset);
  * 
  * \param idx : new index
  * */
-void app_setPresetIdx(uint8_t idx);
+void app_setPresetByIdx(uint8_t idx);
 
 /**
  * @brief enables/disables adc manager

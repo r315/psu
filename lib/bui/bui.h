@@ -163,6 +163,7 @@ public:
 class BUIModel{
 public:
     virtual void tick(void){}
+    virtual void init(void){}
     void setPresenter(BUIPresenter *pre){ _presenter = pre;}
 protected:
     BUIPresenter *_presenter;
