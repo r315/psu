@@ -223,9 +223,13 @@ uint32_t psu_getUsbCurrent(void){
  * */
 void app_processPowerButton(void){
     static uint16_t pwr_off_counter = POWER_OFF_COUNT;
+
+    //DBG_PRINT("ADC2 :%x\n", ADC2_Read(ADC_PWR_SW_CH));
+
     if(GET_PWR_BTN){
         if(--pwr_off_counter == 0){
-            app_saveState();
+            DBG_PRINT("Powering off...\n");
+            //app_saveState();
             psu_poweroff();
     }
     }else{
@@ -436,8 +440,6 @@ extern "C" void app_setup(void){
 
     LCD_Init();
     LCD_Rotation(LCD_LANDSCAPE);
-
-    TEXT_Init();
 
     EEPROM_Init();
 
