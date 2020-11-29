@@ -26,6 +26,8 @@ BUIGraph::BUIGraph(uint8_t x, uint8_t y, uint8_t xsz, uint8_t ysz, uint8_t ntrac
     _xsize = xsz - 1;
     _ysize = ysz;
     _ntraces = ntraces;
+
+    setFlag(BUI_FLAG_REDRAW);
     reset();
 }
 
@@ -49,6 +51,11 @@ void BUIGraph::draw(){
     if(isInvalid()){
         uint8_t tt = _tail;
         uint8_t npoints;
+
+        if(isFlagSet(BUI_FLAG_REDRAW)){
+            drawGraphAxis();
+            clrFlag(BUI_FLAG_REDRAW);
+        }
 
         if(_scroll){
             npoints = _xsize;
@@ -125,7 +132,7 @@ void BUIGraph::nextPoint(){
 void BUIGraph::reset(){
     _tail = _head = 0;
     _scroll = false;
-    memset(_graph_data, 0xCC , _xsize * _ntraces);
-    drawGraphAxis();
+    // Set all traces above maximum for not to be drawn
+    memset(_graph_data, _ysize + 1, _xsize * _ntraces);
     setInvalid(true);
 }

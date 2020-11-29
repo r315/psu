@@ -24,10 +24,12 @@ extern "C" {
 #define bui_createTask              xTaskCreate
 #define BUI_HEAP                    512
 
-#define BUI_FLAG_INVALID            (1 << 1)
 #define BUI_FLAG_VISIBLE            (1 << 0)
+#define BUI_FLAG_INVALID            (1 << 1)
 #define BUI_FLAG_SUSPEND            (1 << 2)
-#define BUI_FLAG_EDIT           (1 << 3)
+#define BUI_FLAG_EDIT               (1 << 3)
+#define BUI_FLAG_SELECTED           (1 << 4)
+#define BUI_FLAG_REDRAW             (1 << 5)
 
 struct list_node{
     void *elem;
