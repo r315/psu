@@ -134,6 +134,7 @@ C_INCLUDES =  \
 -I$(BUI_DIR) \
 -I$(UI_DIR)/model \
 -I$(UI_DIR)/screen_psu \
+-I$(UI_DIR)/screen_preset \
 
 ######################################
 # firmware library

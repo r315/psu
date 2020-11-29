@@ -10,6 +10,7 @@ extern "C" {
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 
 #include "board.h"
 

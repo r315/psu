@@ -22,6 +22,7 @@
 #include "view_psu.h"
 #include "model_psu.h"
 #include "presenter_psu.h"
+#include "presenter_preset.h"
 
 static psu_t psu;
 
@@ -345,10 +346,15 @@ void tskBui(void *ptr){
     static TickType_t xLastWakeTime;
 
     ViewPsu view_psu;
-    PresenterPsu presenter_psu;
+    ViewPreset view_preset;
+
+    PresenterPsu presenter_psu(view_psu);
+    PresenterPreset presenter_preset(view_preset);
+
     BUI bui(model_psu);
    
-    bui.createScreen((BUIView*)&view_psu, (BUIPresenter*)&presenter_psu);
+    bui.createScreen((BUIPresenter*)&presenter_psu);
+    bui.createScreen((BUIPresenter*)&presenter_preset);
     
     LCD_Bkl(TRUE);
 
