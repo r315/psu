@@ -32,7 +32,6 @@ void PresenterPreset::tick(void){
         
         case PRE_EXIT:
             _model->setOutPresetIdx(_view->getSelected());
-            _view->suspend();
             _state = PRE_INIT;
             break;
 
@@ -44,6 +43,10 @@ void PresenterPreset::tick(void){
         default:
             break;
     }
+}
+
+void PresenterPreset::update(void){
+
 }
 
 uint8_t PresenterPreset::eventHandler(buievt_t *evt){

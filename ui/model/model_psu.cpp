@@ -34,13 +34,8 @@ void ModelPsu::tick(void){
  * Called from application task
  * */
 void ModelPsu::update(){
-    if(xSemaphoreTake(access_data, 0) == pdPASS){
-        // Obtain data
-        _out_voltage = psu_getOutputVoltage();
-        _out_current = psu_getOutputCurrent();
-        _load_voltage = psu_getLoadVoltage();
-        _load_current = psu_getLoadCurrent();
-        _usb_current = psu_getUsbCurrent();
+    if(xSemaphoreTake(access_data, 0) == pdPASS){        
+        _presenter->update();
         // Notify for new data
         _flags |= MODEL_FLAG_APP;
 
@@ -108,4 +103,20 @@ void ModelPsu::setOutCurrentPreset(uint32_t i){
 void ModelPsu::setOutPresetIdx(uint8_t idx){
     _preset_idx = idx;
     _flags |= MODEL_FLAG_PRESET_IDX;
+}
+
+void ModelPsu::updateOutputVoltage(void){
+    _out_voltage = psu_getOutputVoltage();
+}
+void ModelPsu::updateOutputCurrent(void){
+    _out_current = psu_getOutputCurrent();
+}
+void ModelPsu::updateLoadVoltage(void){
+    _load_voltage = psu_getLoadVoltage();
+}
+void ModelPsu::updateLoadCurrent(void){
+    _load_current = psu_getLoadCurrent();
+}
+void ModelPsu::updateUsbCurrent(void){
+    _usb_current = psu_getUsbCurrent();
 }

@@ -25,6 +25,7 @@ public:
     void init(void);
     void destroy(void);
     void tick(void);
+    void update(void);
     uint8_t eventHandler(buievt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}   
     BUIView *getView(void){ return (BUIView*)_view;}

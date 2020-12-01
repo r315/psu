@@ -158,6 +158,7 @@ public:
     virtual void init(void){}
     virtual void destroy(void){}
     virtual void tick(void);
+    virtual void update(void);
     virtual uint8_t eventHandler(buievt_t *evt);
     virtual void setModel(BUIModel *m){_model = m;}
     virtual BUIView *getView(void){ return _view;};

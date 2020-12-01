@@ -20,6 +20,10 @@ void PresenterLoad::tick(void){
 
 }
 
+void PresenterLoad::update(void){
+
+}
+
 uint8_t PresenterLoad::eventHandler(buievt_t *evt){
     // user input will end here
     if(evt->type != BUTTON_PRESSED){

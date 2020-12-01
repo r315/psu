@@ -55,6 +55,12 @@ void PresenterPsu::tick(void){
     }
 }
 
+void PresenterPsu::update(void){
+    // update model data
+    _model->updateOutputVoltage();
+    _model->updateOutputCurrent();
+}
+
 uint8_t PresenterPsu::eventHandler(buievt_t *evt){
 
     // user input will end here

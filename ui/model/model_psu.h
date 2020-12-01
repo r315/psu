@@ -40,6 +40,12 @@ public:
     void setOutPreset(preset_t pre);
     void setOutPresetIdx(uint8_t idx);
 
+    void updateOutputVoltage(void);
+    void updateOutputCurrent(void);
+    void updateLoadVoltage(void);
+    void updateLoadCurrent(void);
+    void updateUsbCurrent(void);
+
     uint8_t isFlagSet(uint8_t flag){return !!(this->_flags & flag);}
 private:
     uint32_t _out_voltage;

@@ -20,6 +20,10 @@ void PresenterCharger::tick(void){
 
 }
 
+void PresenterCharger::update(void){
+
+}
+
 uint8_t PresenterCharger::eventHandler(buievt_t *evt){
     // user input will end here
     if(evt->type != BUTTON_PRESSED){
