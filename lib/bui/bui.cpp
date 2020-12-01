@@ -125,12 +125,14 @@ uint16_t listInsert(struct list_node *head, void *elem){
         return idx;        
     }
 
+    idx++;
+
     struct list_node *node = (struct list_node*)bui_malloc(sizeof(struct list_node));
 
     if(node == NULL){
         // Unable to allocate
-        return 0;
-    }   
+        return 0xFFFF;
+    }
 
     node->elem = (struct list_node*)elem;
     node->next = NULL;
