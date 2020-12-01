@@ -472,10 +472,17 @@ extern "C" void app_setup(void){
     
     startTask(tskCmdLine, "CLI", &stdio_ops, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
     startTask(tskPsu, "PSU", NULL, configMINIMAL_STACK_SIZE, PRIORITY_LOW + 1);
-    startTask(tskBui, "BUI", NULL, configMINIMAL_STACK_SIZE * 8, PRIORITY_LOW);
+    startTask(tskBui, "BUI", NULL, configMINIMAL_STACK_SIZE * 9, PRIORITY_LOW);
 }
 
 extern "C" void vApplicationMallocFailedHook( void ){
     dbg_printf("Memory allocation fail\n");
 }
 
+void *operator new(size_t size){
+    return pvPortMalloc(size);
+}
+
+void operator delete(void *ptr){
+    vPortFree(ptr);
+}
