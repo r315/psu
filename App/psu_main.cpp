@@ -347,22 +347,17 @@ ModelPsu model_psu;
 void tskBui(void *ptr){
     static TickType_t xLastWakeTime;
 
-    ViewPsu view_psu;
-    ViewPreset view_preset;
-    ViewCharger view_charger;
-    ViewLoad view_load;
-
-    PresenterPsu presenter_psu(&view_psu);
-    PresenterPreset presenter_preset(&view_preset);
-    PresenterCharger presenter_charger(&view_charger);
-    PresenterLoad presenter_load(&view_load);
+    BUIPresenter *presenter_psu = new PresenterPsu();
+    BUIPresenter *presenter_preset = new PresenterPreset();
+    BUIPresenter *presenter_charger = new PresenterCharger();
+    BUIPresenter *presenter_load = new PresenterLoad();
 
     BUI bui(model_psu);
    
-    bui.createScreen((BUIPresenter*)&presenter_psu);
-    bui.createScreen((BUIPresenter*)&presenter_preset);
-    bui.createScreen((BUIPresenter*)&presenter_charger);
-    bui.createScreen((BUIPresenter*)&presenter_load);
+    bui.addPresenter(presenter_psu);
+    bui.addPresenter(presenter_preset);
+    bui.addPresenter(presenter_charger);
+    bui.addPresenter(presenter_load);
     
     LCD_Bkl(TRUE);
 
@@ -472,17 +467,19 @@ extern "C" void app_setup(void){
     
     startTask(tskCmdLine, "CLI", &stdio_ops, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
     startTask(tskPsu, "PSU", NULL, configMINIMAL_STACK_SIZE, PRIORITY_LOW + 1);
-    startTask(tskBui, "BUI", NULL, configMINIMAL_STACK_SIZE * 9, PRIORITY_LOW);
+    startTask(tskBui, "BUI", NULL, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
 }
 
 extern "C" void vApplicationMallocFailedHook( void ){
-    dbg_printf("Memory allocation fail\n");
+    DBG_PRINT("Memory allocation fail\n");
 }
 
 void *operator new(size_t size){
+    DBG_PRINT("Allocating: %u bytes\n", size);
     return pvPortMalloc(size);
 }
 
 void operator delete(void *ptr){
     vPortFree(ptr);
+    DBG_PRINT("Free mem: %u bytes\n", xPortGetFreeHeapSize());
 }

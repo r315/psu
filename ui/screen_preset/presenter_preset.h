@@ -23,7 +23,9 @@ class ViewPreset;
 
 class PresenterPreset : public BUIPresenter{
 public:
-    PresenterPreset(ViewPreset *v) : _view(v),_state(PRE_INIT){}
+    PresenterPreset() : _view(NULL),_state(PRE_INIT){}
+    void init(void);
+    void destroy(void);
     void update(void);
     uint8_t eventHandler(buievt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}

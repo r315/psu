@@ -21,7 +21,9 @@ typedef enum{
 
 class PresenterCharger : public BUIPresenter{
 public:
-    PresenterCharger(ViewCharger *v) : _view(v), _state(CHG_INIT){}
+    PresenterCharger() : _state(CHG_INIT){ _view = NULL; }
+    void init(void);
+    void destroy(void);
     void update(void);
     uint8_t eventHandler(buievt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}   

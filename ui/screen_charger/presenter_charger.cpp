@@ -1,6 +1,21 @@
 #include "bui.h"
 #include "presenter_charger.h"
 
+void PresenterCharger::init(void){
+    if(_view == NULL){
+        _view = new ViewCharger();
+    }
+    _view->init();
+    //assert(_view != NULL);
+}
+
+void PresenterCharger::destroy(void){
+    if(_view != NULL){
+        //delete _view;
+        //_view = NULL;
+    }
+}
+
 void PresenterCharger::update(void){
 
 }

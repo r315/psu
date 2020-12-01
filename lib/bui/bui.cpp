@@ -5,11 +5,11 @@
 
 void BUI::handler(void *ptr){   
     
-    if(_screen == NULL){
+    if(_active_presenter == NULL){
         return;
     }
 
-    BUIPresenter *presenter = _screen->presenter;
+    BUIPresenter *presenter = _active_presenter;
     BUIView *view = presenter->getView();
     buievt_t evt;
 
@@ -22,10 +22,8 @@ void BUI::handler(void *ptr){
         evt.key = BUTTON_GetValue();
         evt.type = BUTTON_GetEvents();        
         if(presenter->eventHandler(&evt)){
-            //if(view->isSuspending()){
-            dbg_printf("Suspending\n");
-            //view->clrFlag(BUI_FLAG_SUSPEND);
-            ActivateNextScreen();
+            presenter->destroy();            
+            activateNextPresenter();
             return;
         }
     }
@@ -48,9 +46,9 @@ void BUI::handler(void *ptr){
 }
 
 BUI::BUI(BUIModel &m) : _model(m){
-    _screen = NULL;
-    _scrlist.elem = NULL;
-    _scrlist.next = NULL;
+    _active_presenter = NULL;
+    _presenter_list.elem = NULL;
+    _presenter_list.next = NULL;
 }
 
 /**
@@ -60,39 +58,31 @@ BUI::BUI(BUIModel &m) : _model(m){
  * \param screen : poiter to screen to be addded
  * \return : index given to the screen
  * */
-uint8_t BUI::createScreen(BUIPresenter *presenter){
+uint8_t BUI::addPresenter(BUIPresenter *presenter){
 
-    buiscreen_t *scr = (buiscreen_t*)bui_malloc(sizeof(buiscreen_t));
-
-    if(scr == NULL){
+    if(presenter == NULL){
         return -1;
     }
 
-    scr->view = presenter->getView();
-    scr->presenter = presenter;
-
     presenter->setModel(&_model);
     
-    uint8_t idx = listInsert(&_scrlist, (void *)scr);
+    uint8_t idx = listInsert(&_presenter_list, (void *)presenter);
     
-    // If no active screen, set current as active
-    if(_screen == NULL){
-        _model.setPresenter(presenter);
-        _screen = scr;
-        _screen->view->init();
+    if(_active_presenter == NULL){
+        activatePresenter(presenter);
     }
 
     return idx;
 }
 
-void BUI::activateScreen(buiscreen_t *scr){
-    scr->view->init();
-    scr->presenter->setModel(&_model);
-    _model.setPresenter(scr->presenter);
+void BUI::activatePresenter(BUIPresenter *presenter){
+    presenter->init();
+    _model.setPresenter(presenter);
+    _active_presenter = presenter;
 }
 
-void BUI::setActiveScreen(uint8_t idx){
-    struct list_node *head = &_scrlist;
+void BUI::activatePresenterByIdx(uint8_t idx){
+    struct list_node *head = &_presenter_list;
 
     while(idx--){
         head = head->next;
@@ -101,16 +91,15 @@ void BUI::setActiveScreen(uint8_t idx){
         }
     }
 
-    _screen = (buiscreen_t *)head->elem;
-
-    activateScreen(_screen);
+    activatePresenter((BUIPresenter*)head->elem);
 }
 
-void BUI::ActivateNextScreen(void){
-
+void BUI::activateNextPresenter(void){
     // Search node
-    struct list_node *head = &_scrlist;
-    while(head->elem != _screen){
+    struct list_node *head = &_presenter_list;
+    BUIPresenter *pre;
+
+    while(head->elem != _active_presenter){
         if(head->next == NULL){
             return;
         }
@@ -118,12 +107,12 @@ void BUI::ActivateNextScreen(void){
     }
     
     if(head->next != NULL){
-        _screen = (buiscreen_t *)head->next->elem;
+        pre = (BUIPresenter *)head->next->elem;
     }else{
-        _screen = (buiscreen_t *)_scrlist.elem;
+        pre = (BUIPresenter *)_presenter_list.elem;
     }
 
-    activateScreen(_screen);
+    activatePresenter(pre);
 }
 
 uint16_t listInsert(struct list_node *head, void *elem){

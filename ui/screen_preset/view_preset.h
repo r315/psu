@@ -13,7 +13,7 @@ extern "C" {
 class ViewPreset : public BUIView{
 public:
     ViewPreset();
-    ~ViewPreset(){}
+    //~ViewPreset(){}
     void init(void);
     void draw(void);
     void select(uint8_t idx);

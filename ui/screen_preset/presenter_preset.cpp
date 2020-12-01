@@ -4,6 +4,20 @@
 #include "model_psu.h"
 #include "presenter_preset.h"
 
+void PresenterPreset::init(void){
+    if(_view == NULL){
+        _view = new ViewPreset();
+    }
+    _view->init();
+    //assert(_view != NULL);
+}
+
+void PresenterPreset::destroy(void){
+    if(_view != NULL){
+        //delete _view;
+        //_view = NULL;
+    }
+}
 
 void PresenterPreset::update(void){
     switch(_state){

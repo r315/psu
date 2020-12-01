@@ -4,6 +4,21 @@
 #include "model_psu.h"
 #include "presenter_psu.h"
 
+void PresenterPsu::init(void){
+    if(_view == NULL){
+        _view = new ViewPsu();
+    }
+    _view->init();
+    //assert(_view != NULL);
+}
+
+void PresenterPsu::destroy(void){
+    if(_view != NULL){
+        //delete _view;
+        //_view = NULL;
+    }
+}
+
 void PresenterPsu::update(void){
 
     switch(_state){

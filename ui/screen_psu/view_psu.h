@@ -12,7 +12,6 @@ extern "C" {
 class ViewPsu : public BUIView{
 public:
     ViewPsu();
-    ~ViewPsu();
     void init(void);
     void draw(void);
     void updateVoltage(uint32_t mv);

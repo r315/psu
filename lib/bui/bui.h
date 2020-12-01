@@ -132,6 +132,7 @@ public:
         _widget.elem = NULL;  
         _widget.next = NULL;
     }
+    virtual ~BUIView(){}
     virtual void init(void){}
     virtual void draw(void){}
     uint8_t addWidget(BUIWidget *wi){ return listInsert(&_widget, (void *)wi);}
@@ -154,10 +155,15 @@ class BUIModel;
 
 class BUIPresenter{
 public:
+    virtual void init(void){}
+    virtual void destroy(void){}
     virtual void update(void);
     virtual uint8_t eventHandler(buievt_t *evt);
-    virtual void setModel(BUIModel *m);
-    virtual BUIView *getView(void);
+    virtual void setModel(BUIModel *m){_model = m;}
+    virtual BUIView *getView(void){ return _view;};
+protected:
+    BUIView *_view;
+    BUIModel *_model;
 };
 
 class BUIModel{
@@ -169,23 +175,18 @@ protected:
     BUIPresenter *_presenter;
 };
 
-typedef struct bui_screen{
-    BUIView *view;
-    BUIPresenter *presenter;
-}buiscreen_t;
-
 class BUI{    
 public:
     BUI(BUIModel &m);
-    uint8_t createScreen(BUIPresenter *pre);
-    void setActiveScreen(uint8_t idx);
-    void ActivateNextScreen(void);
+    uint8_t addPresenter(BUIPresenter *pre);
+    void activatePresenterByIdx(uint8_t idx);
+    void activateNextPresenter(void);
     void handler(void *ptr);
 protected:
 private:
-    void activateScreen(buiscreen_t *scr);
-    struct list_node _scrlist;
-    buiscreen_t *_screen;
+    void activatePresenter(BUIPresenter *presenter);
+    struct list_node _presenter_list;
+    BUIPresenter *_active_presenter;
     BUIModel &_model;
 };
 

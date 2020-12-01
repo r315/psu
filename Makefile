@@ -101,7 +101,11 @@ $(LIBEMB_PATH)/console/console.cpp \
 $(wildcard $(APP_SRC_DIR)/*.cpp) \
 $(wildcard $(APP_SRC_DIR)/console/*.cpp) \
 $(wildcard $(BUI_DIR)/*.cpp) \
-$(wildcard $(UI_DIR)/**/*.cpp) \
+$(wildcard $(UI_DIR)/model/*.cpp) \
+$(wildcard $(UI_DIR)/screen_psu/*.cpp) \
+$(wildcard $(UI_DIR)/screen_preset/*.cpp) \
+$(wildcard $(UI_DIR)/screen_load/*.cpp) \
+$(wildcard $(UI_DIR)/screen_charger/*.cpp) \
 # ASM sources
 ASM_SOURCES =  \
 startup/startup_stm32f103xb.s
@@ -214,7 +218,7 @@ LDSCRIPT =startup/STM32F103C8Tx_FLASH.ld
 #-specs=nosys.specs, lnosys, not libs: has same size
 #-specs=nano.specs: has the small size
 
-LIBS =-specs=nano.specs -nolibc
+LIBS =-specs=nano.specs -nolibc -lstdc++
 LIBDIR = 
 LDFLAGS = $(MCU) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 

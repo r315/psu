@@ -1,6 +1,21 @@
 #include "bui.h"
 #include "presenter_load.h"
 
+void PresenterLoad::init(void){
+    if(_view == NULL){
+        _view = new ViewLoad();
+    }
+    _view->init();
+    //assert(_view != NULL);
+}
+
+void PresenterLoad::destroy(void){
+    if(_view != NULL){
+        //delete _view;
+        //_view = NULL;
+    }
+}
+
 void PresenterLoad::update(void){
 
 }
