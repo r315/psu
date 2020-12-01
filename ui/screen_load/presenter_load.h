@@ -21,13 +21,13 @@ typedef enum{
 
 class PresenterLoad : public BUIPresenter{
 public:
-    PresenterLoad(ViewLoad &v) : _view(v), _state(LOAD_INIT){}
+    PresenterLoad(ViewLoad *v) : _view(v), _state(LOAD_INIT){}
     void update(void);
-    void eventHandler(buievt_t *evt);
+    uint8_t eventHandler(buievt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}   
-    BUIView &getView(void){ return (BUIView&)_view;}
+    BUIView *getView(void){ return (BUIView*)_view;}
 private:
-    ViewLoad &_view;
+    ViewLoad *_view;
     ModelPsu *_model;
     stateload_e _state;    
 };

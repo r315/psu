@@ -8,8 +8,8 @@
 void PresenterPreset::update(void){
     switch(_state){
         case PRE_INIT:
-            _view.select(_model->getPresetIdx());
-            _view.showPreset(_model->getPreset(_view.getSelected()));
+            _view->select(_model->getPresetIdx());
+            _view->showPreset(_model->getPreset(_view->getSelected()));
             _state = PRE_IDLE;
             break;
 
@@ -17,13 +17,13 @@ void PresenterPreset::update(void){
             break;       
         
         case PRE_EXIT:
-            _model->setOutPresetIdx(_view.getSelected());
-            _view.suspend();
+            _model->setOutPresetIdx(_view->getSelected());
+            _view->suspend();
             _state = PRE_INIT;
             break;
 
         case PRE_UPD:
-            _view.showPreset(_model->getPreset(_view.getSelected()));
+            _view->showPreset(_model->getPreset(_view->getSelected()));
             _state = PRE_IDLE;
             break;
 
@@ -32,10 +32,10 @@ void PresenterPreset::update(void){
     }
 }
 
-void PresenterPreset::eventHandler(buievt_t *evt){
+uint8_t PresenterPreset::eventHandler(buievt_t *evt){
     // user input will end here
     if(evt->type != BUTTON_PRESSED){
-        return;
+        return 0;
     }
 
     _state = PRE_UPD;
@@ -43,9 +43,10 @@ void PresenterPreset::eventHandler(buievt_t *evt){
     switch(evt->key){
         case BUTTON_MODE:
             // switch screen
-            _view.suspend();
+            //_view->suspend();
             _state = PRE_INIT;
-            break;
+            return 1;
+            
 
         case BUTTON_UP:
             moveSelect((MAX_PRESETS>>1));
@@ -70,18 +71,18 @@ void PresenterPreset::eventHandler(buievt_t *evt){
         default:
             break;
     }
-   
+    return 0;
 }
 
 void PresenterPreset::moveSelect(int8_t dir){
     int8_t sel;
 
-    sel = (_view.getSelected() + dir) % MAX_PRESETS;
+    sel = (_view->getSelected() + dir) % MAX_PRESETS;
 
     if(sel < 0){
         sel = MAX_PRESETS + sel;
     }
 
-    _view.select(sel);
+    _view->select(sel);
 }
 

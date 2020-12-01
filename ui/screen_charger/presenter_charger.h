@@ -21,13 +21,13 @@ typedef enum{
 
 class PresenterCharger : public BUIPresenter{
 public:
-    PresenterCharger(ViewCharger &v) : _view(v), _state(CHG_INIT){}
+    PresenterCharger(ViewCharger *v) : _view(v), _state(CHG_INIT){}
     void update(void);
-    void eventHandler(buievt_t *evt);
+    uint8_t eventHandler(buievt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}   
-    BUIView &getView(void){ return (BUIView&)_view;}
+    BUIView *getView(void){ return (BUIView*)_view;}
 private:
-    ViewCharger &_view;
+    ViewCharger *_view;
     ModelPsu *_model;
     statecharger_e _state;    
 };

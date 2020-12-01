@@ -15,9 +15,9 @@ void PresenterPsu::update(void){
             break;       
         
         case PSU_ENTER_IDLE:
-            _view.updateVoltage(_model->getOutVoltagePreset());
-            _view.updateCurrent(_model->getOutCurrentPreset());
-            _view.updatePower(-1);
+            _view->updateVoltage(_model->getOutVoltagePreset());
+            _view->updateCurrent(_model->getOutCurrentPreset());
+            _view->updatePower(-1);
             _state = PSU_IDLE;
             break;
 
@@ -27,10 +27,10 @@ void PresenterPsu::update(void){
                 uint16_t v = _model->getOutVoltage();
                 uint16_t i = _model->getOutCurrent();
                 uint32_t p = (v/1000) * i;
-                _view.updateVoltage(v);
-                _view.updateCurrent(i);
-                _view.updatePower(p);
-                _view.updateGraph();
+                _view->updateVoltage(v);
+                _view->updateCurrent(i);
+                _view->updatePower(p);
+                _view->updateGraph();
             }
             break;
         }
@@ -40,11 +40,11 @@ void PresenterPsu::update(void){
     }
 }
 
-void PresenterPsu::eventHandler(buievt_t *evt){
+uint8_t PresenterPsu::eventHandler(buievt_t *evt){
 
     // user input will end here
     if(evt->type != BUTTON_PRESSED){
-        return;
+        return 0;
     }
 
     switch(_state){
@@ -53,7 +53,11 @@ void PresenterPsu::eventHandler(buievt_t *evt){
             break;
 
         case PSU_IDLE:
-            stateIdle(evt);
+            if(evt->key == BUTTON_MODE){
+                
+                return 1;
+            }
+            stateIdle(evt);            
             break;
 
         case PSU_SET_V:
@@ -67,13 +71,14 @@ void PresenterPsu::eventHandler(buievt_t *evt){
         default:
             break;
     }
+    return 0;
 }
 
 void PresenterPsu::stateIdle(buievt_t *evt){
     switch(evt->key){
         case BUTTON_MODE:
             // switch screen
-            _view.suspend();
+            _view->suspend();
             _state = PSU_INIT;
             break;
 
@@ -125,32 +130,32 @@ void PresenterPsu::stateSetV(buievt_t *evt){
     switch(evt->key){        
 
         case BUTTON_UP:
-            _view.changeVoltage(1);
+            _view->changeVoltage(1);
             break;
             
         case BUTTON_DOWN:
-            _view.changeVoltage(-1);
+            _view->changeVoltage(-1);
             break;
 
         case BUTTON_LEFT:
-            _view.editVoltage(1);
+            _view->editVoltage(1);
             break;
             
         case BUTTON_RIGHT:
-            _view.editVoltage(-1);
+            _view->editVoltage(-1);
             break;
 
         case BUTTON_SET:
             // this call is not thread safe
-            _model->setOutVoltagePreset(_view.getVoltage());
+            _model->setOutVoltagePreset(_view->getVoltage());
         case BUTTON_MODE:
-            _view.editVoltage(0);
+            _view->editVoltage(0);
             _state = _model->getOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
             break;
 
         case BUTTON_EMPTY:
-            _view.updateVoltage(_model->getOutVoltagePreset());
-            _view.editVoltage(1);
+            _view->updateVoltage(_model->getOutVoltagePreset());
+            _view->editVoltage(1);
             _state = PSU_SET_V;
             break;
 
@@ -163,31 +168,31 @@ void PresenterPsu::stateSetI(buievt_t *evt){
     switch(evt->key){
 
         case BUTTON_UP:
-            _view.changeCurrent(1);
+            _view->changeCurrent(1);
             break;
             
         case BUTTON_DOWN:
-            _view.changeCurrent(-1);
+            _view->changeCurrent(-1);
             break;
 
         case BUTTON_LEFT:
-            _view.editCurrent(1);
+            _view->editCurrent(1);
             break;
             
         case BUTTON_RIGHT:
-            _view.editCurrent(-1);
+            _view->editCurrent(-1);
             break;
 
         case BUTTON_SET:
-            _model->setOutCurrentPreset(_view.getCurrent());
+            _model->setOutCurrentPreset(_view->getCurrent());
         case BUTTON_MODE:
-            _view.editCurrent(0);
+            _view->editCurrent(0);
             _state = _model->getOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
             break;
 
         case BUTTON_EMPTY:
-            _view.updateCurrent(_model->getOutCurrentPreset());
-            _view.editCurrent(1);
+            _view->updateCurrent(_model->getOutCurrentPreset());
+            _view->editCurrent(1);
             _state = PSU_SET_I;
             break;
 

@@ -23,13 +23,13 @@ class ViewPsu;
 
 class PresenterPsu : public BUIPresenter{
 public:
-    PresenterPsu(ViewPsu &v) : _view(v){ _state = PSU_INIT;}
+    PresenterPsu(ViewPsu *v) : _view(v){ _state = PSU_INIT;}
     void update(void);
-    void eventHandler(buievt_t *evt);
+    uint8_t eventHandler(buievt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}
-    BUIView &getView(void){ return (BUIView&)_view;}
+    BUIView *getView(void){ return (BUIView*)_view;}
 private:
-    ViewPsu &_view;
+    ViewPsu *_view;
     ModelPsu *_model;
     statepsu_e _state;
     void stateEnabled(buievt_t *evt);

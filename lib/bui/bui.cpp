@@ -9,8 +9,8 @@ void BUI::handler(void *ptr){
         return;
     }
 
-    BUIView *view = _screen->view;
     BUIPresenter *presenter = _screen->presenter;
+    BUIView *view = presenter->getView();
     buievt_t evt;
 
     if(view == NULL || presenter == NULL){
@@ -21,14 +21,13 @@ void BUI::handler(void *ptr){
     if(BUTTON_Read() != BUTTON_EMPTY){
         evt.key = BUTTON_GetValue();
         evt.type = BUTTON_GetEvents();        
-        presenter->eventHandler(&evt);
-    }
-
-    if(view->isSuspending()){
-        dbg_printf("Suspending\n");
-        view->clrFlag(BUI_FLAG_SUSPEND);
-        ActivateNextScreen();
-        return;
+        if(presenter->eventHandler(&evt)){
+            //if(view->isSuspending()){
+            dbg_printf("Suspending\n");
+            //view->clrFlag(BUI_FLAG_SUSPEND);
+            ActivateNextScreen();
+            return;
+        }
     }
 
     // Draw view elements
@@ -69,7 +68,7 @@ uint8_t BUI::createScreen(BUIPresenter *presenter){
         return -1;
     }
 
-    scr->view = &presenter->getView();
+    scr->view = presenter->getView();
     scr->presenter = presenter;
 
     presenter->setModel(&_model);

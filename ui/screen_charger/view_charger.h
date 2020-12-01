@@ -16,7 +16,10 @@ public:
     void init(void);
     void draw(void);
 private:
-    
+    BUIText _wi_v1;
+    BUIText _wi_v2;
+    //BUIText _wi_v3;
+    //BUIText _wi_v4;
 };
 
 #ifdef __cplusplus

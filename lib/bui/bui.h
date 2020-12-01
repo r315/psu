@@ -155,9 +155,9 @@ class BUIModel;
 class BUIPresenter{
 public:
     virtual void update(void);
-    virtual void eventHandler(buievt_t *evt);
+    virtual uint8_t eventHandler(buievt_t *evt);
     virtual void setModel(BUIModel *m);
-    virtual BUIView &getView(void);
+    virtual BUIView *getView(void);
 };
 
 class BUIModel{

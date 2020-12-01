@@ -352,10 +352,10 @@ void tskBui(void *ptr){
     ViewCharger view_charger;
     ViewLoad view_load;
 
-    PresenterPsu presenter_psu(view_psu);
-    PresenterPreset presenter_preset(view_preset);
-    PresenterCharger presenter_charger(view_charger);
-    PresenterLoad presenter_load(view_load);
+    PresenterPsu presenter_psu(&view_psu);
+    PresenterPreset presenter_preset(&view_preset);
+    PresenterCharger presenter_charger(&view_charger);
+    PresenterLoad presenter_load(&view_load);
 
     BUI bui(model_psu);
    

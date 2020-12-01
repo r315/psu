@@ -23,14 +23,14 @@ class ViewPreset;
 
 class PresenterPreset : public BUIPresenter{
 public:
-    PresenterPreset(ViewPreset &v) : _view(v),_state(PRE_INIT){}
+    PresenterPreset(ViewPreset *v) : _view(v),_state(PRE_INIT){}
     void update(void);
-    void eventHandler(buievt_t *evt);
+    uint8_t eventHandler(buievt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}
-    BUIView &getView(void){ return (BUIView&)_view;}
+    BUIView *getView(void){ return (BUIView*)_view;}
 private:
     void moveSelect(int8_t dir);
-    ViewPreset &_view;
+    ViewPreset *_view;
     ModelPsu *_model;
     statepreset_e _state;
     uint8_t _idx;
