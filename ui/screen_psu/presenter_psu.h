@@ -26,7 +26,7 @@ public:
     PresenterPsu() : _view(NULL){ _state = PSU_INIT;}
     void init(void);
     void destroy(void);
-    void update(void);
+    void tick(void);
     uint8_t eventHandler(buievt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}
     BUIView *getView(void){ return (BUIView*)_view;}

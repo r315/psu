@@ -16,7 +16,7 @@ void PresenterLoad::destroy(void){
     }
 }
 
-void PresenterLoad::update(void){
+void PresenterLoad::tick(void){
 
 }
 

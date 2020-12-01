@@ -129,14 +129,14 @@ uint16_t listInsert(struct list_node *head, void *elem);
 class BUIView{
 public:
     BUIView(){ 
-        _widget.elem = NULL;  
-        _widget.next = NULL;
+        _widget_list.elem = NULL;  
+        _widget_list.next = NULL;
     }
     virtual ~BUIView(){}
     virtual void init(void){}
     virtual void draw(void){}
-    uint8_t addWidget(BUIWidget *wi){ return listInsert(&_widget, (void *)wi);}
-    list_node *getWidgets(void){ return &_widget; }
+    uint8_t addWidget(BUIWidget *wi){ return listInsert(&_widget_list, (void *)wi);}
+    list_node *getWidgets(void){ return &_widget_list; }
     uint8_t isFlagSet(uint8_t flag){return !!(this->_flags & flag);}
     uint8_t isInvalid(){ return isFlagSet(BUI_FLAG_INVALID); }
     uint8_t isSuspending(){ return isFlagSet(BUI_FLAG_SUSPEND); }
@@ -146,7 +146,7 @@ public:
     void clrFlag(uint8_t flag){this->_flags &= ~flag;}
     void suspend(void){setFlag(BUI_FLAG_SUSPEND);}
 private:    
-    struct list_node _widget;
+    struct list_node _widget_list;
     uint8_t _flags;
 protected:
 };
@@ -157,7 +157,7 @@ class BUIPresenter{
 public:
     virtual void init(void){}
     virtual void destroy(void){}
-    virtual void update(void);
+    virtual void tick(void);
     virtual uint8_t eventHandler(buievt_t *evt);
     virtual void setModel(BUIModel *m){_model = m;}
     virtual BUIView *getView(void){ return _view;};

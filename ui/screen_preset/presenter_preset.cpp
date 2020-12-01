@@ -19,7 +19,7 @@ void PresenterPreset::destroy(void){
     }
 }
 
-void PresenterPreset::update(void){
+void PresenterPreset::tick(void){
     switch(_state){
         case PRE_INIT:
             _view->select(_model->getPresetIdx());

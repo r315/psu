@@ -16,7 +16,7 @@ void PresenterCharger::destroy(void){
     }
 }
 
-void PresenterCharger::update(void){
+void PresenterCharger::tick(void){
 
 }
 

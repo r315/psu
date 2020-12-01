@@ -25,7 +25,7 @@ void ModelPsu::init(void){
 void ModelPsu::tick(void){
     if(xSemaphoreTake(access_data, 0) == pdPASS){
         // Thread safe call
-        _presenter->update();
+        _presenter->tick();
         xSemaphoreGive(access_data);
     }
 }

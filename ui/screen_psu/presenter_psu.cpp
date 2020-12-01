@@ -19,7 +19,7 @@ void PresenterPsu::destroy(void){
     }
 }
 
-void PresenterPsu::update(void){
+void PresenterPsu::tick(void){
 
     switch(_state){
         case PSU_INIT:
