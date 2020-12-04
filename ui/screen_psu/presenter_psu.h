@@ -28,17 +28,17 @@ public:
     void destroy(void);
     void tick(void);
     void update(void);
-    uint8_t eventHandler(buievt_t *evt);
+    buievt_e eventHandler(buikeyevt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}
     BUIView *getView(void){ return (BUIView*)_view;}
 private:
     ViewPsu *_view;
     ModelPsu *_model;
     statepsu_e _state;
-    void stateEnabled(buievt_t *evt);
-    void stateIdle(buievt_t *evt);
-    void stateSetV(buievt_t *evt);
-    void stateSetI(buievt_t *evt);
+    void stateEnabled(buikeyevt_t *evt);
+    void stateIdle(buikeyevt_t *evt);
+    void stateSetV(buikeyevt_t *evt);
+    void stateSetI(buikeyevt_t *evt);
 };
 
 #ifdef __cplusplus

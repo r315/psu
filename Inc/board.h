@@ -28,7 +28,7 @@ extern "C" {
 #define BUTTON_SET  	(1<<4)
 #define BUTTON_MODE     (1<<6)
 #define BUTTON_OUT      (1<<5)
-#define BUTTON_MEM      (1<<7)
+#define BUTTON_PRE      (1<<7)
 
 #define BUTTON_HW_INIT
 #define BUTTON_HW_READ (255 - EXPANDER_Read())

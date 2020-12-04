@@ -36,11 +36,16 @@ struct list_node{
     struct list_node *next;
 };
 
-typedef struct buievt{
+typedef struct buikeyevt{
     uint8_t key;
     uint8_t type;
-}buievt_t;
+}buikeyevt_t;
 
+typedef enum buievt{
+    BUI_EVT_NONE = 0,
+    BUI_EVT_CHG_SCR,
+    BUI_EVT_SEL_SCR,        // This must be the last value
+}buievt_e;
 
 class BUIWidget{
 public:
@@ -159,7 +164,7 @@ public:
     virtual void destroy(void){}
     virtual void tick(void);
     virtual void update(void);
-    virtual uint8_t eventHandler(buievt_t *evt);
+    virtual buievt_e eventHandler(buikeyevt_t *evt);
     virtual void setModel(BUIModel *m){_model = m;}
     virtual BUIView *getView(void){ return _view;};
 protected:

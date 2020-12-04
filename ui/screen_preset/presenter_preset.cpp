@@ -49,19 +49,19 @@ void PresenterPreset::update(void){
     
 }
 
-uint8_t PresenterPreset::eventHandler(buievt_t *evt){   
+buievt_e PresenterPreset::eventHandler(buikeyevt_t *evt){   
 
     if(_state == PRE_EXIT){
-        return 1;
+        return BUI_EVT_CHG_SCR;
     }
 
     if(evt->type != BUTTON_PRESSED){
-        return 0;
+        return BUI_EVT_NONE;
     }
 
     switch(evt->key){
         case BUTTON_MODE:
-            return 1;            
+            return BUI_EVT_CHG_SCR;            
 
         case BUTTON_UP:
             moveSelect((MAX_PRESETS>>1));
@@ -90,7 +90,7 @@ uint8_t PresenterPreset::eventHandler(buievt_t *evt){
         default:
             break;
     }
-    return 0;
+    return BUI_EVT_NONE;
 }
 
 void PresenterPreset::moveSelect(int8_t dir){

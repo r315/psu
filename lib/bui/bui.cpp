@@ -11,7 +11,7 @@ void BUI::handler(void *ptr){
 
     BUIPresenter *presenter = _active_presenter;
     BUIView *view = presenter->getView();
-    buievt_t evt;
+    buikeyevt_t evt;
 
     if(view == NULL || presenter == NULL){
         return;
@@ -20,11 +20,20 @@ void BUI::handler(void *ptr){
     // read input
     if(BUTTON_Read() != BUTTON_EMPTY){
         evt.key = BUTTON_GetValue();
-        evt.type = BUTTON_GetEvents();        
-        if(presenter->eventHandler(&evt)){
-            presenter->destroy();            
-            activateNextPresenter();
-            return;
+        evt.type = BUTTON_GetEvents();
+        buievt_e res = presenter->eventHandler(&evt);
+        switch(res){
+            case BUI_EVT_CHG_SCR:
+                presenter->destroy();            
+                activateNextPresenter();
+                return;
+
+            default:
+                if(res >= BUI_EVT_SEL_SCR){
+                    uint8_t scr = res - BUI_EVT_SEL_SCR;
+                    activatePresenterByIdx(scr);
+                }
+                break;
         }
     }
 

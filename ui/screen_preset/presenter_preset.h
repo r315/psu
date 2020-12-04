@@ -29,7 +29,7 @@ public:
     void destroy(void);
     void tick(void);
     void update(void);
-    uint8_t eventHandler(buievt_t *evt);
+    buievt_e eventHandler(buikeyevt_t *evt);
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}
     BUIView *getView(void){ return (BUIView*)_view;}
 private:

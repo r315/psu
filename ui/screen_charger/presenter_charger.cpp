@@ -24,21 +24,21 @@ void PresenterCharger::update(void){
 
 }
 
-uint8_t PresenterCharger::eventHandler(buievt_t *evt){
+buievt_e PresenterCharger::eventHandler(buikeyevt_t *evt){
     // user input will end here
     if(evt->type != BUTTON_PRESSED){
-        return 0;
+        return BUI_EVT_NONE;
     }
 
     switch(evt->key){
         case BUTTON_MODE:
             // switch screen
             //_view.suspend();
-            return 1;
+            return BUI_EVT_CHG_SCR;
             break;
         default:
             break;
     }
 
-    return 0;
+    return BUI_EVT_NONE;
 }

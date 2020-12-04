@@ -61,23 +61,26 @@ void PresenterPsu::update(void){
     _model->updateOutputCurrent();
 }
 
-uint8_t PresenterPsu::eventHandler(buievt_t *evt){
+buievt_e PresenterPsu::eventHandler(buikeyevt_t *evt){
 
     // user input will end here
     if(evt->type != BUTTON_PRESSED){
-        return 0;
+        return BUI_EVT_NONE;
     }
 
     switch(_state){
         case PSU_ENABLED:
-            stateEnabled(evt);
-            break;
-
         case PSU_IDLE:
             if(evt->key == BUTTON_MODE){
-                return 1;
+                return BUI_EVT_CHG_SCR;
+            }else if(evt->key == BUTTON_PRE){
+                return (buievt_e)(BUI_EVT_SEL_SCR + 1);
             }
-            stateIdle(evt);            
+            if(_state == PSU_IDLE){
+                stateIdle(evt); 
+            }else{
+                stateEnabled(evt);
+            }
             break;
 
         case PSU_SET_V:
@@ -91,10 +94,10 @@ uint8_t PresenterPsu::eventHandler(buievt_t *evt){
         default:
             break;
     }
-    return 0;
+    return BUI_EVT_NONE;
 }
 
-void PresenterPsu::stateIdle(buievt_t *evt){
+void PresenterPsu::stateIdle(buikeyevt_t *evt){
     switch(evt->key){
         case BUTTON_UP:
             evt->key = BUTTON_EMPTY;
@@ -115,7 +118,7 @@ void PresenterPsu::stateIdle(buievt_t *evt){
     }
 }
 
-void PresenterPsu::stateEnabled(buievt_t *evt){
+void PresenterPsu::stateEnabled(buikeyevt_t *evt){
     switch(evt->key){
         case BUTTON_MODE:
             break;
@@ -139,7 +142,7 @@ void PresenterPsu::stateEnabled(buievt_t *evt){
     }
 }
 
-void PresenterPsu::stateSetV(buievt_t *evt){
+void PresenterPsu::stateSetV(buikeyevt_t *evt){
     switch(evt->key){        
 
         case BUTTON_UP:
@@ -177,7 +180,7 @@ void PresenterPsu::stateSetV(buievt_t *evt){
     }
 }
 
-void PresenterPsu::stateSetI(buievt_t *evt){
+void PresenterPsu::stateSetI(buikeyevt_t *evt){
     switch(evt->key){
 
         case BUTTON_UP:
