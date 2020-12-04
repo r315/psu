@@ -15,7 +15,8 @@ typedef enum{
     PRE_ENTER_IDLE,
     PRE_IDLE,
     PRE_EXIT,
-    PRE_UPD,
+    PRE_CHG,
+    PRE_SET,
 }statepreset_e;
 
 

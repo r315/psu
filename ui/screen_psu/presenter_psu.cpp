@@ -9,7 +9,7 @@ void PresenterPsu::init(void){
         _view = new ViewPsu();
     }
     _view->init();
-    //assert(_view != NULL);
+    _state = PSU_INIT;
 }
 
 void PresenterPsu::destroy(void){
@@ -75,7 +75,6 @@ uint8_t PresenterPsu::eventHandler(buievt_t *evt){
 
         case PSU_IDLE:
             if(evt->key == BUTTON_MODE){
-                
                 return 1;
             }
             stateIdle(evt);            
@@ -97,12 +96,6 @@ uint8_t PresenterPsu::eventHandler(buievt_t *evt){
 
 void PresenterPsu::stateIdle(buievt_t *evt){
     switch(evt->key){
-        case BUTTON_MODE:
-            // switch screen
-            _view->suspend();
-            _state = PSU_INIT;
-            break;
-
         case BUTTON_UP:
             evt->key = BUTTON_EMPTY;
             stateSetV(evt);
@@ -125,7 +118,6 @@ void PresenterPsu::stateIdle(buievt_t *evt){
 void PresenterPsu::stateEnabled(buievt_t *evt){
     switch(evt->key){
         case BUTTON_MODE:
-            // switch screen
             break;
 
         case BUTTON_UP:
@@ -167,7 +159,7 @@ void PresenterPsu::stateSetV(buievt_t *evt){
             break;
 
         case BUTTON_SET:
-            // this call is not thread safe
+            // TODO: fix, this call is not thread safe
             _model->setOutVoltagePreset(_view->getVoltage());
         case BUTTON_MODE:
             _view->editVoltage(0);
