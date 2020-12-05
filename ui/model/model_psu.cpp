@@ -34,18 +34,20 @@ void ModelPsu::tick(void){
  * Called from application task
  * */
 void ModelPsu::update(){
-    if(xSemaphoreTake(access_data, 0) == pdPASS){        
-        _presenter->update();
+    if(xSemaphoreTake(access_data, 0) == pdPASS){
+        // Update model variables through presenter
+        if(_presenter != NULL)
+            _presenter->update();
         // Notify for new data
         _flags |= MODEL_FLAG_APP;
 
-        // Check if preset value has changed
+        // Check if preset value has been edited by user
         if(_flags & MODEL_FLAG_PRESET){
             app_setPreset(_out_preset);
             _flags &= ~MODEL_FLAG_PRESET;
         }
 
-        // Check if preset index has changed
+        // Check if preset selection has changed by user
         if(_flags & MODEL_FLAG_PRESET_IDX){
             // update local preset
             _out_preset = app_getPreset(_preset_idx);

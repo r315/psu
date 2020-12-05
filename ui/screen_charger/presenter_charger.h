@@ -15,13 +15,15 @@ typedef enum{
     CHG_ENTER_IDLE,
     CHG_IDLE,
     CHG_EXIT,
-    CHG_UPD,
+    CHG_ENTER_CHARGING,
+    CHG_CHARGING,
+    CHG_SET_I,
 }statecharger_e;
 
 
 class PresenterCharger : public BUIPresenter{
 public:
-    PresenterCharger() : _state(CHG_INIT){ _view = NULL; }
+    PresenterCharger() : _state(CHG_INIT){ _view = NULL; _ncell = 4; }
     void init(void);
     void destroy(void);
     void tick(void);
@@ -30,9 +32,12 @@ public:
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}   
     BUIView *getView(void){ return (BUIView*)_view;}
 private:
+    void stateIdle(buikeyevt_t *evt);
+    void stateSetI(buikeyevt_t *evt);
     ViewCharger *_view;
     ModelPsu *_model;
-    statecharger_e _state;    
+    statecharger_e _state;
+    uint8_t _ncell;
 };
 
 #ifdef __cplusplus
