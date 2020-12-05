@@ -304,6 +304,12 @@ uint16_t PWM_Get(uint8_t);
 #define VIN_MUX_CH                  4
 #define IUSB_MUX_CH                 13
 
+#define VB4_MUX_CH                   8
+#define VB3_MUX_CH                   9
+#define VB2_MUX_CH                   10
+#define VB1_MUX_CH                   11
+#define VB0_MUX_CH                   12
+
 #endif
 
 /**

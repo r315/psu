@@ -25,6 +25,7 @@ public:
     uint32_t getLoadVoltage(void);
     uint32_t getLoadCurrent(void);
     uint32_t getUsbCurrent(void);
+    uint32_t getCellVoltage(uint8_t c);
 
     uint32_t getOutVoltagePreset(void){return _out_preset.v;}
     void setOutVoltagePreset(uint32_t v);
@@ -45,6 +46,7 @@ public:
     void updateLoadVoltage(void);
     void updateLoadCurrent(void);
     void updateUsbCurrent(void);
+    void updateCellVoltage(uint8_t c);
 
     uint8_t isFlagSet(uint8_t flag){return !!(this->_flags & flag);}
 private:
@@ -53,6 +55,7 @@ private:
     uint32_t _load_voltage;
     uint32_t _load_current;
     uint32_t _usb_current;
+    uint32_t _vb[4];
 
     preset_t _out_preset;
     uint8_t _preset_idx;

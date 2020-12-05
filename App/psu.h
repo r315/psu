@@ -129,6 +129,13 @@ typedef struct psu{
 uint32_t psu_getChannelVoltage(uint8_t channel);
 
 /**
+ * @brief Get cell voltage at balancer terminals
+ * \param c : cell number [4-1], counting from gnd
+ * \return : cell voltage in mV
+ * */
+uint32_t psu_getCellVoltage(uint8_t c);
+
+/**
  * @brief Set/Get output enable status
  * */
 uint8_t app_isOutputEnabled(void);

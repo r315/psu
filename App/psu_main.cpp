@@ -177,6 +177,20 @@ uint32_t psu_getChannelVoltage(uint8_t channel){
     return psu.adc_data[channel] * ADC_GetResolution() * psu.an_channel_gain[channel];
 }
 
+/**
+ * @brief Get cell voltage at balancer terminals
+ * \param c : cell number [4-1], counting from gnd
+ * \return : cell voltage in mV
+ * */
+uint32_t psu_getCellVoltage(uint8_t c){
+    if(c > 4 || c < 1){
+        return 0;
+    }
+    uint32_t cell = psu_getChannelVoltage(VB0_MUX_CH - c - 1);
+
+    return psu_getChannelVoltage(VB0_MUX_CH - c) - cell;
+}
+
 uint32_t psu_getOutputVoltage(void){
     return psu_getChannelVoltage(VOUT_MUX_CH);
 }

@@ -74,6 +74,9 @@ uint32_t ModelPsu::getLoadCurrent(void){
 uint32_t ModelPsu::getUsbCurrent(void){
     return _usb_current;
 }
+uint32_t ModelPsu::getCellVoltage(uint8_t c){
+    return _vb[c - 1];
+}
 
 uint8_t ModelPsu::toggleOutputEnable(void){
     return app_toggleOutputEnable();
@@ -119,4 +122,7 @@ void ModelPsu::updateLoadCurrent(void){
 }
 void ModelPsu::updateUsbCurrent(void){
     _usb_current = psu_getUsbCurrent();
+}
+void ModelPsu::updateCellVoltage(uint8_t c){
+    _vb[c - 1] = psu_getCellVoltage(c);
 }
