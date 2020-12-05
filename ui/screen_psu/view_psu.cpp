@@ -19,14 +19,6 @@ static const uint8_t psu_icon_out[] = {15,8,
     0x7f,0xfc,0xc5,0x46,0xd5,0x6e,0xd5,0x6e,0xd5,0x6e,0xd5,0x6e,0xc4,0x6e,0x7f,0xfc
 };
 
-static void voltageFormat(char *out, int32_t mv){
-    xsprintf(out,"%02u.%uV", mv/1000, (mv/100)%10);    
-}
-
-static void currentFormat(char *out, int32_t ma){
-    xsprintf(out,"%d.%02uA", ma/1000, (ma/10)%100);   
-}
-
 ViewPsu::ViewPsu(): 
     _wi_power(POWER_DRO_POS),
     _wi_current(CURRENT_POS_X, CURRENT_POS_Y),

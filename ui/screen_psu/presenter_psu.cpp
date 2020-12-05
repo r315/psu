@@ -131,7 +131,7 @@ void PresenterPsu::stateEnabled(buikeyevt_t *evt){
             break;
 
         case BUTTON_UP:
-            evt->key = BUTTON_EMPTY;
+            evt->key = BUTTON_EMPTY; // Set empty button to force state change
             stateSetV(evt);
             break;
 

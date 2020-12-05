@@ -28,6 +28,9 @@ private:
     uint8_t _count;
 };
 
+void currentFormat(char *out, int32_t ma);
+void voltageFormat(char *out, int32_t mv);
+
 #ifdef __cplusplus
 }
 #endif

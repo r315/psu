@@ -5,6 +5,13 @@
 
 #define BLINK_TIME_MASK             8
 
+void voltageFormat(char *out, int32_t mv){
+    xsprintf(out,"%02u.%uV", mv/1000, (mv/100)%10);    
+}
+
+void currentFormat(char *out, int32_t ma){
+    xsprintf(out,"%d.%02uA", ma/1000, (ma/10)%100);   
+}
 
 BUIdro::BUIdro(uint16_t x = 0, uint16_t y = 0) : BUIText(x ,y){
     setFont(&GroteskBold16x32);
@@ -46,6 +53,7 @@ void BUIdro::update(void){
 void BUIdro::editValue(int8_t dig){
     if(dig == 0){        
         clrFlag(BUI_FLAG_EDIT);
+        setFlag(BUI_FLAG_INVALID);
         return;
     }
 
