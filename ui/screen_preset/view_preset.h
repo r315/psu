@@ -20,7 +20,7 @@ public:
     uint8_t getSelected(void);
     void showPreset(preset_t pre);
 private:
-    BUIicon _wi_ico[MAX_PRESETS];
+    BUIicon **_wi_ico;
     BUIText _wi_pre_v;
     BUIText _wi_pre_i;
     uint8_t _selected;

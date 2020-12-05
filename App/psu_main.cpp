@@ -148,10 +148,8 @@ void psu_setOutputEnable(uint8_t en){
 void app_setOutputEnable(uint8_t en){
     if(en){
         SET_OE_FLAG;
-        DRAW_Icon(OUTPUT_ICON_POS, (uint8_t *)icon_out, RED);
     }else{
         CLR_OE_FLAG;
-        DRAW_FillRect(OUTPUT_ICON_POS, icon_out[0], icon_out[1], BLACK);        
     }
     psu_setOutputEnable(en);
 }
@@ -164,10 +162,8 @@ uint8_t app_toggleOutputEnable(void){
 void app_setLoadEnable(uint8_t en){
     if(en){
         SET_LD_FLAG;
-        DRAW_Icon(LOAD_ICON_POS, (uint8_t *)icon_load, GREEN);
     }else{
         CLR_LD_FLAG;
-        DRAW_FillRect(LOAD_ICON_POS, icon_load[0], icon_load[1], BLACK);        
     }
 }
 
@@ -467,7 +463,7 @@ extern "C" void app_setup(void){
     
     startTask(tskCmdLine, "CLI", &stdio_ops, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
     startTask(tskPsu, "PSU", NULL, configMINIMAL_STACK_SIZE, PRIORITY_LOW + 1);
-    startTask(tskBui, "BUI", NULL, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
+    startTask(tskBui, "BUI", NULL, configMINIMAL_STACK_SIZE * 8, PRIORITY_LOW);
 }
 
 extern "C" void vApplicationMallocFailedHook( void ){

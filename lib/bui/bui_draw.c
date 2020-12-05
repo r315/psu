@@ -103,7 +103,7 @@ void DRAW_Bitmap(uint16_t x, uint16_t y, uint16_t *data){
  * @param fcolor : forecolor 16bit color
  * @param bcolor : backgroundcolor 16bit color
  * */
-void DRAW_Icon2Bitmap(uint16_t *bitmap, uint8_t *icon, uint16_t fcolor, uint16_t bcolor){
+void DRAW_Icon2Bitmap(uint16_t *bitmap, const uint8_t *icon, const uint16_t *pal){
     uint16_t w, h;
 
     w = *icon++;
@@ -120,8 +120,8 @@ void DRAW_Icon2Bitmap(uint16_t *bitmap, uint8_t *icon, uint16_t fcolor, uint16_t
                 mask = 0x80;
                 bmap = *(++icon);
             }
-            if(bmap & mask) *bitmap = fcolor;
-            else *bitmap = bcolor;
+            if(bmap & mask) *bitmap = pal[1];
+            else *bitmap = pal[0];
         }
     }
 }
@@ -134,22 +134,8 @@ void DRAW_Icon2Bitmap(uint16_t *bitmap, uint8_t *icon, uint16_t fcolor, uint16_t
  * @param icon : input icon, data format {w,h,data...}
  * @param color : forecolor
  * */
-void DRAW_Icon(uint16_t x, uint16_t y, uint8_t *ico, uint16_t color){
-    DRAW_Icon2Bitmap(scratch, ico, color, BLACK);
-    DRAW_Bitmap(x, y, scratch);
-}
-
-/**
- * @brief Draws 1bpp icon
- * 
- * @param x : x position on display
- * @param y : y position on display
- * @param icon : input icon, data format {w,h,data...}
- * @param fcolor : forecolor
- * @param bcolor : backgroundcolor
- * */
-void DRAW_Icon2(uint16_t x, uint16_t y, uint8_t *ico, uint16_t fcolor, uint16_t bcolor){
-    DRAW_Icon2Bitmap(scratch, ico, fcolor, bcolor);
+void DRAW_Icon(uint16_t x, uint16_t y, const uint8_t *ico, const uint16_t *pal){
+    DRAW_Icon2Bitmap(scratch, ico, pal);
     DRAW_Bitmap(x, y, scratch);
 }
 

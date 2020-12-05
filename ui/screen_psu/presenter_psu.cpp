@@ -23,7 +23,12 @@ void PresenterPsu::tick(void){
 
     switch(_state){
         case PSU_INIT:
-            _state = PSU_ENTER_IDLE;
+            if(_model->getOutputEnable()){
+                _state = PSU_ENABLED;
+                _view->showOutIcon(true);
+            }else{
+                _state = PSU_ENTER_IDLE;
+            }
             break;
 
         case PSU_IDLE:
@@ -33,6 +38,7 @@ void PresenterPsu::tick(void){
             _view->updateVoltage(_model->getOutVoltagePreset());
             _view->updateCurrent(_model->getOutCurrentPreset());
             _view->updatePower(-1);
+            _view->showOutIcon(false);
             _state = PSU_IDLE;
             break;
 
@@ -72,9 +78,9 @@ buievt_e PresenterPsu::eventHandler(buikeyevt_t *evt){
         case PSU_ENABLED:
         case PSU_IDLE:
             if(evt->key == BUTTON_MODE){
-                return BUI_EVT_CHG_SCR;
+                return BUI_EVT_SEL_SCR(2);      // select screen load
             }else if(evt->key == BUTTON_PRE){
-                return (buievt_e)(BUI_EVT_SEL_SCR + 1);
+                return BUI_EVT_SEL_SCR(1);      // select screen preset
             }
             if(_state == PSU_IDLE){
                 stateIdle(evt); 
@@ -111,6 +117,7 @@ void PresenterPsu::stateIdle(buikeyevt_t *evt){
 
         case BUTTON_OUT:
             _state = _model->toggleOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
+            _view->showOutIcon(true);
             break;
 
         default:

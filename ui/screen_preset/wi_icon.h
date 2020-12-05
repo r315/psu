@@ -7,20 +7,19 @@ extern "C" {
 
 #include <stdint.h>
 #include "bui.h"
-#include "wi_icon.h"
 
 class BUIicon : public BUIWidget{
 public:
-    BUIicon();
-    BUIicon(uint16_t x, uint16_t y);
-    ~BUIicon(){}
+    BUIicon():BUIWidget(0,0){}
+    BUIicon(uint16_t x, uint16_t y, const uint8_t *ico_data);
     void draw(void);
-    uint8_t isSelected(void){ return isFlagSet(BUI_FLAG_SELECTED); }
     void setPal(const uint16_t *pal){ _pal = pal;}
-
+    uint8_t isSelected(void){ return isFlagSet(BUI_FLAG_SELECTED); }
+    void setVisible(uint8_t v){ if(v) setFlag(BUI_FLAG_VISIBLE); else clrFlag(BUI_FLAG_VISIBLE);}
     void select(uint8_t sel){ if(sel) setFlag(BUI_FLAG_SELECTED); else clrFlag(BUI_FLAG_SELECTED); setInvalid(true);}
 private:
     const uint16_t *_pal;
+    const uint8_t *_ico_data;
 };
 
 #ifdef __cplusplus

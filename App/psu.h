@@ -33,7 +33,7 @@ extern "C" {
 #define UPDATE_INTERVAL             100
 
 #define LOAD_ICON_POS               LCD_W - 36,3
-#define OUTPUT_ICON_POS             160-16,3
+//#define OUTPUT_ICON_POS             160-16,3
 
 #define SCREEN_NUM                  0 //sizeof(screens)/sizeof(void*)
 

@@ -13,6 +13,12 @@
 #define PSU_GRAPH_WIDTH         60
 #define MAX_TEXT_LEN            10
 
+#define PSU_OUTPUT_ICON_POS             160-16,3
+
+static const uint8_t psu_icon_out[] = {15,8,
+    0x7f,0xfc,0xc5,0x46,0xd5,0x6e,0xd5,0x6e,0xd5,0x6e,0xd5,0x6e,0xc4,0x6e,0x7f,0xfc
+};
+
 static void voltageFormat(char *out, int32_t mv){
     xsprintf(out,"%02u.%uV", mv/1000, (mv/100)%10);    
 }
@@ -28,16 +34,20 @@ ViewPsu::ViewPsu():
     _wi_graph(LCD_W - PSU_GRAPH_WIDTH, LCD_H - PSU_GRAPH_HIGHT - 2, 
              PSU_GRAPH_WIDTH, PSU_GRAPH_HIGHT, 
              2, 
-             (const uint16_t[]){0x18E3, RED, GREEN, YELLOW})
+             (const uint16_t[]){0x18E3, RED, GREEN, YELLOW}),
+    _wi_out_icon(PSU_OUTPUT_ICON_POS, psu_icon_out)
 {
 
     _wi_voltage.init(100, 100, MIN_VOLTAGE, MAX_VOLTAGE, voltageFormat);
     _wi_current.init(10, 100, MIN_CURRENT, MAX_CURRENT, currentFormat);
+
+    _wi_out_icon.setPal((const uint16_t[]){BLACK, BLACK, RED});
     
     addWidget(&_wi_power);
     addWidget(&_wi_voltage);
     addWidget(&_wi_current);
     addWidget(&_wi_graph);
+    addWidget(&_wi_out_icon);
 }
 
 void ViewPsu::init(void){
@@ -94,5 +104,10 @@ void ViewPsu::changeVoltage(uint8_t d){
 
 void ViewPsu::changeCurrent(uint8_t d){
     _wi_current.changeValue(d);
+}
+
+void ViewPsu::showOutIcon(uint8_t v){
+    _wi_out_icon.setVisible(v);
+    _wi_out_icon.setInvalid(true);
 }
 

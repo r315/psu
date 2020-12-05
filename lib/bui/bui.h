@@ -31,6 +31,8 @@ extern "C" {
 #define BUI_FLAG_SELECTED           (1 << 4)
 #define BUI_FLAG_REDRAW             (1 << 5)
 
+#define BUI_EVT_SEL_SCR(_S)         (buievt_e)(BUI_EVT_SEL_SCR + _S)
+
 struct list_node{
     void *elem;
     struct list_node *next;

@@ -52,7 +52,7 @@ void PresenterPreset::update(void){
 buievt_e PresenterPreset::eventHandler(buikeyevt_t *evt){   
 
     if(_state == PRE_EXIT){
-        return BUI_EVT_CHG_SCR;
+        return BUI_EVT_SEL_SCR(0); //select screen psu
     }
 
     if(evt->type != BUTTON_PRESSED){
@@ -60,8 +60,8 @@ buievt_e PresenterPreset::eventHandler(buikeyevt_t *evt){
     }
 
     switch(evt->key){
-        case BUTTON_MODE:
-            return BUI_EVT_CHG_SCR;            
+        case BUTTON_PRE:
+            return  BUI_EVT_SEL_SCR(0);            
 
         case BUTTON_UP:
             moveSelect((MAX_PRESETS>>1));

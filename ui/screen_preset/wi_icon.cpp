@@ -3,32 +3,22 @@
 #include "bui.h"
 #include "wi_icon.h"
 
-BUIicon::BUIicon() : BUIWidget(0,0){
-
-}
-
-BUIicon::BUIicon(uint16_t x = 0, uint16_t y = 0) : BUIWidget(x ,y){
-    
+BUIicon::BUIicon(uint16_t x, uint16_t y, const uint8_t *data = NULL) : BUIWidget(x ,y){
+    _ico_data = data;
 }
 
 
 void BUIicon::draw(void){
     if(isInvalid()){
         if(isVisible()){
+            // TODO: Improve icon selection
             if(isSelected()){
-            //TEXT_SetPalette((const uint16_t []){BLACK, YELLOW});
-            //xsprintf(gOut, "%.1fV ", _presets[idx].v/1000.0f);
-            //TEXT_Print(PRESET_INFO1_POS, gOut);
-            //xsprintf(gOut, "%.2fA ", _presets[idx].i/1000.0f);
-            //TEXT_Print(PRESET_INFO2_POS, gOut);
-            //memset16(scratch, PRESET_SELECT, PRESET_SIZE);
-            //TEXT_SetPalette((const uint16_t []){PRESET_SELECT, WHITE});
-                DRAW_FillRect(_x, _y, 16, 16, _pal[1]);
-            }else{
-                //memset16(scratch, PRESET_BCOLOR, PRESET_SIZE);
-                //TEXT_SetPalette((const uint16_t []){PRESET_BCOLOR, WHITE});
-                DRAW_FillRect(_x, _y, 16, 16, _pal[0]);
+                DRAW_FillRect(_x, _y, _ico_data[0], _ico_data[1], _pal[2]);
+            }else{                
+                DRAW_Icon(_x, _y, _ico_data, _pal + 1);
             }
+        }else{
+            DRAW_FillRect(_x, _y, _ico_data[0], _ico_data[1], _pal[0]);
         }
         setInvalid(false);
     }

@@ -9,13 +9,27 @@
 #define PRESET_UNSELECTED_COLOR       WHITE
 #define PRESET_SELECTED_COLOR         CYAN
 
+const uint8_t preset_icon[]{16,16,
+   0,0,0,0,
+   0,0,0,0,
+   0,0,0,0,
+   0,0,0,0,
+   0,0,0,0,
+   0,0,0,0,
+   0,0,0,0,
+   0,0,0,0,
+};
+
 ViewPreset::ViewPreset(): _wi_pre_v(PRESET_INFO1_POS), _wi_pre_i(PRESET_INFO2_POS){
+    _wi_ico = (BUIicon**)bui_malloc(sizeof(BUIicon*) * MAX_PRESETS);
+    configASSERT(_wi_ico != NULL );
+
     for(uint8_t i = 0 ; i < MAX_PRESETS; i++){
         uint8_t x = i % (MAX_PRESETS >> 1);
         uint8_t y = (i - x) / (MAX_PRESETS >> 1);
-        _wi_ico[i].setPos(x*32 + 16, y*32 + 16);
-        _wi_ico[i].setPal((const uint16_t []){PRESET_UNSELECTED_COLOR, PRESET_SELECTED_COLOR});
-        addWidget(&_wi_ico[i]);
+        _wi_ico[i] = new BUIicon(x*32 + 16, y*32 + 16, preset_icon);
+        _wi_ico[i]->setPal((const uint16_t []){BLACK, PRESET_UNSELECTED_COLOR, PRESET_SELECTED_COLOR});
+        addWidget(_wi_ico[i]);
     }
 
     addWidget(&_wi_pre_v);
@@ -40,9 +54,9 @@ void ViewPreset::draw(void){
 }
 
 void ViewPreset::select(uint8_t idx){
-    _wi_ico[_selected].select(false);
+    _wi_ico[_selected]->select(false);
     _selected = idx;
-    _wi_ico[_selected].select(true);
+    _wi_ico[_selected]->select(true);
 }
 
 uint8_t ViewPreset::getSelected(void){
