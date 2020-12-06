@@ -16,7 +16,10 @@ typedef enum{
     PSU_IDLE,
     PSU_ENABLED,
     PSU_SET_V,
-    PSU_SET_I
+    PSU_SET_I,
+    PSU_END_SET_V,
+    PSU_END_SET_I,
+    PSU_ABORT_SET,
 }statepsu_e;
 
 class ViewPsu;
@@ -34,10 +37,10 @@ private:
     ViewPsu *_view;
     ModelPsu *_model;
     statepsu_e _state;
-    void stateEnabled(buikeyevt_t *evt);
-    void stateIdle(buikeyevt_t *evt);
-    void stateSetV(buikeyevt_t *evt);
-    void stateSetI(buikeyevt_t *evt);
+    buievt_e stateEnabled(buikeyevt_t *evt);
+    buievt_e stateIdle(buikeyevt_t *evt);
+    buievt_e stateSetV(buikeyevt_t *evt);
+    buievt_e stateSetI(buikeyevt_t *evt);
 };
 
 #ifdef __cplusplus

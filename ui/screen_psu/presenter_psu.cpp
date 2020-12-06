@@ -41,17 +41,29 @@ void PresenterPsu::tick(void){
 
         case PSU_ENABLED:
         {
-            if(_model->isFlagSet(MODEL_FLAG_APP)){
-                uint16_t v = _model->getOutVoltage();
-                uint16_t i = _model->getOutCurrent();
-                uint32_t p = (v/1000) * i;
-                _view->updateVoltage(v);
-                _view->updateCurrent(i);
-                _view->updatePower(p);
-                _view->updateGraph();
-            }
+            uint16_t v = _model->getOutVoltage();
+            uint16_t i = _model->getOutCurrent();
+            uint32_t p = (v/1000) * i;
+            _view->updateVoltage(v);
+            _view->updateCurrent(i);
+            _view->updatePower(p);
+            _view->updateGraph();
             break;
         }
+
+        case PSU_END_SET_V:
+            _view->editVoltage(false);
+            _model->setOutVoltagePreset(_view->getVoltage());
+            _model->applyPsuPreset();
+            _state = _model->getOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
+            break;
+
+        case PSU_END_SET_I:
+            _view->editCurrent(false);
+            _model->setOutCurrentPreset(_view->getCurrent());
+            _model->applyPsuPreset();
+            _state = _model->getOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
+            break;
         
         default:
             break;
@@ -75,26 +87,16 @@ buievt_e PresenterPsu::eventHandler(buikeyevt_t *evt){
 
     switch(_state){
         case PSU_ENABLED:
-        case PSU_IDLE:
-            if(evt->key == BUTTON_MODE){
-                return BUI_EVT_SEL_SCR(2);      // select screen load
-            }else if(evt->key == BUTTON_PRE){
-                return BUI_EVT_SEL_SCR(1);      // select screen preset
-            }
-            if(_state == PSU_IDLE){
-                stateIdle(evt); 
-            }else{
-                stateEnabled(evt);
-            }
-            break;
+            return stateEnabled(evt);
 
+        case PSU_IDLE:
+            return stateIdle(evt);
+            
         case PSU_SET_V:
-            stateSetV(evt);
-            break;
+            return stateSetV(evt);
 
         case PSU_SET_I:
-            stateSetI(evt);
-            break;
+            return stateSetI(evt);
 
         default:
             break;
@@ -105,7 +107,7 @@ buievt_e PresenterPsu::eventHandler(buikeyevt_t *evt){
 /**
  * Presenter helper functions
  * */
-void PresenterPsu::stateIdle(buikeyevt_t *evt){
+buievt_e PresenterPsu::stateIdle(buikeyevt_t *evt){
     switch(evt->key){
         case BUTTON_UP:
             evt->key = BUTTON_EMPTY;
@@ -122,16 +124,20 @@ void PresenterPsu::stateIdle(buikeyevt_t *evt){
             _view->showOutIcon(true);
             break;
 
+        case BUTTON_MODE:
+            return BUI_EVT_SEL_SCR(2);      // select screen load
+
+        case BUTTON_PRE:
+            return BUI_EVT_SEL_SCR(1);      // select screen preset
+
         default:
             break;
     }
+    return BUI_EVT_NONE;
 }
 
-void PresenterPsu::stateEnabled(buikeyevt_t *evt){
+buievt_e PresenterPsu::stateEnabled(buikeyevt_t *evt){
     switch(evt->key){
-        case BUTTON_MODE:
-            break;
-
         case BUTTON_UP:
             evt->key = BUTTON_EMPTY; // Set empty button to force state change
             stateSetV(evt);
@@ -145,51 +151,48 @@ void PresenterPsu::stateEnabled(buikeyevt_t *evt){
         case BUTTON_OUT:
             _state = _model->toggleOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
             break;
-
+        
+        case BUTTON_PRE:
+            return BUI_EVT_SEL_SCR(1);      // select screen preset
+        
         default:
             break;
     }
+    return BUI_EVT_NONE;
 }
 
-void PresenterPsu::stateSetV(buikeyevt_t *evt){
+buievt_e PresenterPsu::stateSetV(buikeyevt_t *evt){
     switch(evt->key){        
 
-        case BUTTON_UP:
-            _view->changeVoltage(1);
-            break;
+        case BUTTON_UP: _view->changeVoltage(1); break;
             
-        case BUTTON_DOWN:
-            _view->changeVoltage(-1);
-            break;
+        case BUTTON_DOWN: _view->changeVoltage(-1); break;
 
-        case BUTTON_LEFT:
-            _view->editVoltage(1);
-            break;
+        case BUTTON_LEFT: _view->editVoltage(1); break;
             
-        case BUTTON_RIGHT:
-            _view->editVoltage(-1);
-            break;
+        case BUTTON_RIGHT: _view->editVoltage(-1); break;
 
         case BUTTON_SET:
-            // TODO: fix, this call is not thread safe
-            _model->setOutVoltagePreset(_view->getVoltage());
+            _state = PSU_END_SET_V;
+            break;
+            
         case BUTTON_MODE:
-            _view->editVoltage(0);
-            _state = _model->getOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
+            _state = PSU_ABORT_SET;
             break;
 
         case BUTTON_EMPTY:
             _view->updateVoltage(_model->getOutVoltagePreset());
-            _view->editVoltage(1);
+            _view->editVoltage(true);
             _state = PSU_SET_V;
             break;
 
         default:
             break;
     }
+    return BUI_EVT_NONE;
 }
 
-void PresenterPsu::stateSetI(buikeyevt_t *evt){
+buievt_e PresenterPsu::stateSetI(buikeyevt_t *evt){
     switch(evt->key){
 
         case BUTTON_UP:
@@ -209,10 +212,11 @@ void PresenterPsu::stateSetI(buikeyevt_t *evt){
             break;
 
         case BUTTON_SET:
-            _model->setOutCurrentPreset(_view->getCurrent());
+            _state = PSU_END_SET_I;
+            break;
+
         case BUTTON_MODE:
-            _view->editCurrent(0);
-            _state = _model->getOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
+            _state = PSU_ABORT_SET;
             break;
 
         case BUTTON_EMPTY:
@@ -224,4 +228,5 @@ void PresenterPsu::stateSetI(buikeyevt_t *evt){
         default:
             break;
     }
+    return BUI_EVT_NONE;
 }

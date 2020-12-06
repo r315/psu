@@ -43,14 +43,22 @@ public:
     uint8_t getOutputEnable(void);
     uint8_t toggleOutputEnable(void);
 
-    // Called from presenter with app task context
+    /**
+     * Called from presenter with app task context,
+     * to update model data with data from app
+     * */
     void updateOutputVoltage(void);
     void updateOutputCurrent(void);
     void updateLoadVoltage(void);
     void updateLoadCurrent(void);
     void updateUsbCurrent(void);
     void updateCellVoltage(uint8_t c);
-
+    void updatePsuPreset(void);
+    
+    // Apply model data to app
+    void applyPsuPreset(void);
+    void applyChargerPreset(void);
+    void applyPreset(void);
 private:
     uint32_t _out_voltage;
     uint32_t _out_current;
