@@ -102,6 +102,7 @@ $(wildcard $(APP_SRC_DIR)/*.cpp) \
 $(wildcard $(APP_SRC_DIR)/console/*.cpp) \
 $(wildcard $(BUI_DIR)/*.cpp) \
 $(wildcard $(UI_DIR)/model/*.cpp) \
+$(wildcard $(UI_DIR)/common/*.cpp) \
 $(wildcard $(UI_DIR)/screen_psu/*.cpp) \
 $(wildcard $(UI_DIR)/screen_preset/*.cpp) \
 $(wildcard $(UI_DIR)/screen_load/*.cpp) \
@@ -137,6 +138,7 @@ C_INCLUDES =  \
 -I$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
 -I$(BUI_DIR) \
 -I$(UI_DIR)/model \
+-I$(UI_DIR)/common \
 -I$(UI_DIR)/screen_psu \
 -I$(UI_DIR)/screen_preset \
 -I$(UI_DIR)/screen_charger \
