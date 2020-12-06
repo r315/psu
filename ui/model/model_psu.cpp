@@ -94,20 +94,17 @@ preset_t ModelPsu::getPreset(uint8_t idx){
     return app_getPreset(idx);
 }
 void ModelPsu::setOutPreset(preset_t pre){
-    _out_preset = pre;
-    _flags |= MODEL_FLAG_PRESET;
+    setFlag(MODEL_FLAG_PRESET);
 }
 void ModelPsu::setOutVoltagePreset(uint32_t v){
-    _out_preset.v = v; 
-    _flags |= MODEL_FLAG_PRESET;
+    setFlag(MODEL_FLAG_PRESET);
 }
 void ModelPsu::setOutCurrentPreset(uint32_t i){
-    _out_preset.i = i; 
-    _flags |= MODEL_FLAG_PRESET;
+    setFlag(MODEL_FLAG_PRESET);
 }
 void ModelPsu::setOutPresetIdx(uint8_t idx){
     _preset_idx = idx;
-    _flags |= MODEL_FLAG_PRESET_IDX;
+    setFlag(MODEL_FLAG_PRESET_IDX);
 }
 
 void ModelPsu::updateOutputVoltage(void){

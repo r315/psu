@@ -19,7 +19,7 @@ public:
     void update();
     void init(void);
 
-    uint8_t hasData();
+    // Called from presenter with bui task context to get/set model data
     uint32_t getOutVoltage(void);
     uint32_t getOutCurrent(void);
     uint32_t getLoadVoltage(void);
@@ -48,7 +48,6 @@ public:
     void updateUsbCurrent(void);
     void updateCellVoltage(uint8_t c);
 
-    uint8_t isFlagSet(uint8_t flag){return !!(this->_flags & flag);}
 private:
     uint32_t _out_voltage;
     uint32_t _out_current;
@@ -60,7 +59,6 @@ private:
     preset_t _out_preset;
     uint8_t _preset_idx;
 
-    uint8_t _flags;
     SemaphoreHandle_t access_data;
 };
 
