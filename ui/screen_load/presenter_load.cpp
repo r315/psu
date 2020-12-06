@@ -9,13 +9,6 @@ void PresenterLoad::init(void){
     //assert(_view != NULL);
 }
 
-void PresenterLoad::destroy(void){
-    if(_view != NULL){
-        //delete _view;
-        //_view = NULL;
-    }
-}
-
 void PresenterLoad::tick(void){
 
 }

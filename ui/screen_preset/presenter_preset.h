@@ -26,7 +26,6 @@ class PresenterPreset : public BUIPresenter{
 public:
     PresenterPreset() : _view(NULL),_state(PRE_INIT){}
     void init(void);
-    void destroy(void);
     void tick(void);
     void update(void);
     buievt_e eventHandler(buikeyevt_t *evt);

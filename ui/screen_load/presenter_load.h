@@ -23,7 +23,6 @@ class PresenterLoad : public BUIPresenter{
 public:
     PresenterLoad() : _state(LOAD_INIT){ _view = NULL;}
     void init(void);
-    void destroy(void);
     void tick(void);
     void update(void);
     buievt_e eventHandler(buikeyevt_t *evt);

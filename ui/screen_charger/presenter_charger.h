@@ -25,7 +25,6 @@ class PresenterCharger : public BUIPresenter{
 public:
     PresenterCharger() : _state(CHG_INIT){ _view = NULL; _ncell = 4; }
     void init(void);
-    void destroy(void);
     void tick(void);
     void update(void);
     buievt_e eventHandler(buikeyevt_t *evt);

@@ -8,9 +8,6 @@ void PresenterCharger::init(void){
     _view->init();
 }
 
-void PresenterCharger::destroy(void){
-}
-
 void PresenterCharger::tick(void){
     switch(_state){
         case CHG_INIT:

@@ -5,20 +5,17 @@
 #include "presenter_psu.h"
 
 void PresenterPsu::init(void){
+    // Allocate view
     if(_view == NULL){
         _view = new ViewPsu();
     }
+    // Invalidate view and widgets
     _view->init();
+    // Set state fo be initialized
     _state = PSU_INIT;
 }
 
-void PresenterPsu::destroy(void){
-    if(_view != NULL){
-        //delete _view;
-        //_view = NULL;
-    }
-}
-
+// Called at the end of frame by bui task
 void PresenterPsu::tick(void){
 
     switch(_state){
@@ -61,12 +58,14 @@ void PresenterPsu::tick(void){
     }
 }
 
+// Called from app task
 void PresenterPsu::update(void){
-    // update model data
+    // update the necessary model data
     _model->updateOutputVoltage();
     _model->updateOutputCurrent();
 }
 
+// Called from bui task at start of frame if any button event has ocurred
 buievt_e PresenterPsu::eventHandler(buikeyevt_t *evt){
 
     // user input will end here
@@ -103,6 +102,9 @@ buievt_e PresenterPsu::eventHandler(buikeyevt_t *evt){
     return BUI_EVT_NONE;
 }
 
+/**
+ * Presenter helper functions
+ * */
 void PresenterPsu::stateIdle(buikeyevt_t *evt){
     switch(evt->key){
         case BUTTON_UP:

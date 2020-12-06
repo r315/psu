@@ -12,13 +12,6 @@ void PresenterPreset::init(void){
     _state = PRE_INIT;
 }
 
-void PresenterPreset::destroy(void){
-    if(_view != NULL){
-        //delete _view;
-        //_view = NULL;
-    }
-}
-
 void PresenterPreset::tick(void){
     switch(_state){
         case PRE_INIT:

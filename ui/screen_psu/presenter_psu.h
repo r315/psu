@@ -25,7 +25,6 @@ class PresenterPsu : public BUIPresenter{
 public:
     PresenterPsu() : _view(NULL){ _state = PSU_INIT;}
     void init(void);
-    void destroy(void);
     void tick(void);
     void update(void);
     buievt_e eventHandler(buikeyevt_t *evt);
