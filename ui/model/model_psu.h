@@ -26,21 +26,24 @@ public:
     uint32_t getLoadCurrent(void);
     uint32_t getUsbCurrent(void);
     uint32_t getCellVoltage(uint8_t c);
-
-    uint32_t getOutVoltagePreset(void){return _out_preset.v;}
-    void setOutVoltagePreset(uint32_t v);
-    uint32_t getOutCurrentPreset(void){return _out_preset.i;}
-    void setOutCurrentPreset(uint32_t i);
-    
-    uint8_t toggleOutputEnable(void);
-    uint8_t getOutputEnable(void);
-
-    preset_t getOutPreset(void){ return _out_preset;}
+    uint32_t getOutVoltagePreset(void);
+    uint32_t getOutCurrentPreset(void);
+    preset_t getPsuPreset(void);
+    preset_t getChargerPreset(void);
     uint8_t getPresetIdx(void);
     preset_t getPreset(uint8_t idx);
+    uint8_t getBatteryType(void){return _bt_ty;}
+    void setOutVoltagePreset(uint32_t v);
+    void setOutCurrentPreset(uint32_t i);
     void setOutPreset(preset_t pre);
     void setOutPresetIdx(uint8_t idx);
+    void setBatteryType(uint8_t t){ _bt_ty = t;}
+    
+    // Resource not shared, called from presenter
+    uint8_t getOutputEnable(void);
+    uint8_t toggleOutputEnable(void);
 
+    // Called from presenter with app task context
     void updateOutputVoltage(void);
     void updateOutputCurrent(void);
     void updateLoadVoltage(void);
@@ -55,9 +58,10 @@ private:
     uint32_t _load_current;
     uint32_t _usb_current;
     uint32_t _vb[4];
-
-    preset_t _out_preset;
+    preset_t _psu_preset;
+    preset_t _chg_preset;
     uint8_t _preset_idx;
+    uint8_t _bt_ty;
 
     SemaphoreHandle_t access_data;
 };

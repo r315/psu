@@ -15,8 +15,9 @@ ModelPsu::ModelPsu(){
 }
 
 void ModelPsu::init(void){
-    _out_preset = app_getCurrentPreset();
+    _psu_preset = app_getCurrentPreset();
     _preset_idx = app_getCurrentPresetIdx();
+    _bt_ty = 0; // 1S
 }
 
 /**
@@ -43,14 +44,14 @@ void ModelPsu::update(){
 
         // Check if preset value has been edited by user
         if(_flags & MODEL_FLAG_PRESET){
-            app_setPreset(_out_preset);
+            app_setPreset(_psu_preset);
             _flags &= ~MODEL_FLAG_PRESET;
         }
 
         // Check if preset selection has changed by user
         if(_flags & MODEL_FLAG_PRESET_IDX){
             // update local preset
-            _out_preset = app_getPreset(_preset_idx);
+            _psu_preset = app_getPreset(_preset_idx);
             // Set new preset
             app_setPresetByIdx(_preset_idx);
             _flags &= ~MODEL_FLAG_PRESET_IDX;
@@ -59,7 +60,6 @@ void ModelPsu::update(){
         xSemaphoreGive(access_data);
     }
 }
-
 
 uint32_t ModelPsu::getOutVoltage(void){
     return _out_voltage;
@@ -79,6 +79,24 @@ uint32_t ModelPsu::getUsbCurrent(void){
 uint32_t ModelPsu::getCellVoltage(uint8_t c){
     return _vb[c - 1];
 }
+uint32_t ModelPsu::getOutVoltagePreset(void){
+     return _psu_preset.v;
+}
+uint32_t ModelPsu::getOutCurrentPreset(void){
+    return _psu_preset.i;
+}
+preset_t ModelPsu::getPsuPreset(void){
+    return _psu_preset;
+}
+uint8_t ModelPsu::getPresetIdx(void){    
+    return _preset_idx;
+}
+preset_t ModelPsu::getPreset(uint8_t idx){
+    return app_getPreset(idx);
+}
+preset_t ModelPsu::getChargerPreset(void){
+    return _chg_preset;
+}
 
 uint8_t ModelPsu::toggleOutputEnable(void){
     return app_toggleOutputEnable();
@@ -87,19 +105,16 @@ uint8_t ModelPsu::getOutputEnable(void){
     return app_isOutputEnabled();
 }
 
-uint8_t ModelPsu::getPresetIdx(void){    
-    return _preset_idx;
-}
-preset_t ModelPsu::getPreset(uint8_t idx){
-    return app_getPreset(idx);
-}
 void ModelPsu::setOutPreset(preset_t pre){
+    _psu_preset = pre;
     setFlag(MODEL_FLAG_PRESET);
 }
 void ModelPsu::setOutVoltagePreset(uint32_t v){
+    _psu_preset.v = v; 
     setFlag(MODEL_FLAG_PRESET);
 }
 void ModelPsu::setOutCurrentPreset(uint32_t i){
+    _psu_preset.i = i; 
     setFlag(MODEL_FLAG_PRESET);
 }
 void ModelPsu::setOutPresetIdx(uint8_t idx){
