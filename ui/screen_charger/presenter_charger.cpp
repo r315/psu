@@ -13,8 +13,10 @@ void PresenterCharger::tick(void){
         case CHG_INIT:
 
         case CHG_ENTER_IDLE:
-            _view->updateCurrent(_model->getOutCurrentPreset());
             _view->showChargingIcon(false);
+            _view->updateCurrent(_model->getOutCurrentPreset());
+            _view->updateBatteryType(_model->getBatteryType());
+            _view->updateCapacity(0);
             _state = CHG_IDLE;
             break;
 
@@ -36,6 +38,13 @@ void PresenterCharger::tick(void){
             }
             break;
 
+        case CHG_END_SET_TYPE:
+            _model->setBatteryType(_view->getBatteryType());            
+
+        case CHG_ABORT_SET_TYPE:
+            _view->editBatteryType(false);
+            _state = CHG_ENTER_IDLE;
+            break;
 
         default:
             break;
@@ -57,6 +66,7 @@ buievt_e PresenterCharger::eventHandler(buikeyevt_t *evt){
     switch(_state){
         case CHG_IDLE:
             if(evt->key == BUTTON_MODE){
+                _state = CHG_INIT;
                 return BUI_EVT_CHG_SCR;
             }
             stateIdle(evt);
@@ -67,6 +77,10 @@ buievt_e PresenterCharger::eventHandler(buikeyevt_t *evt){
             break;
 
         case CHG_CHARGING:
+            break;
+
+        case CHG_SET_TYPE:
+            stateSetType(evt);
             break;
             
         default:
@@ -85,6 +99,11 @@ void PresenterCharger::stateIdle(buikeyevt_t *evt){
             stateSetI(evt);
             break;
 
+        case BUTTON_UP:
+            evt->key = BUTTON_EMPTY;
+            stateSetType(evt);
+            break;
+
         case BUTTON_OUT:
             _state = _model->toggleOutputEnable() ? CHG_ENTER_CHARGING : CHG_ENTER_IDLE;
             break;
@@ -97,28 +116,15 @@ void PresenterCharger::stateIdle(buikeyevt_t *evt){
 void PresenterCharger::stateSetI(buikeyevt_t *evt){
     switch(evt->key){
 
-        case BUTTON_UP:
-            _view->changeCurrent(1);
-            break;
+        case BUTTON_UP: _view->changeCurrent(1); break;
             
-        case BUTTON_DOWN:
-            _view->changeCurrent(-1);
-            break;
+        case BUTTON_DOWN: _view->changeCurrent(-1); break;
 
-        case BUTTON_LEFT:
-            _view->editCurrent(1);
-            break;
+        case BUTTON_LEFT: _view->editCurrent(1); break;
             
-        case BUTTON_RIGHT:
-            _view->editCurrent(-1);
-            break;
+        case BUTTON_RIGHT: _view->editCurrent(-1); break;
 
-        case BUTTON_SET:
-            _model->setOutCurrentPreset(_view->getCurrent());
-            _view->editCurrent(0);
-            _state = CHG_ENTER_IDLE;
-            break;
-
+        case BUTTON_SET: _model->setOutCurrentPreset(_view->getCurrent());            
         case BUTTON_MODE:
             _view->editCurrent(0);
             _state = CHG_ENTER_IDLE;
@@ -128,6 +134,35 @@ void PresenterCharger::stateSetI(buikeyevt_t *evt){
             _view->updateCurrent(_model->getOutCurrentPreset());
             _view->editCurrent(1);
             _state = CHG_SET_I;
+            break;
+
+        default:
+            break;
+    }
+}
+
+void PresenterCharger::stateSetType(buikeyevt_t *evt){
+    switch(evt->key){
+
+        case BUTTON_LEFT:
+            _view->scrollBatteryType(-1);
+            break;
+            
+        case BUTTON_RIGHT:
+            _view->scrollBatteryType(1);
+            break;
+
+        case BUTTON_SET:
+            _state = CHG_END_SET_TYPE;
+            break;
+            
+        case BUTTON_MODE:
+            _state = CHG_ABORT_SET_TYPE;
+            break;
+
+        case BUTTON_EMPTY:
+            _view->editBatteryType(true);
+            _state = CHG_SET_TYPE;
             break;
 
         default:

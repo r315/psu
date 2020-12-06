@@ -18,6 +18,9 @@ typedef enum{
     CHG_ENTER_CHARGING,
     CHG_CHARGING,
     CHG_SET_I,
+    CHG_SET_TYPE,
+    CHG_ABORT_SET_TYPE,
+    CHG_END_SET_TYPE
 }statecharger_e;
 
 
@@ -33,6 +36,7 @@ public:
 private:
     void stateIdle(buikeyevt_t *evt);
     void stateSetI(buikeyevt_t *evt);
+    void stateSetType(buikeyevt_t *evt);
     ViewCharger *_view;
     ModelPsu *_model;
     statecharger_e _state;
