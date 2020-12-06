@@ -26,15 +26,13 @@ void PresenterCharger::tick(void){
             break;
 
         case CHG_IDLE:
-        case CHG_CHARGING:
-            if(_model->isFlagSet(MODEL_FLAG_APP)){
-                for(uint8_t i = 1; i <= CHG_MAX_CELL; i++){
-                    if(i < _ncell){
-                        _view->updateCellVoltage(i, _model->getCellVoltage(i));
-                    }else{
-                        _view->updateCellVoltage(i, -1);
-                    }
-                }                
+        case CHG_CHARGING:            
+            for(uint8_t i = 1; i <= CHG_MAX_CELL; i++){
+                if(i < _ncell){
+                    _view->updateCellVoltage(i, _model->getCellVoltage(i));
+                }else{
+                    _view->updateCellVoltage(i, -1);
+                }
             }
             break;
 

@@ -179,12 +179,8 @@ public:
     virtual void tick(void){}
     virtual void init(void){}
     void setPresenter(BUIPresenter *pre){ _presenter = pre;}
-    uint8_t isFlagSet(uint8_t flag){return !!(this->_flags & flag);}
-    void setFlag(uint8_t flag){this->_flags |= flag;}
-    void clrFlag(uint8_t flag){this->_flags &= ~flag;}
 protected:
     BUIPresenter *_presenter;
-    uint32_t _flags;
 };
 
 class BUI{    

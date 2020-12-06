@@ -15,7 +15,7 @@ ModelPsu::ModelPsu(){
 }
 
 void ModelPsu::init(void){
-    _psu_preset = app_getCurrentPreset();
+    updatePsuPreset();
     _preset_idx = app_getCurrentPresetIdx();
     _bt_ty = 0; // 1S
 }
@@ -26,7 +26,8 @@ void ModelPsu::init(void){
 void ModelPsu::tick(void){
     if(xSemaphoreTake(access_data, 0) == pdPASS){
         // Thread safe call
-        _presenter->tick();
+        if(_presenter != NULL)
+            _presenter->tick();
         xSemaphoreGive(access_data);
     }
 }
@@ -39,24 +40,6 @@ void ModelPsu::update(){
         // Update model variables through presenter
         if(_presenter != NULL)
             _presenter->update();
-        // Notify for new data
-        _flags |= MODEL_FLAG_APP;
-
-        // Check if preset value has been edited by user
-        if(_flags & MODEL_FLAG_PRESET){
-            app_setPreset(_psu_preset);
-            _flags &= ~MODEL_FLAG_PRESET;
-        }
-
-        // Check if preset selection has changed by user
-        if(_flags & MODEL_FLAG_PRESET_IDX){
-            // update local preset
-            _psu_preset = app_getPreset(_preset_idx);
-            // Set new preset
-            app_setPresetByIdx(_preset_idx);
-            _flags &= ~MODEL_FLAG_PRESET_IDX;
-        }
-
         xSemaphoreGive(access_data);
     }
 }
@@ -107,19 +90,15 @@ uint8_t ModelPsu::getOutputEnable(void){
 
 void ModelPsu::setOutPreset(preset_t pre){
     _psu_preset = pre;
-    setFlag(MODEL_FLAG_PRESET);
 }
 void ModelPsu::setOutVoltagePreset(uint32_t v){
     _psu_preset.v = v; 
-    setFlag(MODEL_FLAG_PRESET);
 }
 void ModelPsu::setOutCurrentPreset(uint32_t i){
     _psu_preset.i = i; 
-    setFlag(MODEL_FLAG_PRESET);
 }
 void ModelPsu::setOutPresetIdx(uint8_t idx){
     _preset_idx = idx;
-    setFlag(MODEL_FLAG_PRESET_IDX);
 }
 
 void ModelPsu::updateOutputVoltage(void){
@@ -139,4 +118,17 @@ void ModelPsu::updateUsbCurrent(void){
 }
 void ModelPsu::updateCellVoltage(uint8_t c){
     _vb[c - 1] = psu_getCellVoltage(c);
+}
+void ModelPsu::updatePsuPreset(void){
+    _psu_preset = app_getCurrentPreset();
+}
+
+void ModelPsu::applyPsuPreset(void){
+    app_setPreset(_psu_preset);
+}
+void ModelPsu::applyChargerPreset(void){
+    app_setPreset(_chg_preset);
+}
+void ModelPsu::applyPreset(void){
+    app_setPresetByIdx(_preset_idx);    
 }
