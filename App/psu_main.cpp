@@ -32,7 +32,9 @@ static CmdPwr pwr;
 static CmdIo io;
 static CmdSet set;
 static CmdReset reset;
+#ifdef ENABLE_EEPROM
 static CmdEeprom eeprom;
+#endif
 #ifdef ENABLE_DFU
 static CmdDfu dfu;
 #endif
@@ -58,7 +60,9 @@ static ConsoleCommand *commands[] = {
 #endif
     &reset,
     &status,
+#ifdef ENABLE_EEPROM
     &eeprom,
+#endif
     NULL
 };
 
@@ -306,7 +310,7 @@ void app_defaultState(void){
  * 
  * */
 uint8_t app_restoreState(void){
-
+#ifdef ENABLE_EEPROM
     uint16_t size = (uint8_t*)&psu.cksum - (uint8_t*)&psu;
 
     EEPROM_Read(EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1);
@@ -319,10 +323,14 @@ uint8_t app_restoreState(void){
         return 0;
     }
     SET_EEPROM_FLAG;
+#else
+    app_defaultState();
+#endif
     return 1;
 }
 
 uint8_t app_saveState(void){
+#ifdef ENABLE_EEPROM
     uint16_t size;
     size = (uint8_t*)&psu.cksum - (uint8_t*)&psu;
     psu.cksum = app_calcCksum((uint8_t*)&psu, size);
@@ -331,6 +339,7 @@ uint8_t app_saveState(void){
         return 0;
     }
     DBG_PRINT("done\n");
+#endif
     return 1;
 }
 
@@ -459,9 +468,9 @@ extern "C" void app_setup(void){
 
     LCD_Init();
     LCD_Rotation(LCD_LANDSCAPE);
-
+#ifdef ENABLE_EEPROM
     EEPROM_Init();
-
+#endif
     app_restoreState();
 
     PWM_Init(psu.pwm_cal[0].init, psu.pwm_cal[1].init, psu.pwm_cal[2].init);

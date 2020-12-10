@@ -3,6 +3,7 @@
 #include "eeprom.h"
 #include "psu.h"
 
+#ifdef ENABLE_EEPROM
 void CmdEeprom::dumpAddress(uint16_t addr){
     uint8_t buf[16];
 
@@ -89,3 +90,4 @@ char CmdEeprom::execute(void *ptr){
 
     return CMD_BAD_PARAM;
 }
+#endif

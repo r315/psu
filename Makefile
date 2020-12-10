@@ -192,6 +192,7 @@ C_DEFS =  \
 -DUSE_GROTESKBOLD_FONT \
 -D_ENABLE_USB_CDC \
 -DENABLE_UART \
+-D_ENABLE_EEPROM \
 
 # compile gcc flags
 ifeq ($(DEBUG), 1)

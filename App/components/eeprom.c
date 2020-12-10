@@ -2,7 +2,7 @@
 #include "eeprom.h"
 #include "board.h"
 
-
+#ifdef ENABLE_EEPROM
 
 void EEPROM_Init(void){
     uint8_t data;
@@ -59,3 +59,5 @@ uint16_t EEPROM_Erase(void){
     }
     return EEPROM_SIZE;
 }
+
+#endif
