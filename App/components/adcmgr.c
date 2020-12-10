@@ -12,6 +12,22 @@ static const uint8_t adcmgr_seq[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 #define ADCMGR_DEFAULT_SEQ      adcmgr_seq
 #define ADCMGR_DEFAULT_GAIN     adcmgr_ch_gain
 
+// https://www.electronicdesign.com/technologies/analog/article/21778422/use-software-filters-to-reduce-adc-noise
+#define MRG_ENABLE_FIR  // Finite impulse response
+//#define MRG_ENABLE_IIR   // Infinite impulse response
+
+#ifdef MRG_ENABLE_FIR
+#define MRG_FIR_ORDER  16
+static uint32_t avg;
+static uint8_t avg_count;
+#endif
+
+#ifdef MRG_ENABLE_IIR
+#define MRG_IIR_COUNTS  16
+static uint32_t iir_acc;
+static uint8_t iir_count;
+#endif
+
 /**
  * @brief Callback for single channel convertion 
  * in sequence.
@@ -19,7 +35,28 @@ static const uint8_t adcmgr_seq[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
  * \param data : raw adc value 
  * */
 static void eoc_seq_cb(uint16_t data){
+#ifdef MRG_ENABLE_FIR
+    avg += data;
+    if(--avg_count > 0){
+        ADC_Start();
+        return;
+    }
+    adcmgr_ch_data[seq_idx++] = avg/MRG_FIR_ORDER;
+    avg = 0;
+    avg_count = MRG_FIR_ORDER;
+#elif defined(MRG_ENABLE_IIR)
+    iir_acc = ((data - iir_acc)/MRG_IIR_COUNTS) + iir_acc;
+    //iir_acc += (data - iir_acc);
+    if(--iir_count > 0){
+        ADC_Start();
+        return;
+    }
+    adcmgr_ch_data[seq_idx++] = iir_acc;
+    iir_acc = 0;
+    iir_count = MRG_IIR_COUNTS;
+#else
     adcmgr_ch_data[seq_idx++] = data;
+#endif
     if(seq_idx == seq_len){
         if(adcmgr_eoc_cb)
             adcmgr_eoc_cb(adcmgr_ch_data);
@@ -63,6 +100,13 @@ uint16_t ADCMGR_Convert(uint8_t channel){
     ADCMGR_SetChannel(channel);
     seq_idx = 0;
     ADC_SetCallBack(eoc_single_cb);
+#ifdef MRG_ENABLE_FIR
+    avg = 0;
+    avg_count = MRG_FIR_ORDER;
+#elif defined(MRG_ENABLE_IIR)
+    iir_acc = 0;
+    iir_count = MRG_IIR_COUNTS;
+#endif
     ADC_Start();
     while(seq_idx == 0);
     return adcmgr_ch_data[0];
@@ -104,6 +148,13 @@ void ADCMGR_Start(void){
     }
     seq_idx = 0;
     ADCMGR_SetChannel(seq_idx);
+#ifdef MRG_ENABLE_FIR
+    avg = 0;
+    avg_count = MRG_FIR_ORDER;
+#elif defined(MRG_ENABLE_IIR)
+    iir_acc = 0;
+    iir_count = MRG_IIR_COUNTS;
+#endif
     ADC_Start();
 }
 
