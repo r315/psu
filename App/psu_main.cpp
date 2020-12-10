@@ -90,12 +90,12 @@ const float default_an_channel_gain[] = {
     1.0f,
     1.0f,
     1.0f,
-    1.0f,
-    1.0f,
-    1.0f,
-    1.0f,
-    1.0f,
-    1.0f,  // IUSB
+    5.7f,  // MUX8  B+
+    4.3f,  // MUX9  VB3
+    3.0f,  // MUX10 VB2
+    2.0f,  // MUX11 VB1
+    1.0f,  // MUX12 B-
+    1.0f,  // MUX13 IUSB
     1.0f,
     1.0f,
     1.0f
@@ -183,16 +183,11 @@ uint32_t psu_getChannelVoltage(uint8_t channel){
 
 /**
  * @brief Get cell voltage at balancer terminals
- * \param c : cell number [4-1], counting from gnd
+ * \param c : cell number [0,3], counting from gnd
  * \return : cell voltage in mV
  * */
 uint32_t psu_getCellVoltage(uint8_t c){
-    if(c > 4 || c < 1){
-        return 0;
-    }
-    uint32_t cell = psu_getChannelVoltage(VB0_MUX_CH - c - 1);
-
-    return psu_getChannelVoltage(VB0_MUX_CH - c) - cell;
+    return psu_getChannelVoltage(VB0_MUX_CH - (c + 1));
 }
 
 uint32_t psu_getOutputVoltage(void){

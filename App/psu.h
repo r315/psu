@@ -32,6 +32,8 @@ extern "C" {
 #define APP_INTERVAL                10
 #define UPDATE_INTERVAL             100
 
+#define MAX_CELL_VOLTAGE            4200
+
 #define LOAD_ICON_POS               LCD_W - 36,3
 //#define OUTPUT_ICON_POS             160-16,3
 
