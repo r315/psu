@@ -17,7 +17,10 @@ ModelPsu::ModelPsu(){
 void ModelPsu::init(void){
     updatePsuPreset();
     _preset_idx = app_getCurrentPresetIdx();
-    _bt_ty = 0; // 1S
+    
+    _bt_ty = 1; // 1S
+    _chg_preset.v = MAX_CELL_VOLTAGE;
+    _chg_preset.i = 100;
 }
 
 /**
@@ -60,10 +63,10 @@ uint32_t ModelPsu::getUsbCurrent(void){
     return _usb_current;
 }
 uint32_t ModelPsu::getCellVoltage(uint8_t c){
-    return _vb[c - 1];
+    return _vb[c];
 }
 uint32_t ModelPsu::getOutVoltagePreset(void){
-     return _psu_preset.v;
+    return _psu_preset.v;
 }
 uint32_t ModelPsu::getOutCurrentPreset(void){
     return _psu_preset.i;
@@ -79,6 +82,9 @@ preset_t ModelPsu::getPreset(uint8_t idx){
 }
 preset_t ModelPsu::getChargerPreset(void){
     return _chg_preset;
+}
+uint32_t ModelPsu::getChargeCurrent(void){
+    return _chg_preset.i;
 }
 
 uint8_t ModelPsu::toggleOutputEnable(void){
@@ -100,6 +106,13 @@ void ModelPsu::setOutCurrentPreset(uint32_t i){
 void ModelPsu::setOutPresetIdx(uint8_t idx){
     _preset_idx = idx;
 }
+void ModelPsu::setChargerCurrent(uint32_t i){
+    _chg_preset.i = i;    
+}
+void ModelPsu::setBatteryType(uint8_t t){
+     _bt_ty = t;
+     _chg_preset.v = MAX_CELL_VOLTAGE * (t);
+}
 
 void ModelPsu::updateOutputVoltage(void){
     _out_voltage = psu_getOutputVoltage();
@@ -117,7 +130,7 @@ void ModelPsu::updateUsbCurrent(void){
     _usb_current = psu_getUsbCurrent();
 }
 void ModelPsu::updateCellVoltage(uint8_t c){
-    _vb[c - 1] = psu_getCellVoltage(c);
+    _vb[c] = psu_getCellVoltage(c);
 }
 void ModelPsu::updatePsuPreset(void){
     _psu_preset = app_getCurrentPreset();

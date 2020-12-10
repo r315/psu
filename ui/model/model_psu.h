@@ -8,10 +8,6 @@ extern "C" {
 #include <stdint.h>
 #include "psu.h"
 
-#define MODEL_FLAG_APP              (1 << 0)    // Application updated data
-#define MODEL_FLAG_PRESET           (1 << 1)    // Preset value changed
-#define MODEL_FLAG_PRESET_IDX       (1 << 2)    // Preset index changed
-
 class ModelPsu: public BUIModel{
 public:
     ModelPsu();
@@ -33,11 +29,13 @@ public:
     uint8_t getPresetIdx(void);
     preset_t getPreset(uint8_t idx);
     uint8_t getBatteryType(void){return _bt_ty;}
+    uint32_t getChargeCurrent(void);
     void setOutVoltagePreset(uint32_t v);
     void setOutCurrentPreset(uint32_t i);
     void setOutPreset(preset_t pre);
     void setOutPresetIdx(uint8_t idx);
-    void setBatteryType(uint8_t t){ _bt_ty = t;}
+    void setBatteryType(uint8_t t);
+    void setChargerCurrent(uint32_t i);
     
     // Resource not shared, called from presenter
     uint8_t getOutputEnable(void);
@@ -69,7 +67,7 @@ private:
     preset_t _psu_preset;
     preset_t _chg_preset;
     uint8_t _preset_idx;
-    uint8_t _bt_ty;
+    uint8_t _bt_ty;         // Current selected battery type [1, 4]
 
     SemaphoreHandle_t access_data;
 };
