@@ -33,7 +33,7 @@ public:
     void setOutVoltagePreset(uint32_t v);
     void setOutCurrentPreset(uint32_t i);
     void setOutPreset(preset_t pre);
-    void setOutPresetIdx(uint8_t idx);
+    void selectPresetByIdx(uint8_t idx);
     void setBatteryType(uint8_t t);
     void setChargerCurrent(uint32_t i);
     
@@ -51,12 +51,10 @@ public:
     void updateLoadCurrent(void);
     void updateUsbCurrent(void);
     void updateCellVoltage(uint8_t c);
-    void updatePsuPreset(void);
     
     // Apply model data to app
     void applyPsuPreset(void);
     void applyChargerPreset(void);
-    void applyPreset(void);
 private:
     uint32_t _out_voltage;
     uint32_t _out_current;
@@ -64,7 +62,8 @@ private:
     uint32_t _load_current;
     uint32_t _usb_current;
     uint32_t _vb[4];
-    preset_t _psu_preset;
+    preset_t *_preset_list;
+    preset_t *_psu_preset;
     preset_t _chg_preset;
     uint8_t _preset_idx;
     uint8_t _bt_ty;         // Current selected battery type [1, 4]

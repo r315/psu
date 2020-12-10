@@ -123,8 +123,9 @@ buievt_e PresenterPsu::stateIdle(buikeyevt_t *evt){
             break;
 
         case BUTTON_OUT:
-            _state = _model->toggleOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
+            _model->applyPsuPreset();
             _view->showOutIcon(true);
+            _state = _model->toggleOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
             break;
 
         case BUTTON_MODE:

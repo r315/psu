@@ -24,9 +24,8 @@ void PresenterPreset::tick(void){
             break;       
         
         case PRE_SET:
-            _model->setOutPresetIdx(_view->getSelected());
-            _model->applyPreset();
-            _model->updatePsuPreset();
+            _model->selectPresetByIdx(_view->getSelected());
+            _model->applyPsuPreset();
             _state = PRE_EXIT;
             break;
 

@@ -108,11 +108,10 @@ typedef struct preset{
 }preset_t;
 
 typedef struct psu{ 
-    uint8_t preset_idx;                 
-    uint8_t screen_idx;
-    preset_t preset_list[MAX_PRESETS];
-    pwmcal_t pwm_cal[PWM_NUM_CH];
     float an_channel_gain[AN_MUX_NUM_CH];
+    pwmcal_t pwm_cal[PWM_NUM_CH];
+    preset_t preset_list[MAX_PRESETS];
+    uint8_t preset_idx;                 
     uint8_t cksum;
     volatile uint8_t flags;         // Above fields are saved to eeprom
     uint16_t *adc_data;
@@ -192,54 +191,30 @@ uint32_t psu_getInputVoltage(void);
 uint8_t app_isAdcDone(void);
 
 /**
- * @brief Change screen
- * 
- * \param screen_idx : new screen index
- * */
-void app_selectScreen(uint8_t screen_idx);
-
-/**
- * @brief Get current preset
- * 
- * \return : preset_t with current and voltage setting
- * */
-preset_t app_getCurrentPreset(void);
-
-/** 
- * @brief Get current preset index
- * 
- * \return : index
- * */
-uint8_t app_getCurrentPresetIdx(void);
-
-/**
- * @brief Get preset at index
- * 
- * \param idx : index of preset
- * \return : preset_t 
- * */
-preset_t app_getPreset(uint8_t idx);
-
-/**
  * @brief Get list of all presets
  * 
  * \return pointer to preset array
  * */
 preset_t *app_getPresetList(void);
-
 /**
- * @brief Update current selected preset
- * 
- * \param preset : preset with new values
+ * @brief Get/Set last used preset index
  * */
+uint8_t app_getSavedPresetIdx(void);
+void app_setPresetIdx(uint8_t idx);
 
-void app_setPreset(preset_t preset);
 /**
- * @brief Change current preset using index
+ * @brief Set psu output to values given by preset
+ * 
+ * \param preset : preset with values
+ * */
+void app_applyPreset(preset_t *preset);
+
+/**
+ * @brief Set psu output from preset values at given index
  * 
  * \param idx : new index
  * */
-void app_setPresetByIdx(uint8_t idx);
+void app_applyPresetByIdx(uint8_t idx);
 
 /**
  * @brief enables/disables adc manager

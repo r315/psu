@@ -15,8 +15,10 @@ ModelPsu::ModelPsu(){
 }
 
 void ModelPsu::init(void){
-    updatePsuPreset();
-    _preset_idx = app_getCurrentPresetIdx();
+
+    _preset_list = app_getPresetList();
+    _preset_idx = app_getSavedPresetIdx();
+    _psu_preset = &_preset_list[_preset_idx];
     
     _bt_ty = 1; // 1S
     _chg_preset.v = MAX_CELL_VOLTAGE;
@@ -66,19 +68,19 @@ uint32_t ModelPsu::getCellVoltage(uint8_t c){
     return _vb[c];
 }
 uint32_t ModelPsu::getOutVoltagePreset(void){
-    return _psu_preset.v;
+    return _psu_preset->v;
 }
 uint32_t ModelPsu::getOutCurrentPreset(void){
-    return _psu_preset.i;
+    return _psu_preset->i;
 }
 preset_t ModelPsu::getPsuPreset(void){
-    return _psu_preset;
+    return *_psu_preset;
 }
 uint8_t ModelPsu::getPresetIdx(void){    
     return _preset_idx;
 }
 preset_t ModelPsu::getPreset(uint8_t idx){
-    return app_getPreset(idx);
+    return app_getPresetList()[idx];
 }
 preset_t ModelPsu::getChargerPreset(void){
     return _chg_preset;
@@ -95,16 +97,18 @@ uint8_t ModelPsu::getOutputEnable(void){
 }
 
 void ModelPsu::setOutPreset(preset_t pre){
-    _psu_preset = pre;
+    _psu_preset->v = pre.v;
+    _psu_preset->i = pre.i;
 }
 void ModelPsu::setOutVoltagePreset(uint32_t v){
-    _psu_preset.v = v; 
+    _psu_preset->v = v; 
 }
 void ModelPsu::setOutCurrentPreset(uint32_t i){
-    _psu_preset.i = i; 
+    _psu_preset->i = i; 
 }
-void ModelPsu::setOutPresetIdx(uint8_t idx){
+void ModelPsu::selectPresetByIdx(uint8_t idx){
     _preset_idx = idx;
+    _psu_preset = _preset_list + _preset_idx;
 }
 void ModelPsu::setChargerCurrent(uint32_t i){
     _chg_preset.i = i;    
@@ -132,16 +136,10 @@ void ModelPsu::updateUsbCurrent(void){
 void ModelPsu::updateCellVoltage(uint8_t c){
     _vb[c] = psu_getCellVoltage(c);
 }
-void ModelPsu::updatePsuPreset(void){
-    _psu_preset = app_getCurrentPreset();
-}
 
 void ModelPsu::applyPsuPreset(void){
-    app_setPreset(_psu_preset);
+    app_applyPreset(_psu_preset);
 }
 void ModelPsu::applyChargerPreset(void){
-    app_setPreset(_chg_preset);
-}
-void ModelPsu::applyPreset(void){
-    app_setPresetByIdx(_preset_idx);    
+    app_applyPreset(&_chg_preset);
 }

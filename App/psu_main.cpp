@@ -97,7 +97,6 @@ const float default_an_channel_gain[] = {
     1.0f,  // MUX12 B-
     1.0f,  // MUX13 IUSB
     1.0f,
-    1.0f,
     1.0f
 };
 
@@ -257,35 +256,25 @@ uint8_t app_isOutputEnabled(void){
     return  GET_OE_FLAG;
 }
 
-preset_t app_getCurrentPreset(void){
-    return psu.preset_list[psu.preset_idx];
-}
-
-preset_t app_getPreset(uint8_t idx){
-    return psu.preset_list[idx];
-}
-
-uint8_t app_getCurrentPresetIdx(void){
-    return psu.preset_idx;
-}
-
 preset_t *app_getPresetList(void){
     return psu.preset_list;
 }
 
-static void app_applyPreset(){
-    psu_setOutputVoltage(psu.preset_list[psu.preset_idx].v);
-    psu_setOutputCurrent(psu.preset_list[psu.preset_idx].i);
+uint8_t app_getSavedPresetIdx(void){
+    return psu.preset_idx;
 }
 
-void app_setPreset(preset_t pre){
-    memcpy(&psu.preset_list[psu.preset_idx], &pre, sizeof(preset_t));
-    app_applyPreset();
-}
-
-void app_setPresetByIdx(uint8_t idx){
+void app_setPresetIdx(uint8_t idx){
     psu.preset_idx = idx;
-    app_applyPreset();
+}
+
+void app_applyPreset(preset_t *pre){
+    psu_setOutputVoltage(pre->v);
+    psu_setOutputCurrent(pre->i);
+}
+
+void app_applyPresetByIdx(uint8_t idx){
+    app_applyPreset(&psu.preset_list[idx]);
 }
 
 /**
@@ -296,7 +285,6 @@ void app_defaultState(void){
     memcpy(psu.preset_list, default_preset, sizeof(default_preset));
     memcpy(psu.an_channel_gain, default_an_channel_gain, sizeof(default_an_channel_gain));
     psu.preset_idx = 0;
-    psu.screen_idx = 0;
     psu.flags = 0;
 }
 
