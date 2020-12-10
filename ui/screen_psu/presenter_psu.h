@@ -19,7 +19,8 @@ typedef enum{
     PSU_SET_I,
     PSU_END_SET_V,
     PSU_END_SET_I,
-    PSU_ABORT_SET,
+    PSU_ABORT_SET_V,
+    PSU_ABORT_SET_I
 }statepsu_e;
 
 class ViewPsu;

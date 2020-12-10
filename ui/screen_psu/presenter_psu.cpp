@@ -52,18 +52,21 @@ void PresenterPsu::tick(void){
         }
 
         case PSU_END_SET_V:
-            _view->editVoltage(false);
             _model->setOutVoltagePreset(_view->getVoltage());
             _model->applyPsuPreset();
+        case PSU_ABORT_SET_V:
+            _view->editVoltage(false);
             _state = _model->getOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
             break;
 
         case PSU_END_SET_I:
-            _view->editCurrent(false);
             _model->setOutCurrentPreset(_view->getCurrent());
             _model->applyPsuPreset();
+        case PSU_ABORT_SET_I:
+            _view->editCurrent(false);
             _state = _model->getOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
             break;
+
         
         default:
             break;
@@ -177,7 +180,7 @@ buievt_e PresenterPsu::stateSetV(buikeyevt_t *evt){
             break;
             
         case BUTTON_MODE:
-            _state = PSU_ABORT_SET;
+            _state = PSU_ABORT_SET_V;
             break;
 
         case BUTTON_EMPTY:
@@ -216,7 +219,7 @@ buievt_e PresenterPsu::stateSetI(buikeyevt_t *evt){
             break;
 
         case BUTTON_MODE:
-            _state = PSU_ABORT_SET;
+            _state = PSU_ABORT_SET_I;
             break;
 
         case BUTTON_EMPTY:
