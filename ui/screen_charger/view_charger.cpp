@@ -8,6 +8,7 @@
 #define CF_POS  96,0
 #define MA_POS  96,16
 #define AH_POS  96,32
+#define PV_POS  96,48
 
 #define CHG_CHARGING_ICON_POS             160-16,3
 
@@ -40,10 +41,13 @@ ViewCharger::ViewCharger(){
 
     _wi_ah = new BUIText(AH_POS);
 
+    _wi_pv = new BUIText(PV_POS);
+
     addWidget(_wi_ma);
     addWidget(_wi_ah);
     addWidget(_wi_bt);
     addWidget(_wi_chg_icon);
+    addWidget(_wi_pv);
 }
 
 void ViewCharger::init(void){    
@@ -72,8 +76,8 @@ static void formater(char *buf, uint8_t i, int32_t v){
 }
 
 void ViewCharger::updateCellVoltage(uint8_t c, int32_t v){
-    formater(_txt_buf, c, v);
-    _wi_vc[c-1]->setText(_txt_buf);
+    formater(_txt_buf, c + 1, v);
+    _wi_vc[c]->setText(_txt_buf);
 }
 
 void ViewCharger::updateCurrent(uint32_t i){
@@ -102,13 +106,21 @@ void ViewCharger::editBatteryType(uint8_t e){
 }
 
 void ViewCharger::updateBatteryType(uint8_t e){
-    _wi_bt->select(e);
+    _wi_bt->select(e - 1);
 }
 
 void ViewCharger::scrollBatteryType(int8_t e){
     _wi_bt->scroll(e);
 }
 
+/**
+ * \return 1:1S, .., 4:4S
+ * */
 uint8_t ViewCharger::getBatteryType(void){
-    return _wi_bt->getSelect();
+    return _wi_bt->getSelect() + 1;
+}
+
+void ViewCharger::updatePackVoltage(uint32_t pv){
+    xsprintf(_txt_buf, "%.2fV", (float)(pv/1000.0));
+    _wi_pv->setText(_txt_buf);
 }

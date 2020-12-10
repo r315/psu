@@ -32,13 +32,15 @@ public:
     void scrollBatteryType(int8_t e);
     void updateBatteryType(uint8_t e);
     uint8_t getBatteryType(void);
+    void updatePackVoltage(uint32_t pv);
 private:
-    BUIText **_wi_vc;
-    BUIdro *_wi_ma;
-    BUIText *_wi_ah;
-    BUIlist *_wi_bt;
-    BUIicon  *_wi_chg_icon;
-    char *_txt_buf;
+    BUIText **_wi_vc;           // Cell voltages
+    BUIdro *_wi_ma;             // Charge current
+    BUIText *_wi_ah;            // Ah put into battery
+    BUIlist *_wi_bt;            // Battery type
+    BUIicon  *_wi_chg_icon;     // Charge icon
+    BUIText *_wi_pv;            // Pack voltage
+    char *_txt_buf;             
 };
 
 #ifdef __cplusplus

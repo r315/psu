@@ -20,7 +20,9 @@ typedef enum{
     CHG_SET_I,
     CHG_SET_TYPE,
     CHG_ABORT_SET_TYPE,
-    CHG_END_SET_TYPE
+    CHG_END_SET_TYPE,
+    CHG_ABORT_SET_I,
+    CHG_END_SET_I
 }statecharger_e;
 
 
@@ -35,6 +37,7 @@ public:
     BUIView *getView(void){ return (BUIView*)_view;}
 private:
     void stateIdle(buikeyevt_t *evt);
+    void stateCharging(buikeyevt_t *evt);
     void stateSetI(buikeyevt_t *evt);
     void stateSetType(buikeyevt_t *evt);
     ViewCharger *_view;

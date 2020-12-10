@@ -13,31 +13,50 @@ void PresenterCharger::tick(void){
         case CHG_INIT:
 
         case CHG_ENTER_IDLE:
+            _ncell = _model->getBatteryType();
             _view->showChargingIcon(false);
-            _view->updateCurrent(_model->getOutCurrentPreset());
-            _view->updateBatteryType(_model->getBatteryType());
+            _view->updateCurrent(_model->getChargeCurrent());
+            _view->updateBatteryType(_ncell);
             _view->updateCapacity(0);
             _state = CHG_IDLE;
             break;
 
         case CHG_ENTER_CHARGING:
-            _view->showChargingIcon(true);
+        {
+            _model->applyChargerPreset();
+            _view->showChargingIcon(true);            
             _state = CHG_CHARGING;
             break;
+        }
 
-        case CHG_IDLE:
         case CHG_CHARGING:            
-            for(uint8_t i = 1; i <= CHG_MAX_CELL; i++){
+            _view->updateCurrent(_model->getOutCurrent());
+        case CHG_IDLE:
+        {
+            uint32_t pack_voltage = 0;
+            for(uint8_t i = 0; i < CHG_MAX_CELL; i++){
                 if(i < _ncell){
-                    _view->updateCellVoltage(i, _model->getCellVoltage(i));
+                    uint32_t cell_voltage = _model->getCellVoltage(i) - pack_voltage;
+                    _view->updateCellVoltage(i, cell_voltage);
+                    pack_voltage += cell_voltage;
                 }else{
                     _view->updateCellVoltage(i, -1);
                 }
             }
+            _view->updatePackVoltage(pack_voltage);
+            break;
+        }
+
+        case CHG_END_SET_I:
+            _model->setChargerCurrent(_view->getCurrent());
+        case CHG_ABORT_SET_I:
+            _view->editCurrent(false);
+            _state = CHG_ENTER_IDLE;
             break;
 
         case CHG_END_SET_TYPE:
-            _model->setBatteryType(_view->getBatteryType());            
+            _model->setBatteryType(_view->getBatteryType());    /* save battery type on model, this also sets pack voltage on charger preset */ 
+            _ncell = _view->getBatteryType();
 
         case CHG_ABORT_SET_TYPE:
             _view->editBatteryType(false);
@@ -50,9 +69,10 @@ void PresenterCharger::tick(void){
 }
 
 void PresenterCharger::update(void){
-    for(uint8_t i = 1; i <= _ncell; i++){
+    for(uint8_t i = 0; i < _ncell; i++){
         _model->updateCellVoltage(i);
     }
+    _model->updateOutputCurrent();
 }
 
 buievt_e PresenterCharger::eventHandler(buikeyevt_t *evt){
@@ -75,6 +95,7 @@ buievt_e PresenterCharger::eventHandler(buikeyevt_t *evt){
             break;
 
         case CHG_CHARGING:
+            stateCharging(evt);
             break;
 
         case CHG_SET_TYPE:
@@ -111,6 +132,16 @@ void PresenterCharger::stateIdle(buikeyevt_t *evt){
     }
 }
 
+void PresenterCharger::stateCharging(buikeyevt_t *evt){
+    switch(evt->key){
+        case BUTTON_OUT:
+            _state = _model->toggleOutputEnable() ? CHG_ENTER_CHARGING : CHG_ENTER_IDLE;
+            break;
+
+        default:
+            break;
+    }
+}
 void PresenterCharger::stateSetI(buikeyevt_t *evt){
     switch(evt->key){
 
@@ -122,15 +153,16 @@ void PresenterCharger::stateSetI(buikeyevt_t *evt){
             
         case BUTTON_RIGHT: _view->editCurrent(-1); break;
 
-        case BUTTON_SET: _model->setOutCurrentPreset(_view->getCurrent());            
-        case BUTTON_MODE:
-            _view->editCurrent(0);
-            _state = CHG_ENTER_IDLE;
+        case BUTTON_SET: 
+            _state = CHG_END_SET_I;
+            break;
+
+        case BUTTON_MODE:            
+            _state = CHG_ABORT_SET_I;
             break;
 
         case BUTTON_EMPTY:
-            _view->updateCurrent(_model->getOutCurrentPreset());
-            _view->editCurrent(1);
+            _view->editCurrent(true);
             _state = CHG_SET_I;
             break;
 
