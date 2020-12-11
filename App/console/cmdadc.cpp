@@ -10,10 +10,9 @@ void CmdAdc::help(void){
     console->print("Commands:\n");
     console->print("\tres\t\tADC Resolution\n");
     console->print("\tcal\t\tCalibrate ADC\n");
-    console->print("\tread <ch|all>\tread channel value\n");
-    console->print("\tplot <ch>\tplot channel value in to graph, press any key to stop\n");
-    console->print("\tgain <ch> <float>\tset channel gain\n");
-    console->print("\tmgr <stop|resume|convert <ch>> | plot <ch>\n");
+    console->print("\tread <ch|all>\tread channel [0-15] value\n");
+    console->print("\tplot <ch>\tplot channel value in to graph, ESC to stop\n");
+    console->print("\tgain <ch> [float]\tget/set channel gain\n");
 }
 
 void CmdAdc::printResolution(void){
@@ -25,82 +24,66 @@ void CmdAdc::printCalibrationData(void){
 }
 
 void CmdAdc::printChannelVoltage(uint8_t channel){
-    console->print("CH %u: %.2fmv\n", channel, psu_getChannelVoltage(channel));
+    if(channel < AN_MUX_NUM_CH){
+        console->print("CH %u:\t%umv\n", channel, psu_getChannelVoltage(channel));
+    }
 }
 
 char CmdAdc::execute(void *ptr){ 
-char *argv[4], *param;
-uint32_t argc;
+char *str = (char*)ptr;
 int32_t intvalue;
+double floatvalue;
     
-    argc = strToArray((char*)ptr, argv);
-
-    if(argc == 0){
-        help();
-        printCalibrationData();
+    if(isNextWord(&str, "res")){
         printResolution();
         return CMD_OK;
     }
 
-    if((param = getOptValue("res", argc, argv)) != NULL){
-        printResolution();
-        return CMD_OK;
-    }
-
-    if((param = getOptValue("cal", argc, argv)) != NULL){
+    if(isNextWord(&str, "cal")){
         ADC_Calibrate();
         printCalibrationData();        
         return CMD_OK;
     }
 
-    if((param = getOptValue("read", argc, argv)) != NULL){
-        if(nextInt(&param, &intvalue)){
+    if(isNextWord(&str, "read")){
+        if(nextInt(&str, &intvalue)){
             printChannelVoltage(intvalue);
             return CMD_OK;
         }
 
-        if(!xstrcmp(param, "all")){
-            for (size_t i = 0; i < AN_MUX_NUM_CH; i++)
-            {
+        if(isNextWord(&str, "all")){
+            for (size_t i = 0; i < AN_MUX_NUM_CH; i++){
                 printChannelVoltage(i);
             }
             return CMD_OK;
         }
     }
 
-    if((param = getOptValue("mgr", argc, argv)) != NULL){
-        if(!xstrcmp(param, "stop")){            
-            app_enable_adcmgr(FALSE);
-            console->print("ADC manager stopped.\n");
-            return CMD_OK;
-        }        
-
-        if(!xstrcmp(param, "convert")){
-            param = argv[2];
-            if(nextInt(&param, &intvalue)){
-                console->print("CH %u: %d\n", intvalue, ADCMGR_Convert(intvalue));
-                return CMD_OK;
-            }
-        }
-
-        if(!xstrcmp(param, "resume")){
-            app_enable_adcmgr(TRUE);
-            return CMD_OK;            
-        }
-
-    }
-
-    if((param = getOptValue("plot", argc, argv)) != NULL){
-        if(nextInt(&param, &intvalue)){
+    if(isNextWord(&str, "plot")){
+        if(nextInt(&str, &intvalue)){
             static TickType_t xLastWakeTime;
             while( !console->kbhit() ){
-                //console->print("%.2f\n", ADCMGR_GetChannelVoltage(intvalue)/1000);
-                console->print("%d\n", ADCMGR_Convert(intvalue));
+                console->print("%d\n", psu_getChannelVoltage(intvalue));
                 vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(200));
             }
             return CMD_OK;
         }
     }
+
+    if(isNextWord(&str, "gain")){
+        if(nextInt(&str, &intvalue)){
+            if(nextDouble(&str, &floatvalue)){
+                psu_setChannelGain(intvalue, floatvalue);
+            }else{
+                console->print("%.2f\n", psu_getChannelGain(intvalue));
+            }
+            return CMD_OK;
+        }
+    }
+
+    help();
+    printCalibrationData();
+    printResolution();
 
     return CMD_BAD_PARAM;
 }

@@ -84,6 +84,7 @@ void BUIdro::changeValue(int8_t dt){
     }
 }
 
+// TODO: Optimize for not allways write to display in edit mode
 void BUIdro::draw(void){
     if(isInvalid() || isFlagSet(BUI_FLAG_EDIT)){
         if(isVisible()){            

@@ -8,7 +8,6 @@ void PresenterPreset::init(void){
     if(_view == NULL){
         _view = new ViewPreset();
     }
-    _view->init();
     _state = PRE_INIT;
 }
 
@@ -17,6 +16,7 @@ void PresenterPreset::tick(void){
         case PRE_INIT:
             _view->select(_model->getPresetIdx());
             _view->showPreset(_model->getPreset(_view->getSelected()));
+            _view->init();
             _state = PRE_IDLE;
             break;
 
