@@ -8,9 +8,7 @@ void PresenterPsu::init(void){
     // Allocate view
     if(_view == NULL){
         _view = new ViewPsu();
-    }
-    // Invalidate view and widgets
-    _view->init();
+    }    
     // Set state fo be initialized
     _state = PSU_INIT;
 }
@@ -21,11 +19,13 @@ void PresenterPsu::tick(void){
     switch(_state){
         case PSU_INIT:
             if(_model->getOutputEnable()){
-                _state = PSU_ENABLED;
                 _view->showOutIcon(true);
+                _state = PSU_ENABLED;
             }else{
+                _view->showOutIcon(false);
                 _state = PSU_ENTER_IDLE;
             }
+            _view->init();
             break;
 
         case PSU_IDLE:

@@ -90,10 +90,10 @@ const float default_an_channel_gain[] = {
     1.0f,
     1.0f,
     1.0f,
-    5.7f,  // MUX8  B+
-    4.3f,  // MUX9  VB3
-    3.0f,  // MUX10 VB2
-    2.0f,  // MUX11 VB1
+    5.77f,  // MUX8  B+
+    4.39f,  // MUX9  VB3
+    3.08f,  // MUX10 VB2
+    2.05f,  // MUX11 VB1
     1.0f,  // MUX12 B-
     1.0f,  // MUX13 IUSB
     1.0f,
@@ -225,6 +225,14 @@ uint32_t psu_getUsbCurrent(void){
     return psu_getChannelVoltage(IUSB_MUX_CH);
 }
 
+float psu_getChannelGain(uint8_t ch){
+    return psu.an_channel_gain[ch];
+}
+
+void psu_setChannelGain(uint8_t ch, float g){
+    psu.an_channel_gain[ch] = g;
+}
+
 /**
  * Application api
  * */
@@ -327,18 +335,6 @@ uint8_t app_saveState(void){
 }
 
 /**
- * @brief enables/disables adc manager
- * Use for testing, inibits/allow tsk_psu of calling ADCMGR_Start
- * */
-void app_enable_adcmgr(uint8_t en){
-    if(en){
-        ADCMGR_SetSequence(NULL,0 , psu_adc_cb);
-        SET_ADCMGR_FLAG;
-    }
-    else
-        CLR_ADCMGR_FLAG;   
-}
-/**
  * Model
  * */
 ModelPsu model_psu;
@@ -378,18 +374,13 @@ uint8_t count = 0;
 
     ADCMGR_Start();
 
-    SET_ADCMGR_FLAG;
-
     model_psu.init();
 
     while(1){
-        //app_checkButtons();
-        app_processPowerButton();
-        //DBG_PIN_HIGH;
-        
         //DBG_PIN_LOW;        
-        if(GET_AD_FLAG && GET_ADCMGR_FLAG){
-            //model_update((model_t*)&psu.adc_data);
+        app_processPowerButton();
+        
+        if(GET_AD_FLAG){
             model_psu.update();
             CLR_AD_FLAG;
             ADCMGR_Start();
@@ -404,6 +395,7 @@ uint8_t count = 0;
         #ifndef ENABLE_DEBUG
         reloadWatchDog();
         #endif
+        //DBG_PIN_HIGH;
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
 }

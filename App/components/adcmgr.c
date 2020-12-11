@@ -81,13 +81,10 @@ static void eoc_single_cb(uint16_t data){
 
 /**
  * @brief Initializes ADC manager 
- * Each channel is initialized with a default gain
+ * 
  * */
 void ADCMGR_Init(void){
     ADC_Init(0);
-    /* for (uint8_t i = 0; i < ADCMGR_NUM_CHANNELS; i++){
-       ADCMGR_DEFAULT_GAIN[i] = 1.0f;
-    }     */
 }
 
 /**

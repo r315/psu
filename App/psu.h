@@ -71,11 +71,6 @@ extern "C" {
 #define CLR_LD_FLAG         CLR_FLAG(2)
 #define GET_LD_FLAG         GET_FLAG(2)
 
-// ADC Manager enable
-#define SET_ADCMGR_FLAG     SET_FLAG(3)
-#define CLR_ADCMGR_FLAG     CLR_FLAG(3)
-#define GET_ADCMGR_FLAG     GET_FLAG(3)
-
 // EEPROM load result
 #define SET_EEPROM_FLAG     SET_FLAG(4)
 #define CLR_EEPROM_FLAG     CLR_FLAG(4)
@@ -217,12 +212,6 @@ void app_applyPreset(preset_t *preset);
 void app_applyPresetByIdx(uint8_t idx);
 
 /**
- * @brief enables/disables adc manager
- * Use for testing, inibits/allow tsk_psu of calling ADCMGR_Start
- * */
-void app_enable_adcmgr(uint8_t en);
-
-/**
  * @brief Saves app state to eeprom
  * 
  * The value of presets, pwm calibration, adc gains, current preset selected...
@@ -256,6 +245,12 @@ void app_defaultState(void);
  * @brief
  * */
 void psu_poweroff(void);
+
+/**
+ * @brief
+ * */
+float psu_getChannelGain(uint8_t ch);
+void psu_setChannelGain(uint8_t ch, float g);
 
 #ifdef __cplusplus
 }
