@@ -283,7 +283,7 @@ uint16_t ADC_GetCalibration(void){
 }
 
 /**
- * @brief
+ * @brief Return weight step in mV
  * */
 float ADC_GetResolution(void){
     return hadc1.resolution;

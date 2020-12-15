@@ -67,26 +67,26 @@ static ConsoleCommand *commands[] = {
 };
 
 const pwmcal_t default_pwm_calibration[] = {
-    {490, (1<<PWM_RESOLUTION), 1020},   // pwm1 (VOUT) calibration <min, max, start>
+    {490, (1<<PWM_RESOLUTION), 1024},   // pwm1 (VOUT) calibration <min, max, start>
     {0, (1<<PWM_RESOLUTION), 100},      // pwm2 (IOUT) calibration
     {0, (1<<PWM_RESOLUTION), 0},        // pwm3 (ILOAD) calibration MUST be 0
 };
 
 const preset_t default_preset[] = {
-    {1200, 100},   // <mv, ma>
+    {MIN_VOLTAGE, 100},   // <mv, ma>
     {1800, 100},
     {2500, 100},
-    {3300, 1600},
-    {5000, 300},
-    {9600, 50}
+    {MAX_VOLTAGE, 100},
+    {5000, 100},
+    {9600, 100}
 };
 
 const float default_an_channel_gain[] = {
-    6.1f,  // V1  gain = 1/(R300/(R300+R301))
-    0.9f,  // I1
-    6.1f,  // V2  gain = 1/(R402/(R402+R403))
+    6.13f,  // V1 = 1/(R300/(R300+R301))
+    0.9f,  // I1 = VRS / AV(10) / RS(0.1) <=> VRS
+    6.1f,  // V2 = 1/(R402/(R402+R403))
     1.0f,  // I2
-    6.1f,  // V3  gain = 1/(R205/(R205+R203))
+    6.1f,  // V3 = 1/(R205/(R205+R203))
     1.0f,
     1.0f,
     1.0f,
@@ -236,6 +236,14 @@ void psu_setChannelGain(uint8_t ch, float g){
     if(ch < AN_MUX_NUM_CH){
         psu.an_channel_gain[ch] = g;        
     }
+}
+
+void psu_setPwmChannelCalibration(uint8_t ch, uint16_t min, uint16_t max){
+    psu.pwm_cal[ch].min = min;
+    psu.pwm_cal[ch].max = max;
+}
+pwmcal_t psu_getPwmChannelCalibration(uint8_t ch){
+    return psu.pwm_cal[ch];
 }
 
 /**

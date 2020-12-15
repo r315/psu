@@ -1,67 +1,88 @@
 #include "cmdpwm.h"
-#include "board.h"
+#include "psu.h"
+
 
 void CmdPwm::help(void){ 
-    console->print("\nUsage: pwm <ch> [value]\n");
-    console->print("PWM control\n\n");
-    console->print("Channel: 1-4\n");
-    console->print("Value: 0-1023\n");
-    console->print("Control mode (no value specified on command):\n\n");
-    console->print("\t+/-, change duty\n");
-    console->print("\tv, enter value\n");
-    console->print("\tq, quit\n\nPins:\n");
-    console->print(
+    console->print("\nUsage: pwm <ch> <command> [parameters]\n");
+    console->print("PWM control commands\n\n");
+    console->print("Channel\t: 1-3\n\n");
+    console->print("val\t: set channel value, [value] 0-1024\n");    
+    console->print("\tControl mode (no value specified on command):\n");
+    console->print("\t\t+/-, change duty\n");
+    console->print("\t\tv, enter value\n");
+    console->print("\t\ts, stop\n\n");
+    console->print("cfg <min> <max>\t: Configure pwm range\n\n");
+    console->print("Pins:\n"
                 "\tPWM1 (PB4): %d\n"
                 "\tPWM2 (PB5): %d\n"
-                "\tPWM3 (PB0): %d\n"
-                "\tPWM4 (PB1): %d\n", PWM_Get(0), PWM_Get(1), PWM_Get(2), PWM_Get(3));
+                "\tPWM3 (PB0): %d\n", PWM_Get(0), PWM_Get(1), PWM_Get(2));
 }
 
 char CmdPwm::execute(void *ptr){
-int32_t channel, curValue;
-char line[5];
+    char *str = (char*)ptr, c;
+    int32_t ch, val;
+    char line[5];
 
-    if(!nextInt((char**)&ptr, &channel) || channel < 1 || channel > 4){
+    if(!nextInt(&str, &ch)){
         help(); 
         return CMD_BAD_PARAM;
     }
 
-    channel--;  // adjust to index    
-
-    if(!nextInt((char**)&ptr, &curValue)){
-        curValue = PWM_Get(channel);
-    }else{
-        PWM_Set(channel, curValue);
-        return CMD_OK;
+    if(ch < 1 || ch > 3){
+        help(); 
+        return CMD_BAD_PARAM;
     }
 
-    uint8_t c = 0;
+    ch--;
 
-    while( (c = console->xgetchar()) != 'q'){
-        switch(c){
-            case '+':
-                if(curValue < PWM_MAX_VALUE){
-                    PWM_Set(channel, ++curValue);
-                }
-                console->print("\r%u", curValue);
-                break;
-            case '-':
-                if(curValue > PWM_MIN_VALUE){
-                    PWM_Set(channel, --curValue);
-                }
-                console->print("\r%u", curValue);
-                break;
-            case 'v':
-                console->print("\rCH[%u]=", channel + 1);  // restore channel number
-                console->getLine(line, sizeof(line));
-                if(yatoi(line, (int32_t*)&curValue) == 0){
-                    console->print("\rInvalid value [%d - %d]", PWM_MIN_VALUE, PWM_MAX_VALUE);
-                }else{
-                    PWM_Set(channel, curValue);
-                }
-                break;
-        }       
+    if(isNextWord(&str, "val")){
+        if(nextInt(&str, &val)){
+            PWM_Set(ch, val);
+        }else{
+            val = PWM_Get(ch);
+            while( (c = console->xgetchar()) != 'q'){
+                switch(c){
+                    case '+':
+                        if(val < PWM_MAX_VALUE){
+                            PWM_Set(ch, ++val);
+                        }
+                        console->print("\r%u", val);
+                        break;
+                    case '-':
+                        if(val > PWM_MIN_VALUE){
+                            PWM_Set(ch, --val);
+                        }
+                        console->print("\r%u", val);
+                        break;
+                    case 'v':
+                        console->print("\rCH[%u]=", ch + 1);  // restore channel number
+                        console->getLine(line, sizeof(line));
+                        if(yatoi(line, (int32_t*)&val) == 0){
+                            console->print("\rInvalid value [%d - %d]", PWM_MIN_VALUE, PWM_MAX_VALUE);
+                        }else{
+                            PWM_Set(ch, val);
+                        }
+                        break;
+                }       
+            }
+            console->xputchar('\n');
+        }
+        return CMD_OK;       
     }
-    console->xputchar('\n');
-    return CMD_OK; 
+
+    if(isNextWord(&str, "cfg")){        
+        int32_t min, max;        
+        if(nextInt(&str, &min)){
+            if(nextInt(&str, &max)){
+                psu_setPwmChannelCalibration(ch, min, max);
+                return CMD_OK;
+            }
+        }
+        pwmcal_t pwm = psu_getPwmChannelCalibration(ch);
+        console->print("Min: %u, Max %u\n", pwm.min, pwm.max);
+        return CMD_OK;        
+    }
+
+    help();
+    return CMD_BAD_PARAM;
 }

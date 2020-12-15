@@ -29,6 +29,11 @@ void PresenterPsu::tick(void){
             break;
 
         case PSU_IDLE:
+            // Check if status has changed
+            if(_model->getOutputEnable()){
+                _view->showOutIcon(true);
+                _state = PSU_ENABLED;
+            }
             break;       
         
         case PSU_ENTER_IDLE:

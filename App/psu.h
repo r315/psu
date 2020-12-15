@@ -21,7 +21,7 @@ extern "C" {
 #define PRIORITY_LOW                3
 
 #define MAX_VOLTAGE                 20000U
-#define MIN_VOLTAGE                 1200U
+#define MIN_VOLTAGE                 1300U
 #define MAX_CURRENT                 3000U
 #define MIN_CURRENT                 0U
 #define MAX_ILOAD                   1000U  // TODO: LIMIT in HW to 500mA
@@ -32,7 +32,7 @@ extern "C" {
 #define APP_INTERVAL                10
 #define UPDATE_INTERVAL             100
 
-#define MAX_CELL_VOLTAGE            4200
+#define MAX_CELL_VOLTAGE            4190
 
 #define LOAD_ICON_POS               LCD_W - 36,3
 //#define OUTPUT_ICON_POS             160-16,3
@@ -251,6 +251,12 @@ void psu_poweroff(void);
  * */
 float psu_getChannelGain(uint8_t ch);
 void psu_setChannelGain(uint8_t ch, float g);
+
+/**
+ * @brief
+ * */
+void psu_setPwmChannelCalibration(uint8_t ch, uint16_t min, uint16_t max);
+pwmcal_t psu_getPwmChannelCalibration(uint8_t ch);
 
 #ifdef __cplusplus
 }
