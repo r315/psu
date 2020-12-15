@@ -2,6 +2,13 @@
 #include "bui.h"
 #include "model_psu.h"
 
+const uint32_t batVoltages[4] = {
+    4100,
+    8300,
+    12500,
+    16730
+};
+
 ModelPsu::ModelPsu(){
     access_data = xSemaphoreCreateBinary();
 
@@ -115,7 +122,7 @@ void ModelPsu::setChargerCurrent(uint32_t i){
 }
 void ModelPsu::setBatteryType(uint8_t t){
      _bt_ty = t;
-     _chg_preset.v = MAX_CELL_VOLTAGE * (t);
+     _chg_preset.v = batVoltages[_bt_ty - 1];
 }
 
 void ModelPsu::updateOutputVoltage(void){

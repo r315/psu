@@ -23,6 +23,7 @@ void PresenterCharger::tick(void){
 
         case CHG_ENTER_CHARGING:
         {
+            _model->setBatteryType(_view->getBatteryType());
             _model->applyChargerPreset();
             _view->showChargingIcon(true);            
             _state = CHG_CHARGING;
