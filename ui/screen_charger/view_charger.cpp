@@ -83,8 +83,12 @@ void ViewCharger::updateCellVoltage(uint8_t c, int32_t v){
 void ViewCharger::updateCurrent(uint32_t i){
     _wi_ma->setValue(i);
 }
-void ViewCharger::updateCapacity(uint32_t ah){
-    xsprintf(_txt_buf, "%uAh", ah);
+void ViewCharger::updateCapacity(int32_t mah){
+      if(mah < 0){
+        xsprintf(_txt_buf, "----mAh");
+    }else{
+        xsprintf(_txt_buf, "%umAh   ", mah);
+    }
     _wi_ah->setText(_txt_buf);
 }
 

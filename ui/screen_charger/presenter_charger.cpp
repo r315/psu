@@ -17,7 +17,7 @@ void PresenterCharger::tick(void){
             _view->showChargingIcon(false);
             _view->updateCurrent(_model->getChargeCurrent());
             _view->updateBatteryType(_ncell);
-            _view->updateCapacity(0);
+            _view->updateCapacity(-1);
             _state = CHG_IDLE;
             break;
 
@@ -27,11 +27,18 @@ void PresenterCharger::tick(void){
             _model->applyChargerPreset();
             _view->showChargingIcon(true);            
             _state = CHG_CHARGING;
+            _capacity = 0;
+            _ticks = GetTicks();
             break;
         }
 
-        case CHG_CHARGING:            
-            _view->updateCurrent(_model->getOutCurrent());
+        case CHG_CHARGING:
+        {
+            uint32_t ma = _model->getOutCurrent();
+            computeCapacity(ma);
+            _view->updateCurrent(ma);
+            _view->updateCapacity(_capacity);
+        }
         case CHG_IDLE:
         {
             uint32_t pack_voltage = 0;
@@ -44,6 +51,7 @@ void PresenterCharger::tick(void){
                     _view->updateCellVoltage(i, -1);
                 }
             }
+            // Use calculated voltage,because in idle the relay disconnects both terminals
             _view->updatePackVoltage(pack_voltage);
             break;
         }
@@ -199,4 +207,15 @@ void PresenterCharger::stateSetType(buikeyevt_t *evt){
         default:
             break;
     }
+}
+
+void PresenterCharger::computeCapacity(uint32_t ma){
+    uint32_t elapsed = ElapsedTicks(_ticks); 
+
+    // Value will update every 30s
+    if(elapsed >= 30000){
+        _capacity += ma/(3600/30);
+        _ticks = GetTicks();
+    }
+
 }

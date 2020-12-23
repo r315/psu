@@ -23,7 +23,7 @@ public:
 
     void updateCellVoltage(uint8_t c, int32_t v);
     void updateCurrent(uint32_t i);
-    void updateCapacity(uint32_t ah);
+    void updateCapacity(int32_t mah);
     void showChargingIcon(uint8_t v);
     void editCurrent(uint8_t dig);
     void changeCurrent(uint8_t d);

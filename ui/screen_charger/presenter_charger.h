@@ -40,10 +40,13 @@ private:
     void stateCharging(buikeyevt_t *evt);
     void stateSetI(buikeyevt_t *evt);
     void stateSetType(buikeyevt_t *evt);
+    void computeCapacity(uint32_t ma);
     ViewCharger *_view;
     ModelPsu *_model;
     statecharger_e _state;
     uint8_t _ncell;
+    float _capacity;
+    uint32_t _ticks;
 };
 
 #ifdef __cplusplus
