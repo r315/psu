@@ -18,7 +18,6 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 #include "cmsis_os.h"
 #include "usb_device.h"
 
@@ -44,22 +43,21 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
 osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+#if defined(ENABLE_USB_CDC)
 extern uint32_t g_pfnVectors;
+#endif
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
 void StartDefaultTask(void const * argument);
-
+void Error_Handler(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 void app_setup(void);
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -78,10 +76,11 @@ int main(void)
 		PB10 -> SCL (LCD_CD)
 		PB11 -> SDA (LCD_LED)
     */ 
-  
+#if defined(ENABLE_USB_CDC)  
   /* Vector Table Relocation to startup vector table  */
   SCB->VTOR = (uint32_t)(&g_pfnVectors) & 0xFFFF;
   reenumerate_usb();
+#endif
   /* USER CODE END 1 */
   
   /* MCU Configuration--------------------------------------------------------*/
@@ -100,7 +99,7 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
+  
   /* USER CODE BEGIN 2 */
   
   /* USER CODE END 2 */
@@ -190,38 +189,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(DBG_GPIO_Port, DBG_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : DBG_Pin */
-  GPIO_InitStruct.Pin = DBG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(DBG_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : T2_Pin TT_Pin T1_Pin */
-  GPIO_InitStruct.Pin = T2_Pin|TT_Pin|T1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */

@@ -7,7 +7,6 @@ extern "C" {
 
 #include <button.h>
 #include <stdout.h>
-#include "main.h"
 #include "stm32f1xx.h"
 #include "pcf8574.h"
 #include "lcd.h"

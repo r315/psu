@@ -16,10 +16,16 @@
 TARGET = app_psu
 
 ######################################
-# building variables
+# building options
 ######################################
 # debug build?
-DEBUG =1
+ENABLE_DEBUG :=yes
+
+ENABLE_CLI :=yes
+
+ENABLE_UI :=yes
+
+ENABLE_EEPROM :=no
 
 #######################################
 # paths
@@ -55,27 +61,16 @@ Src/main.c \
 Src/stm32f1xx_it.c \
 Src/system_stm32f1xx.c \
 Src/stm32f1xx_hal_msp.c \
+$(APP_SRC_DIR)/components/adcmgr.c \
 $(wildcard $(APP_SRC_DIR)/*.c) \
-$(wildcard $(APP_SRC_DIR)/components/*.c) \
-$(LIBEMB_PATH)/display/font.c \
-$(LIBEMB_PATH)/button/button.c \
 $(LIBEMB_PATH)/misc/strfunc.c \
-$(LIBEMB_PATH)/misc/debug.c \
 $(LIBEMB_PATH)/misc/pinName.c \
-$(LIBEMB_PATH)/drv/tft/st7735.c \
-$(LIBEMB_PATH)/display/lcd.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c \
-$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.c \
-$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
-$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
-$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
-$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
-$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
 $(FREERTOS_DIR)/portable/GCC/ARM_CM3/port.c \
 $(FREERTOS_DIR)/portable/MemMang/heap_4.c \
 $(FREERTOS_DIR)/list.c \
@@ -83,10 +78,39 @@ $(FREERTOS_DIR)/queue.c \
 $(FREERTOS_DIR)/tasks.c \
 $(FREERTOS_DIR)/timers.c \
 $(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
-$(BUI_DIR)/bui_draw.c \
+
+#$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
+$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
+$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
+$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
+
+ifeq ($(filter yes $(ENABLE_EEPROM), $(ENABLE_UI)), yes)
+	C_SOURCES +=$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c
+endif
+
+ifeq ($(ENABLE_DEBUG),yes)
+C_SOURCES +=  \
+$(LIBEMB_PATH)/misc/debug.c
+endif
+
+ifeq ($(ENABLE_UI),yes)
+C_SOURCES +=  \
+$(LIBEMB_PATH)/drv/tft/st7735.c \
+$(LIBEMB_PATH)/display/lcd.c \
+$(LIBEMB_PATH)/button/button.c \
+$(LIBEMB_PATH)/display/font.c \
+$(APP_SRC_DIR)/components/pcf8574.c \
+$(BUI_DIR)/bui_draw.c
+endif
+
+ifeq ($(ENABLE_EEPROM),yes)
+C_SOURCES +=  \
+$(APP_SRC_DIR)/components/eeprom.c
+endif
 
 # USB lib
 #C_SOURCES += \
+$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
 $(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
@@ -96,17 +120,27 @@ Src/usbd_desc.c \
 Src/usbd_conf.c \
 Src/usb_device.c \
 
+# CPP sources
 CPP_SOURCES = \
-$(LIBEMB_PATH)/console/console.cpp \
 $(wildcard $(APP_SRC_DIR)/*.cpp) \
-$(wildcard $(APP_SRC_DIR)/console/*.cpp) \
+
+ifeq ($(ENABLE_CLI),yes)
+CPP_SOURCES += \
+$(LIBEMB_PATH)/console/console.cpp \
+$(wildcard $(APP_SRC_DIR)/console/*.cpp)
+endif
+
+ifeq ($(ENABLE_UI),yes)
+CPP_SOURCES += \
 $(wildcard $(BUI_DIR)/*.cpp) \
 $(wildcard $(UI_DIR)/model/*.cpp) \
 $(wildcard $(UI_DIR)/common/*.cpp) \
 $(wildcard $(UI_DIR)/screen_psu/*.cpp) \
 $(wildcard $(UI_DIR)/screen_preset/*.cpp) \
 $(wildcard $(UI_DIR)/screen_load/*.cpp) \
-$(wildcard $(UI_DIR)/screen_charger/*.cpp) \
+$(wildcard $(UI_DIR)/screen_charger/*.cpp)
+endif
+
 # ASM sources
 ASM_SOURCES =  \
 startup/startup_stm32f103xb.s
@@ -186,21 +220,39 @@ AS_DEFS =
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32F103xB \
--DUSE_ADCMGR \
--DCONSOLE_BLOCKING \
--DUSE_COURIER_FONT \
--DUSE_GROTESKBOLD_FONT \
--D_ENABLE_USB_CDC \
--DENABLE_UART \
--D_ENABLE_EEPROM \
+-DUSE_ADCMGR
 
 # compile gcc flags
-ifeq ($(DEBUG), 1)
+ifeq ($(ENABLE_DEBUG),yes)
 OPT =-Og -g -gdwarf-2
 C_DEFS +=-DENABLE_DEBUG
 else
 OPT =-Os
 endif
+
+ifeq ($(ENABLE_CLI),yes)
+C_DEFS +=\
+-DENABLE_CLI \
+-DCONSOLE_BLOCKING \
+-D_ENABLE_USB_CDC \
+-DENABLE_UART
+endif
+
+ifeq ($(ENABLE_UI),yes)
+C_DEFS +=\
+-DENABLE_UI \
+-DUSE_COURIER_FONT \
+-DUSE_GROTESKBOLD_FONT
+endif
+
+ifeq ($(ENABLE_EEPROM),yes)
+C_DEFS +=-DENABLE_EEPROM
+endif
+
+ifeq ($(filter yes $(ENABLE_EEPROM), $(ENABLE_UI)), yes)
+C_DEFS +=-DENABLE_I2C
+endif
+
 
 ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections
 CFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections -std=c99
@@ -254,6 +306,7 @@ upload: $(BUILD_DIR)/$(TARGET).bin
 test:
 	@echo $(CURDIR)
 	@echo ""; $(foreach d, $(VPATH), echo $(d);)
+	@echo $(filter yes $(ENABLE_EEPROM), $(ENABLE_UI))
 #@echo $(C_SOURCES)
 #######################################
 # build the application

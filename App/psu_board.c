@@ -6,8 +6,9 @@
 #include "usbd_cdc_if.h"
 #include <stdout.h>
 
+#if defined(ENABLE_I2C)
 static I2C_HandleTypeDef hi2c2;
-
+#endif
 
 void BOARD_Init(void){
     
@@ -20,7 +21,9 @@ void BOARD_Init(void){
     DBG_PIN_INIT;
         
     SPI_Init();
+#if defined(ENABLE_I2C)
     I2C_Init();
+#endif
     RTC_Init();
 }
 
@@ -107,6 +110,7 @@ uint16_t PWM_Get(uint8_t ch){
 /**
  * Console stdout, stdin
  * */
+#if defined(ENABLE_CLI)
 #define STDIN_QUEUE_LENGTH 128
 #define STDOUT_QUEUE_LENGTH 128
 #define STDIO_QUEUE_ITEM_SIZE 1
@@ -148,6 +152,7 @@ static void stdio_init(void){
     UART_Init();
     #endif
 }
+#endif
 
 #ifdef ENABLE_USB_CDC
 static void putAndRetry(uint8_t *data, uint16_t len){
@@ -814,6 +819,7 @@ void DMA1_Channel5_IRQHandler(void){
 * @param hi2c: I2C handle pointer
 * @retval None
 */
+#if defined(ENABLE_I2C)
 void I2C_Init(void){
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -866,7 +872,7 @@ uint16_t I2C_Read(uint8_t addr, uint8_t *data, uint32_t size){
     taskEXIT_CRITICAL();
     return size;
 }
-
+#endif
 /**
  * @brief Configure watchdog timer according a given interval
  *  in wich the timer will expire and a system reset is performed

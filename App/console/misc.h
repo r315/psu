@@ -36,9 +36,11 @@ public:
 	}
 	char execute(void *ptr){
         uint8_t data;
-
+#if defined(ENABLE_I2C)
         data = EXPANDER_Read();
-
+#else
+        data = 0;
+#endif
         console->print("IO: b%08b\n", data);
         console->print("PWR: %s\n", GET_PWR_BTN ? "ON" : "OFF");
 

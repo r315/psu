@@ -5,7 +5,7 @@
 #include "task.h"
 
 #include "psu.h"
-
+#if defined(ENABLE_CLI)
 #include "misc.h"
 #include "cmdhelp.h"
 #include "cmdadc.h"
@@ -14,16 +14,10 @@
 #include "cmdset.h"
 #include "cmdstatus.h"
 #include "cmdeeprom.h"
-
-#include "bui.h"
-#include "model_psu.h"
-#include "presenter_psu.h"
-#include "presenter_preset.h"
-#include "presenter_charger.h"
-#include "presenter_load.h"
+#endif
 
 static psu_t psu;
-
+#if defined(ENABLE_CLI)
 static Console console;
 static CmdHelp help;
 static CmdAdc adc1;
@@ -39,14 +33,6 @@ static CmdEeprom eeprom;
 static CmdDfu dfu;
 #endif
 static CmdStatus status;
-
-extern const uint8_t icon_out[];
-extern const uint8_t icon_psu[];
-extern const uint8_t icon_load[];
-extern const uint8_t icon_chr[];
-extern const uint8_t dro_unit_v[];
-extern const uint8_t dro_unit_a[];
-
 
 static ConsoleCommand *commands[] = {
     &help,
@@ -65,6 +51,19 @@ static ConsoleCommand *commands[] = {
 #endif
     NULL
 };
+#endif
+
+#if defined(ENABLE_UI)
+#include "bui.h"
+#include "model_psu.h"
+#include "presenter_psu.h"
+#include "presenter_preset.h"
+#include "presenter_charger.h"
+#include "presenter_load.h"
+
+static ModelPsu model_psu;
+#endif
+
 
 const pwmcal_t default_pwm_calibration[] = {
     {490, (1<<PWM_RESOLUTION), 1024},   // pwm1 (VOUT) calibration <min, max, start>
@@ -122,6 +121,7 @@ static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
     DBG_PRINT("Set pwm %d %u\n",ch, pwm_value);
 }
 
+#if defined(ENABLE_EEPROM)
 static uint8_t app_calcCksum(uint8_t *src, uint16_t len){
     uint8_t sum = 0;
 
@@ -131,6 +131,7 @@ static uint8_t app_calcCksum(uint8_t *src, uint16_t len){
 
     return 256 - sum;
 }
+#endif
 
 /**
  * PSU public control functions
@@ -139,7 +140,9 @@ void psu_poweroff(void){
     // TODO: Properly disable all peripherals (clock and pwr) and then power off
     psu_setOutputEnable(FALSE);
     psu_setLoadCurrent(0);
+#if defined(ENABLE_UI)
     LCD_Bkl(OFF);
+#endif
     vTaskDelay(pdMS_TO_TICKS(POWER_OFF_DELAY));
     SOFT_POWER_OFF;
 }
@@ -350,11 +353,12 @@ uint8_t app_saveState(void){
 /**
  * Model
  * */
-ModelPsu model_psu;
+
 
 /**
  * 
  * */
+#if defined(ENABLE_UI)
 void tskBui(void *ptr){
     static TickType_t xLastWakeTime;
 
@@ -377,7 +381,7 @@ void tskBui(void *ptr){
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
 }
-
+#endif
 /**
  * 
  * */
@@ -386,15 +390,17 @@ static TickType_t xLastWakeTime;
 uint8_t count = 0;   
 
     ADCMGR_Start();
-
+#if defined(ENABLE_UI)
     model_psu.init();
-
+#endif
     while(1){
         //DBG_PIN_LOW;        
         app_processPowerButton();
         
         if(GET_AD_FLAG){
+            #if defined(ENABLE_UI)
             model_psu.update();
+            #endif
             CLR_AD_FLAG;
             ADCMGR_Start();
         }
@@ -413,6 +419,7 @@ uint8_t count = 0;
     }
 }
 
+#if defined(ENABLE_CLI)
 void tskCmdLine(void *ptr){
     
     stdout_t *stdio_port = (stdout_t*)ptr;
@@ -440,22 +447,24 @@ void tskCmdLine(void *ptr){
         console.process();
     }
 }
-
+#endif
 static void startTask(void(*task)(void*), const char *name, void *args, uint32_t stack, int priority){
     if(xTaskCreate( task, name, stack, args, priority, NULL ) != pdPASS){
-        dbg_printf("FAIL: to start task %s\n", name);    
+        DBG_PRINT("FAIL: to start task %s\n", name);    
     }
 }
 
 extern "C" void app_setup(void){  
     BOARD_Init();  
 
-    psu_setOutputEnable(FALSE);
+    app_setOutputEnable(FALSE);
 
+#if defined(ENABLE_UI)
     EXPANDER_Init();
-
     LCD_Init();
     LCD_Rotation(LCD_LANDSCAPE);
+#endif
+
 #ifdef ENABLE_EEPROM
     EEPROM_Init();
 #endif
@@ -471,10 +480,14 @@ extern "C" void app_setup(void){
     #ifndef ENABLE_DEBUG
     enableWatchDog(WATCHDOG_TIME);
     #endif
-    
+
+#if defined(ENABLE_CLI)   
     startTask(tskCmdLine, "CLI", &stdio_ops, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
+#endif
     startTask(tskPsu, "PSU", NULL, configMINIMAL_STACK_SIZE, PRIORITY_LOW + 1);
+#if defined(ENABLE_UI)
     startTask(tskBui, "BUI", NULL, configMINIMAL_STACK_SIZE * 8, PRIORITY_LOW);
+#endif
 }
 
 extern "C" void vApplicationMallocFailedHook( void ){

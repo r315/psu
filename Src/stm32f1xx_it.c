@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include "stm32f1xx_hal.h"
 #include "stm32f1xx_it.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -58,8 +58,9 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+#if defined(ENABLE_USB_CDC)
 extern PCD_HandleTypeDef hpcd_USB_FS;
-
+#endif
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -164,12 +165,13 @@ void DebugMon_Handler(void)
   * @brief This function handles DMA1 channel4 global interrupt.
   */
 void DMA1_Channel4_IRQHandler(void){
-
+#if defined(ENABLE_I2C)
   if(DMA1->ISR & DMA_ISR_TCIF4){
     I2C2->CR1 |= I2C_CR1_STOP;
     I2C2->CR2 &= ~I2C_CR2_DMAEN;
   }
   DMA1->IFCR = DMA_IFCR_CGIF4;  
+#endif
 }
 
 /**
