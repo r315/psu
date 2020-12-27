@@ -16,6 +16,8 @@ typedef enum{
     LOAD_IDLE,
     LOAD_EXIT,
     LOAD_UPD,
+    LOAD_ENABLE_LOAD,
+    LOAD_RUNNING,
 }stateload_e;
 
 
@@ -29,7 +31,14 @@ public:
     void setModel(BUIModel *m){_model = (ModelPsu*)m;}   
     BUIView *getView(void){ return (BUIView*)_view;}
 private:
-    stateload_e _state;    
+    buievt_e stateIdle(buikeyevt_t *evt);
+    buievt_e stateRunning(buikeyevt_t *evt);
+    void computeCapacity(uint32_t ma);
+    ModelPsu *_model;
+    ViewLoad *_view;
+    stateload_e _state;
+    float _capacity;
+    uint32_t _elapsed_ticks;
 };
 
 #ifdef __cplusplus
