@@ -30,6 +30,8 @@ public:
     preset_t getPreset(uint8_t idx);
     uint8_t getBatteryType(void){return _bt_ty;}
     uint32_t getChargeCurrent(void);
+    uint32_t getLoadVoltagePreset(void);
+    uint32_t getLoadCurrentPreset(void);
     void setOutVoltagePreset(uint32_t v);
     void setOutCurrentPreset(uint32_t i);
     void setOutPreset(preset_t pre);
@@ -55,6 +57,8 @@ public:
     // Apply model data to app
     void applyPsuPreset(void);
     void applyChargerPreset(void);
+    void applyLoadCurrent(void);
+    void disableLoad(void);
 private:
     uint32_t _out_voltage;
     uint32_t _out_current;
@@ -65,8 +69,9 @@ private:
     preset_t *_preset_list;
     preset_t *_psu_preset;
     preset_t _chg_preset;
+    preset_t _load_preset;
     uint8_t _preset_idx;
-    uint8_t _bt_ty;         // Current selected battery type [1, 4]
+    uint8_t _bt_ty;         // Current selected battery type [1, 4]    
 
     SemaphoreHandle_t access_data;
 };

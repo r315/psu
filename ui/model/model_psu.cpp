@@ -30,6 +30,9 @@ void ModelPsu::init(void){
     _bt_ty = 1; // 1S
     _chg_preset.v = MAX_CELL_VOLTAGE;
     _chg_preset.i = 100;
+
+    _load_preset.v = 3200;
+    _load_preset.i = 200;
 }
 
 /**
@@ -95,6 +98,12 @@ preset_t ModelPsu::getChargerPreset(void){
 uint32_t ModelPsu::getChargeCurrent(void){
     return _chg_preset.i;
 }
+uint32_t ModelPsu::getLoadVoltagePreset(void){
+    return _load_preset.v;
+}
+uint32_t ModelPsu::getLoadCurrentPreset(void){
+    return _load_preset.i;
+}
 
 uint8_t ModelPsu::toggleOutputEnable(void){
     return app_toggleOutputEnable();
@@ -149,4 +158,10 @@ void ModelPsu::applyPsuPreset(void){
 }
 void ModelPsu::applyChargerPreset(void){
     app_applyPreset(&_chg_preset);
+}
+void ModelPsu::applyLoadCurrent(void){
+    psu_setLoadCurrent(_load_preset.i);
+}
+void ModelPsu::disableLoad(void){
+    psu_setLoadCurrent(0);
 }
