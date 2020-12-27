@@ -27,21 +27,13 @@ extern "C" {
 #define MAX_ILOAD                   1000U  // TODO: LIMIT in HW to 500mA
 #define MIN_ILOAD                   0U
 #define MAX_VLOAD                   20000U
+#define MIN_VLOAD                   0U
 
 #define ADC_INTERVAL                100 //ms
 #define APP_INTERVAL                10
 #define UPDATE_INTERVAL             100
 
 #define MAX_CELL_VOLTAGE            4190
-
-#define LOAD_ICON_POS               LCD_W - 36,3
-//#define OUTPUT_ICON_POS             160-16,3
-
-#define SCREEN_NUM                  0 //sizeof(screens)/sizeof(void*)
-
-//#define BLINK_TIME_MASK             8
-//#define BLINK_ON                    1
-//#define BLINK_OFF                   0
 
 #define CONSOLE_PROMPT              "PSU >"
 
