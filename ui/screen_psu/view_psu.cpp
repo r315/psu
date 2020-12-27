@@ -43,11 +43,11 @@ ViewPsu::ViewPsu():
 }
 
 void ViewPsu::init(void){
-    _wi_graph.setFlag(BUI_FLAG_REDRAW);
     // Invalidate view
     setInvalid(true);
     // Invalidate widgets
     BUIWidget::invalidateList(getWidgets());
+    _wi_graph.redraw();
 }
 
 void ViewPsu::draw(){

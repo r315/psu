@@ -92,7 +92,12 @@ protected:
 
 class BUIGraph : public BUIWidget {
 public:
-    BUIGraph() : BUIWidget(0,0) {}
+    BUIGraph():
+        BUIGraph(0,0,
+            64,20,
+            1,
+            (const uint16_t[]){WHITE, BLUE,RED})
+    {}
     ~BUIGraph();
     /**
      * @brief Configure graph
@@ -120,6 +125,7 @@ public:
     void nextPoint();
     void update();
     void reset();
+    void redraw();
 private:
     const uint16_t *_pal;
     uint16_t _xsize, _ysize;

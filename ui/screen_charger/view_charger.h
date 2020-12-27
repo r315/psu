@@ -40,7 +40,7 @@ private:
     BUIlist *_wi_bt;            // Battery type
     BUIicon  *_wi_chg_icon;     // Charge icon
     BUIText *_wi_pv;            // Pack voltage
-    char *_txt_buf;             
+    char *_txt_buf;
 };
 
 #ifdef __cplusplus

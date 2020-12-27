@@ -43,6 +43,10 @@ void BUIGraph::clear(){
     DRAW_FillRect(_x, _y, _xsize, _ysize, _pal[0]);
 }
 
+void BUIGraph::redraw(){
+    setFlag(BUI_FLAG_REDRAW);
+}
+
 /**
  * @brief Redraws full graph and plots current graph data
  * */

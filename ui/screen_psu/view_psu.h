@@ -30,7 +30,7 @@ private:
     BUIText _wi_power;
     BUIdro _wi_current;
     BUIdro _wi_voltage;
-    BUIGraph _wi_graph;  
+    BUIGraph _wi_graph;
     BUIicon  _wi_out_icon;
 };
 

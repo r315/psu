@@ -118,7 +118,6 @@ buievt_e PresenterCharger::eventHandler(buikeyevt_t *evt){
     return BUI_EVT_NONE;
 }
 
-
 void PresenterCharger::stateIdle(buikeyevt_t *evt){
     switch(evt->key){
 
@@ -156,6 +155,7 @@ void PresenterCharger::stateCharging(buikeyevt_t *evt){
             break;
     }
 }
+
 void PresenterCharger::stateSetI(buikeyevt_t *evt){
     switch(evt->key){
 

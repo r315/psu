@@ -7,7 +7,6 @@ extern "C" {
 
 #include <stdint.h>
 #include "bui.h"
-#include "wi_dro.h"
 
 class BUIdro : public BUIText{
 public:
