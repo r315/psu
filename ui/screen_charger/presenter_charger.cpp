@@ -6,6 +6,7 @@ void PresenterCharger::init(void){
         _view = new ViewCharger();
     }
     _view->init();
+    _capacity = 0;
 }
 
 void PresenterCharger::tick(void){
@@ -17,7 +18,7 @@ void PresenterCharger::tick(void){
             _view->showChargingIcon(false);
             _view->updateCurrent(_model->getChargeCurrent());
             _view->updateBatteryType(_ncell);
-            _view->updateCapacity(-1);
+            _view->updateCapacity(_capacity);
             _state = CHG_IDLE;
             break;
 
@@ -27,7 +28,6 @@ void PresenterCharger::tick(void){
             _model->applyChargerPreset();
             _view->showChargingIcon(true);            
             _state = CHG_CHARGING;
-            _capacity = 0;
             _ticks = GetTicks();
             break;
         }
@@ -134,6 +134,11 @@ void PresenterCharger::stateIdle(buikeyevt_t *evt){
 
         case BUTTON_OUT:
             _state = _model->toggleOutputEnable() ? CHG_ENTER_CHARGING : CHG_ENTER_IDLE;
+            break;
+
+        case BUTTON_PRE:
+            _capacity = 0;
+            _view->updateCapacity(_capacity);
             break;
 
         default:
