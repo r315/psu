@@ -48,6 +48,9 @@ ViewCharger::ViewCharger(){
     addWidget(_wi_bt);
     addWidget(_wi_chg_icon);
     addWidget(_wi_pv);
+
+    _txt_buf = (char*)bui_malloc(10);
+    configASSERT(_txt_buf != NULL);
 }
 
 void ViewCharger::init(void){    
@@ -55,9 +58,6 @@ void ViewCharger::init(void){
     setInvalid(true);    
     // Invalidate widgets
     BUIWidget::invalidateList(getWidgets());
-
-    _txt_buf = (char*)bui_malloc(10);
-    configASSERT(_txt_buf != NULL);
 }
 
 void ViewCharger::draw(void){
