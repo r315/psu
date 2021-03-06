@@ -67,15 +67,15 @@ extern "C" {
  * LEDS and debug pin
  * */
 #define LED_PIN         PC_13
-#define LED_INIT        pinInit(LED_PIN, GPO_2MHZ);
+#define LED_INIT        pinInit(LED_PIN, GPO_2MHZ)
 #define LED_TOGGLE      HAL_GPIO_TogglePin(PIN_NAME_TO_PORT(LED_PIN), PIN_NAME_TO_PIN(LED_PIN))
 #define LED_OFF         pinWrite(LED_PIN, GPIO_PIN_SET)
 #define LED_ON          pinWrite(LED_PIN, GPIO_PIN_RESET)
 
 #define DBG_PIN         PB_6
 #define DBG_PIN_INIT    pinInit(DBG_PIN, GPO_2MHZ);
-#define DBG_PIN_HIGH    pinWrite(LED_PIN, GPIO_PIN_SET)
-#define DBG_PIN_LOW     pinWrite(LED_PIN, GPIO_PIN_RESET)
+#define DBG_PIN_HIGH    pinWrite(DBG_PIN, GPIO_PIN_SET)
+#define DBG_PIN_LOW     pinWrite(DBG_PIN, GPIO_PIN_RESET)
 #define DBG_PIN_TOGGLE  pinToggle(DBG_PIN)
 
 #if defined(ENABLE_DEBUG)
@@ -177,10 +177,10 @@ void SPI_WriteDMA(uint16_t *dst, uint32_t len);
  * */
 #if defined(ENABLE_USB_CDC) || defined(ENABLE_UART)
 extern StdOut stdio_ops;
-#define DEFSTDIO stdio_ops
+#define SERIAL_IO &stdio_ops
 #elif defined(ENABLE_DEBUG)
 extern stdout_t dummy_out;
-#define DEFSTDIO dummy_out
+#define SERIAL_IO &dummy_out
 #endif
 
 

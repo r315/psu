@@ -27,6 +27,11 @@ ENABLE_UI :=yes
 
 ENABLE_EEPROM :=no
 
+ENABLE_VCOM :=yes
+
+ENABLE_UART :=no
+
+RELEASE :=no
 #######################################
 # paths
 #######################################
@@ -85,7 +90,8 @@ $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
 
 ifeq ($(filter yes $(ENABLE_EEPROM), $(ENABLE_UI)), yes)
-	C_SOURCES +=$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c
+C_SOURCES += \
+$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c
 endif
 
 ifeq ($(ENABLE_DEBUG),yes)
@@ -108,17 +114,18 @@ C_SOURCES +=  \
 $(APP_SRC_DIR)/components/eeprom.c
 endif
 
-# USB lib
-#C_SOURCES += \
+ifeq ($(ENABLE_VCOM),yes)
+C_SOURCES += \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
-$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
-$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
-$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
-$(REPOSITORY)Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
+$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
+$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
+$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
+$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Src/usbd_cdc_if.c \
 Src/usbd_desc.c \
 Src/usbd_conf.c \
-Src/usb_device.c \
+Src/usb_device.c
+endif
 
 # CPP sources
 CPP_SOURCES = \
@@ -223,19 +230,20 @@ C_DEFS =  \
 -DUSE_ADCMGR
 
 # compile gcc flags
-ifeq ($(ENABLE_DEBUG),yes)
-OPT =-Og -g -gdwarf-2
-C_DEFS +=-DENABLE_DEBUG
+ifneq ($(RELEASE),yes)
+OPT =-Og -g# -gdwarf-2
 else
 OPT =-Os
+endif
+
+ifeq ($(ENABLE_DEBUG),yes)
+C_DEFS +=-DENABLE_DEBUG
 endif
 
 ifeq ($(ENABLE_CLI),yes)
 C_DEFS +=\
 -DENABLE_CLI \
--DCONSOLE_BLOCKING \
--D_ENABLE_USB_CDC \
--DENABLE_UART
+-DCONSOLE_BLOCKING
 endif
 
 ifeq ($(ENABLE_UI),yes)
@@ -253,6 +261,13 @@ ifeq ($(filter yes $(ENABLE_EEPROM), $(ENABLE_UI)), yes)
 C_DEFS +=-DENABLE_I2C
 endif
 
+ifeq ($(ENABLE_VCOM),yes)
+C_DEFS +=-DENABLE_USB_CDC
+endif
+
+ifeq ($(ENABLE_UART),yes)
+C_DEFS +=-DENABLE_UART
+endif
 
 ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections
 CFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections -std=c99

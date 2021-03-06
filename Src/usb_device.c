@@ -55,7 +55,7 @@ USBD_HandleTypeDef hUsbDeviceFS;
  * -- Insert your external function declaration here --
  */
 /* USER CODE BEGIN 1 */
-
+void Error_Handler(void);
 /* USER CODE END 1 */
 
 /**

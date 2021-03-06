@@ -420,6 +420,10 @@ uint8_t count = 0;
 }
 
 #if defined(ENABLE_CLI)
+
+#if !(defined(ENABLE_USB_CDC) || defined(ENABLE_UART))
+#error "NO SERIAL IO DEFINED"
+#endif
 void tskCmdLine(void *ptr){
     
     stdout_t *stdio_port = (stdout_t*)ptr;
@@ -427,7 +431,7 @@ void tskCmdLine(void *ptr){
     stdio_port->init();
 
     #ifdef ENABLE_DEBUG
-    dbg_init(stdio_port);
+    dbg_init(SERIAL_IO);
     #endif
 
     console.init(stdio_port, CONSOLE_PROMPT);
@@ -474,7 +478,7 @@ extern "C" void app_setup(void){
 
     ADCMGR_Init();
 
-    ADCMGR_SetSequence(NULL,0 , psu_adc_cb);
+    ADCMGR_SetSequence(NULL, 0 , psu_adc_cb);
 
     // Configure watchdog
     #ifndef ENABLE_DEBUG
@@ -482,7 +486,7 @@ extern "C" void app_setup(void){
     #endif
 
 #if defined(ENABLE_CLI)   
-    startTask(tskCmdLine, "CLI", &stdio_ops, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
+    startTask(tskCmdLine, "CLI", SERIAL_IO, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
 #endif
     startTask(tskPsu, "PSU", NULL, configMINIMAL_STACK_SIZE, PRIORITY_LOW + 1);
 #if defined(ENABLE_UI)
