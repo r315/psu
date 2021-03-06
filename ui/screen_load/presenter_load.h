@@ -33,7 +33,7 @@ public:
 private:
     buievt_e stateIdle(buikeyevt_t *evt);
     buievt_e stateRunning(buikeyevt_t *evt);
-    void computeCapacity(uint32_t ma);
+    float accumulateCapacity(float capacity, uint32_t ma);
     ModelPsu *_model;
     ViewLoad *_view;
     stateload_e _state;

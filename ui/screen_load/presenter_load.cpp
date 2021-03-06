@@ -44,7 +44,7 @@ void PresenterLoad::tick(void){
             _view->updateVoltage(v);
             _view->updatePower((v/1000) * i);
             _view->updateGraph();
-            computeCapacity(i);
+            _capacity = accumulateCapacity(_capacity, i);
             _view->updateCapacity(_capacity);
             _view->updateTime(_elapsed_ticks/1000);
             break;
@@ -121,12 +121,13 @@ buievt_e PresenterLoad::stateRunning(buikeyevt_t *evt){
     return BUI_EVT_NONE;
 }
 
-void PresenterLoad::computeCapacity(uint32_t ma){
+float PresenterLoad::accumulateCapacity(float capacity, uint32_t ma){
     uint32_t ticks = ElapsedTicks(_elapsed_ticks); 
 
     // Value will update every 25s, match graph size
     if(ticks >= 25000){
         _elapsed_ticks += ticks;
-        _capacity += ma/(3600/25);
+        capacity += ma/(3600/25);
     }
+    return capacity;
 }
