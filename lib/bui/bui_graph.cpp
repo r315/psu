@@ -82,6 +82,12 @@ void BUIGraph::draw(){
                 tt = 0;
             }
         }
+
+        // fill remaning graph, if any with background
+        for(uint8_t i = npoints; i < _xsize; i++){
+            DRAW_VLine(_x + i, _y + 1, _ysize, _pal[0]);
+        }
+
         setInvalid(false);
     }
 }
