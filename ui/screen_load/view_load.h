@@ -22,6 +22,12 @@ public:
     void updateCurrent(uint32_t ma);
     void updateGraph(void);
     void showLoadIcon(uint8_t v);
+    void editCC(uint8_t dig);
+    void changeCC(uint8_t dig);
+    void editEndVoltage(uint8_t dig);
+    void changeEndVoltage(uint8_t dig);
+    uint32_t getCC(void){return _wi_ma->getValue();}
+    uint32_t getEndVoltage(void){return _wi_voltage->getValue();}
 private:
     BUIdro *_wi_ma;
     BUIText *_wi_ah;

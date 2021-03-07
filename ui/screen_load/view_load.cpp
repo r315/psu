@@ -79,6 +79,10 @@ void ViewLoad::updateCurrent(uint32_t ma){
     _wi_ma->setValue(ma);
 }
 
+void ViewLoad::updateVoltage(int32_t v){
+    _wi_voltage->setValue(v);
+}
+
 void ViewLoad::updatePower(int32_t mw){
     if(mw >= 0 && mw < 100000){
         xsprintf(_txt_buf,"%02u.%uW", mw/1000, (mw/100)%10);
@@ -96,11 +100,6 @@ void ViewLoad::updateTime(uint32_t ts){
     _wi_time->setText(_txt_buf);
 }
 
-void ViewLoad::updateVoltage(int32_t v){
-    xsprintf(_txt_buf, "%.2fV", (float)(v/1000.0));
-    _wi_voltage->setText(_txt_buf);
-}
-
 void ViewLoad::updateGraph(void){
     uint8_t vals[2];
     vals[0] = _wi_voltage->getValue() * LOAD_GRAPH_HIGHT / MAX_VLOAD;
@@ -108,8 +107,23 @@ void ViewLoad::updateGraph(void){
     _wi_graph->addPoint(vals, 2);
 }
 
-
 void ViewLoad::showLoadIcon(uint8_t v){
     _wi_load_icon->setVisible(v);
     _wi_load_icon->setInvalid(true);
+}
+
+void ViewLoad::editCC(uint8_t dig){
+    _wi_ma->editValue(dig);
+}
+
+void ViewLoad::changeCC(uint8_t d){
+    _wi_ma->changeValue(d);
+}
+
+void ViewLoad::editEndVoltage(uint8_t dig){
+    _wi_voltage->editValue(dig);
+}
+
+void ViewLoad::changeEndVoltage(uint8_t d){
+    _wi_voltage->changeValue(d);
 }
