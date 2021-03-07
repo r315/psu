@@ -24,7 +24,7 @@ void PresenterCharger::tick(void){
 
         case CHG_ENTER_CHARGING:
         {
-            _model->setBatteryType(_view->getBatteryType());
+            _model->setBatteryTypePreset(_view->getBatteryType());
             _model->applyChargerPreset();
             _view->showChargingIcon(true);            
             _state = CHG_CHARGING;
@@ -57,14 +57,14 @@ void PresenterCharger::tick(void){
         }
 
         case CHG_END_SET_I:
-            _model->setChargerCurrent(_view->getCurrent());
+            _model->setChargerCurrentPreset(_view->getCurrent());
         case CHG_ABORT_SET_I:
             _view->editCurrent(false);
             _state = CHG_ENTER_IDLE;
             break;
 
         case CHG_END_SET_TYPE:
-            _model->setBatteryType(_view->getBatteryType());    /* save battery type on model, this also sets pack voltage on charger preset */ 
+            _model->setBatteryTypePreset(_view->getBatteryType());    /* save battery type on model, this also sets pack voltage on charger preset */ 
             _ncell = _view->getBatteryType();
 
         case CHG_ABORT_SET_TYPE:
