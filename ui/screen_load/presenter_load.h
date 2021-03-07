@@ -14,10 +14,16 @@ typedef enum{
     LOAD_INIT = 0,
     LOAD_ENTER_IDLE,
     LOAD_IDLE,
-    LOAD_EXIT,
+    LOAD_END,
     LOAD_UPD,
     LOAD_ENABLE_LOAD,
     LOAD_RUNNING,
+    LOAD_SET_I,
+    LOAD_END_SET_I,
+    LOAD_ABORT_SET_I,
+    LOAD_SET_V,
+    LOAD_END_SET_V,
+    LOAD_ABORT_SET_V,
 }stateload_e;
 
 
@@ -33,7 +39,8 @@ public:
 private:
     buievt_e stateIdle(buikeyevt_t *evt);
     buievt_e stateRunning(buikeyevt_t *evt);
-    float accumulateCapacity(float capacity, uint32_t ma);
+    void stateSetI(buikeyevt_t *evt);
+    void stateSetEndVoltage(buikeyevt_t *evt);
     ModelPsu *_model;
     ViewLoad *_view;
     stateload_e _state;

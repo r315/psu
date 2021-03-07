@@ -5,17 +5,19 @@
 void PresenterLoad::init(void){
     if(_view == NULL){
         _view = new ViewLoad();
+        _capacity  = 0;
+        _elapsed_ticks = 0;
     }
     _view->init();
-    //assert(_view != NULL);
 }
 
 void PresenterLoad::tick(void){
+    static uint32_t last_ticks = 0;
+
      switch(_state){
         case LOAD_INIT:        
-            _view->updateCapacity(0);
-            _view->init();
-            _view->updateTime(0);
+            _view->updateCapacity(_capacity);            
+            _view->updateTime(_elapsed_ticks/1000);       
 
         case LOAD_ENTER_IDLE:
             _model->disableLoad();
@@ -25,30 +27,58 @@ void PresenterLoad::tick(void){
             _view->showLoadIcon(false);
             _state = LOAD_IDLE;
 
-        case LOAD_IDLE:
-        {
+        case LOAD_IDLE:        
+            break;        
+        
+
+        case LOAD_END_SET_I:
+            _model->setLoadCurrentPreset(_view->getCC());
+        case LOAD_ABORT_SET_I:
+            _view->editCC(false);
+            _state = LOAD_ENTER_IDLE;
             break;
-        }
+
+        case LOAD_END_SET_V:
+            _model->setLoadVoltagePreset(_view->getEndVoltage());
+        case LOAD_ABORT_SET_V:
+            _view->editEndVoltage(false);
+            _state = LOAD_ENTER_IDLE;
+            break;
 
         case LOAD_ENABLE_LOAD:
             _model->applyLoadCurrent();
             _view->showLoadIcon(true);
             _state = LOAD_RUNNING;
-
+            last_ticks = GetTicks();
 
         case LOAD_RUNNING:
-        {
+        {            
             uint32_t i = _model->getLoadCurrent();
             uint32_t v = _model->getLoadVoltage();
             _view->updateCurrent(i);
             _view->updateVoltage(v);
             _view->updatePower((v/1000) * i);
             _view->updateGraph();
-            _capacity = accumulateCapacity(_capacity, i);
+
+            uint32_t ticks = ElapsedTicks(last_ticks);
+            // Value will update every 25s, match graph size
+            if(ticks >= 25000){
+                _elapsed_ticks += ticks;
+                _capacity += i/(3600/25);
+                last_ticks = GetTicks();
+            }
+
             _view->updateCapacity(_capacity);
             _view->updateTime(_elapsed_ticks/1000);
+            if(v < _model->getLoadVoltagePreset()){
+                _state = LOAD_END;
+            }            
             break;
         }
+
+        case LOAD_END:
+            _state = LOAD_ENTER_IDLE;
+            break;
 
         default:
             break;
@@ -68,11 +98,19 @@ buievt_e PresenterLoad::eventHandler(buikeyevt_t *evt){
     }
 
     switch(_state){
-        case LOAD_IDLE:            
+        case LOAD_IDLE:
             return stateIdle(evt);
 
         case LOAD_RUNNING:
             return stateRunning(evt);
+
+        case LOAD_SET_I:
+            stateSetI(evt);
+            break;
+
+        case LOAD_SET_V:
+            stateSetEndVoltage(evt);
+            break; 
 
         default:
             break;
@@ -81,18 +119,17 @@ buievt_e PresenterLoad::eventHandler(buikeyevt_t *evt){
     return BUI_EVT_NONE;
 }
 
-
 buievt_e PresenterLoad::stateIdle(buikeyevt_t *evt){
     switch(evt->key){
 
         case BUTTON_DOWN:
-            //evt->key = BUTTON_EMPTY;
-            //stateSetI(evt);
+            evt->key = BUTTON_EMPTY;
+            stateSetI(evt);
             break;
 
         case BUTTON_UP:
-            //evt->key = BUTTON_EMPTY;
-            //stateSetType(evt);
+            evt->key = BUTTON_EMPTY;
+            stateSetEndVoltage(evt);
             break;
 
         case BUTTON_OUT:
@@ -102,6 +139,12 @@ buievt_e PresenterLoad::stateIdle(buikeyevt_t *evt){
         case BUTTON_MODE:
             _state = LOAD_INIT;
             return BUI_EVT_CHG_SCR;
+
+         case BUTTON_PRE:
+            _elapsed_ticks = 0;
+            _capacity = 0;
+            _state = LOAD_INIT;
+            break;
 
         default:
             break;
@@ -114,6 +157,7 @@ buievt_e PresenterLoad::stateRunning(buikeyevt_t *evt){
 
         case BUTTON_OUT:
             _state = LOAD_ENTER_IDLE;
+            break;       
 
         default:
             break;
@@ -121,13 +165,60 @@ buievt_e PresenterLoad::stateRunning(buikeyevt_t *evt){
     return BUI_EVT_NONE;
 }
 
-float PresenterLoad::accumulateCapacity(float capacity, uint32_t ma){
-    uint32_t ticks = ElapsedTicks(_elapsed_ticks); 
+void PresenterLoad::stateSetI(buikeyevt_t *evt){
+    switch(evt->key){
 
-    // Value will update every 25s, match graph size
-    if(ticks >= 25000){
-        _elapsed_ticks += ticks;
-        capacity += ma/(3600/25);
+        case BUTTON_UP: _view->changeCC(1); break;
+            
+        case BUTTON_DOWN: _view->changeCC(-1); break;
+
+        case BUTTON_LEFT: _view->editCC(1); break;
+            
+        case BUTTON_RIGHT: _view->editCC(-1); break;
+
+        case BUTTON_SET: 
+            _state = LOAD_END_SET_I;
+            break;
+
+        case BUTTON_MODE:            
+            _state = LOAD_ABORT_SET_I;
+            break;
+        // Enter CC
+        case BUTTON_EMPTY: 
+            _view->editCC(true);
+            _state = LOAD_SET_I;
+            break;
+
+        default:
+            break;
     }
-    return capacity;
+}
+
+void PresenterLoad::stateSetEndVoltage(buikeyevt_t *evt){
+    switch(evt->key){
+
+        case BUTTON_UP: _view->changeEndVoltage(1); break;
+            
+        case BUTTON_DOWN: _view->changeEndVoltage(-1); break;
+
+        case BUTTON_LEFT: _view->editEndVoltage(1); break;
+            
+        case BUTTON_RIGHT: _view->editEndVoltage(-1); break;
+
+        case BUTTON_SET: 
+            _state = LOAD_END_SET_V;
+            break;
+
+        case BUTTON_MODE:            
+            _state = LOAD_ABORT_SET_V;
+            break;
+        // Enter CC
+        case BUTTON_EMPTY: 
+            _view->editEndVoltage(true);
+            _state = LOAD_SET_V;
+            break;
+
+        default:
+            break;
+    }
 }

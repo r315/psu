@@ -31,7 +31,7 @@ void ModelPsu::init(void){
     _chg_preset.v = MAX_CELL_VOLTAGE;
     _chg_preset.i = 100;
 
-    _load_preset.v = 3200;
+    _load_preset.v = 0;     // End voltage,
     _load_preset.i = 200;
 }
 
