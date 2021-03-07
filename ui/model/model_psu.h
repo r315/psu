@@ -36,8 +36,10 @@ public:
     void setOutCurrentPreset(uint32_t i);
     void setOutPreset(preset_t pre);
     void selectPresetByIdx(uint8_t idx);
-    void setBatteryType(uint8_t t);
-    void setChargerCurrent(uint32_t i);
+    void setBatteryTypePreset(uint8_t t);
+    void setChargerCurrentPreset(uint32_t i);
+    void setLoadVoltagePreset(uint32_t mv);
+    void setLoadCurrentPreset(uint32_t ma);
     
     // Resource not shared, called from presenter
     uint8_t getOutputEnable(void);

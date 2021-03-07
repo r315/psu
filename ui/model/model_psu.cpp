@@ -59,6 +59,19 @@ void ModelPsu::update(){
     }
 }
 
+/**
+ * @brief App forwarding
+ * */
+uint8_t ModelPsu::toggleOutputEnable(void){
+    return app_toggleOutputEnable();
+}
+uint8_t ModelPsu::getOutputEnable(void){
+    return app_isOutputEnabled();
+}
+
+/**
+ * @brief Read model data
+ * */
 uint32_t ModelPsu::getOutVoltage(void){
     return _out_voltage;
 }
@@ -105,13 +118,9 @@ uint32_t ModelPsu::getLoadCurrentPreset(void){
     return _load_preset.i;
 }
 
-uint8_t ModelPsu::toggleOutputEnable(void){
-    return app_toggleOutputEnable();
-}
-uint8_t ModelPsu::getOutputEnable(void){
-    return app_isOutputEnabled();
-}
-
+/**
+ * @brief Write new data to model data
+ * */
 void ModelPsu::setOutPreset(preset_t pre){
     _psu_preset->v = pre.v;
     _psu_preset->i = pre.i;
@@ -126,14 +135,24 @@ void ModelPsu::selectPresetByIdx(uint8_t idx){
     _preset_idx = idx;
     _psu_preset = _preset_list + _preset_idx;
 }
-void ModelPsu::setChargerCurrent(uint32_t i){
+void ModelPsu::setChargerCurrentPreset(uint32_t i){
     _chg_preset.i = i;    
 }
-void ModelPsu::setBatteryType(uint8_t t){
+void ModelPsu::setBatteryTypePreset(uint8_t t){
      _bt_ty = t;
      _chg_preset.v = batVoltages[_bt_ty - 1];
 }
+void ModelPsu::setLoadCurrentPreset(uint32_t ma){
+    _load_preset.i = ma;
+}
+void ModelPsu::setLoadVoltagePreset(uint32_t mv){
+    _load_preset.v = mv;
+}
 
+/**
+ * @brief Update internal data model with latest data from app,
+ * called from presenter class
+ * */ 
 void ModelPsu::updateOutputVoltage(void){
     _out_voltage = psu_getOutputVoltage();
 }
@@ -153,6 +172,9 @@ void ModelPsu::updateCellVoltage(uint8_t c){
     _vb[c] = psu_getCellVoltage(c);
 }
 
+/**
+ * @brief Instruct app to use model data presets
+ * */
 void ModelPsu::applyPsuPreset(void){
     app_applyPreset(_psu_preset);
 }
