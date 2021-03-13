@@ -15,6 +15,8 @@
 
 #define PSU_OUTPUT_ICON_POS             160-16,3
 
+#define PSU_I_USB_POS           (LCD_W - 6 * 8), 12
+
 static const uint8_t psu_icon_out[] = {15,8,
     0x7f,0xfc,0xc5,0x46,0xd5,0x6e,0xd5,0x6e,0xd5,0x6e,0xd5,0x6e,0xc4,0x6e,0x7f,0xfc
 };
@@ -27,7 +29,8 @@ ViewPsu::ViewPsu():
              PSU_GRAPH_WIDTH, PSU_GRAPH_HIGHT, 
              2, 
              (const uint16_t[]){0x18E3, RED, GREEN, YELLOW}),
-    _wi_out_icon(PSU_OUTPUT_ICON_POS, psu_icon_out)
+    _wi_out_icon(PSU_OUTPUT_ICON_POS, psu_icon_out),
+    _wi_usb_current(PSU_I_USB_POS)
 {
 
     _wi_voltage.init(100, 100, MIN_VOLTAGE, MAX_VOLTAGE, voltageFormat);
@@ -40,6 +43,7 @@ ViewPsu::ViewPsu():
     addWidget(&_wi_current);
     addWidget(&_wi_graph);
     addWidget(&_wi_out_icon);
+    addWidget(&_wi_usb_current);
 }
 
 void ViewPsu::init(void){
@@ -80,6 +84,12 @@ void ViewPsu::updateGraph(void){
     vals[0] = _wi_voltage.getValue() * PSU_GRAPH_HIGHT / MAX_VOLTAGE;
     vals[1] = _wi_current.getValue() * PSU_GRAPH_HIGHT / MAX_CURRENT;
     _wi_graph.addPoint(vals, 2);
+}
+
+void ViewPsu::updateUsbCurrent(uint32_t ma){
+    char out[5];
+    xsprintf(out,"%3dmA", ma);
+    _wi_usb_current.setText(out);
 }
 
 void ViewPsu::editVoltage(uint8_t dig){

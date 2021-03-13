@@ -17,6 +17,7 @@ public:
     void draw(void);
     void updateVoltage(uint32_t mv);
     void updateCurrent(uint32_t ma);
+    void updateUsbCurrent(uint32_t ma);
     void updatePower(int32_t mw);
     void updateGraph(void);
     void editVoltage(uint8_t dig);
@@ -32,6 +33,7 @@ private:
     BUIdro _wi_voltage;
     BUIGraph _wi_graph;
     BUIicon  _wi_out_icon;
+    BUIText _wi_usb_current;
 };
 
 #ifdef __cplusplus

@@ -76,6 +76,8 @@ void PresenterPsu::tick(void){
         default:
             break;
     }
+
+    _view->updateUsbCurrent(_model->getUsbCurrent());
 }
 
 // Called from app task
@@ -83,6 +85,7 @@ void PresenterPsu::update(void){
     // update the necessary model data
     _model->updateOutputVoltage();
     _model->updateOutputCurrent();
+    _model->updateUsbCurrent();
 }
 
 // Called from bui task at start of frame if any button event has ocurred
