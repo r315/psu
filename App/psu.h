@@ -191,7 +191,7 @@ preset_t *app_getPresetList(void);
 /**
  * @brief Get/Set last used preset index
  * */
-uint8_t app_getSavedPresetIdx(void);
+uint8_t app_getPresetIdx(void);
 void app_setPresetIdx(uint8_t idx);
 
 /**

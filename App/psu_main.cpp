@@ -73,11 +73,11 @@ const pwmcal_t default_pwm_calibration[] = {
 };
 
 const preset_t default_preset[] = {
-    {MIN_VOLTAGE, 100},   // <mv, ma>
-    {1800, 100},
-    {2500, 100},
-    {MAX_VOLTAGE, 100},
-    {5000, 100},
+    {1800, 200},   // <mv, ma>
+    {2500, 200},
+    {3300, 500},
+    {4200, 300},
+    {5000, 200},
     {9600, 100}
 };
 
@@ -122,7 +122,7 @@ extern "C" void psu_adc_cb(uint16_t *data){
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
     uint16_t pwm_value = (x - in_min) * (psu.pwm_cal[ch].max - psu.pwm_cal[ch].min) / (in_max - in_min) + psu.pwm_cal[ch].min;
     PWM_Set(ch, pwm_value);
-    DBG_PRINT("Set pwm %d %u\n",ch, pwm_value);
+    DBG_PRINT("Set PWM%d %u\n",ch, pwm_value);
 }
 
 #if defined(ENABLE_EEPROM)
@@ -264,7 +264,7 @@ void app_processPowerButton(void){
     if(GET_PWR_BTN){
         if(--pwr_off_counter == 0){
             DBG_PRINT("Powering off...\n");
-            //app_saveState();
+            app_saveState();
             psu_poweroff();
     }
     }else{
@@ -288,7 +288,7 @@ preset_t *app_getPresetList(void){
     return psu.preset_list;
 }
 
-uint8_t app_getSavedPresetIdx(void){
+uint8_t app_getPresetIdx(void){
     return psu.preset_idx;
 }
 
@@ -328,7 +328,7 @@ uint8_t app_restoreState(void){
     
     uint8_t cksum = app_calcCksum((uint8_t*)&psu, size);
     if( psu.cksum != cksum){
-        //DBG_PRINT("Invalid data on EEPROM\n");
+        DBG_PRINT("Invalid data on EEPROM, using default values!\n");
         app_defaultState();
         CLR_EEPROM_FLAG;
         return 0;
@@ -342,10 +342,19 @@ uint8_t app_restoreState(void){
 
 uint8_t app_saveState(void){
 #ifdef ENABLE_EEPROM
-    uint16_t size;
-    size = (uint8_t*)&psu.cksum - (uint8_t*)&psu;
+    // Calculate cksum for current values
+    uint16_t size = (uint8_t*)&psu.cksum - (uint8_t*)&psu;
     psu.cksum = app_calcCksum((uint8_t*)&psu, size);
-    DBG_PRINT("Writting %u bytes to eeprom, cksum 0x%2X\n", size, psu.cksum);
+    // Read cksum from eeprom and compare with previous calculated cksum
+    uint8_t cksum;
+    EEPROM_Read(EEPROM_APP_OFFSET + size, (uint8_t*)&cksum, 1);
+    DBG_PRINT("EEPROM cksum: %2X, settings cksum: %2X\n", cksum, psu.cksum);
+    if(cksum == psu.cksum){
+        // No changes made on settings
+        return 1;
+    }
+
+    DBG_PRINT("Writting %u bytes to EEPROM\n", size + 1);
     if(!EEPROM_Write(EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1)){
         return 0;
     }
