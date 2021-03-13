@@ -177,9 +177,7 @@ uint16_t len = 0;
 }
 #endif
 
-#if defined(ENABLE_UART) 
-
-
+#if defined(ENABLE_UART)
 void UART_Init(void){
     RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
     RCC->APB2RSTR |= RCC_APB2RSTR_USART1RST;

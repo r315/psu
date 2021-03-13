@@ -56,6 +56,8 @@ BUILD_DIR :=build
 BUI_DIR :=./lib/bui
 
 UI_DIR :=./ui
+
+USB_DIR :=./lib/stm32-usb-cdc
 ######################################
 # sources
 ######################################
@@ -82,6 +84,17 @@ $(FREERTOS_DIR)/queue.c \
 $(FREERTOS_DIR)/tasks.c \
 $(FREERTOS_DIR)/timers.c \
 $(FREERTOS_DIR)/CMSIS_RTOS/cmsis_os.c \
+
+USB_CDC_SOURCES =\
+$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
+$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
+$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
+$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
+$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
+$(USB_DIR)/usbd_cdc_if.c \
+$(USB_DIR)/usbd_desc.c \
+$(USB_DIR)/usbd_conf.c \
+$(USB_DIR)/usb_device.c
 
 #$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
@@ -114,16 +127,7 @@ $(APP_SRC_DIR)/components/eeprom.c
 endif
 
 ifeq ($(ENABLE_VCOM),yes)
-C_SOURCES += \
-$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
-$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
-$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
-$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
-$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
-Src/usbd_cdc_if.c \
-Src/usbd_desc.c \
-Src/usbd_conf.c \
-Src/usb_device.c
+C_SOURCES += $(USB_CDC_SOURCES)
 endif
 
 # CPP sources
@@ -183,6 +187,7 @@ C_INCLUDES =  \
 -I$(UI_DIR)/screen_preset \
 -I$(UI_DIR)/screen_charger \
 -I$(UI_DIR)/screen_load \
+-I$(USB_DIR) \
 
 ######################################
 # firmware library
@@ -288,7 +293,7 @@ LDSCRIPT =startup/STM32F103C8Tx_FLASH.ld
 #-specs=nano.specs: has the small size
 
 LIBS =-specs=nano.specs -nolibc -lstdc++
-LIBDIR = 
+LIBDIR =-Llib/stm32-usb-cdc
 LDFLAGS = $(MCU) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
@@ -321,6 +326,10 @@ test:
 	@echo $(CURDIR)
 	@echo ""; $(foreach d, $(VPATH), echo $(d);)
 	@echo $(filter yes $(ENABLE_EEPROM), $(ENABLE_UI))
+
+lib_cdc:
+	$(MAKE) -C $(USB_DIR)
+
 #@echo $(C_SOURCES)
 #######################################
 # build the application

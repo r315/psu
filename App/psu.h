@@ -107,7 +107,7 @@ typedef struct psu{
 /**
  * @brief Global adc conversions counter
  * */
-extern uint32_t g_mgr_eoc_count;
+extern volatile uint32_t g_mgr_eoc_count;
 
 /**
  * @brief PSU control API
