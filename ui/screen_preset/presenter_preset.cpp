@@ -23,14 +23,14 @@ void PresenterPreset::tick(void){
         case PRE_IDLE:
             break;       
         
-        case PRE_SET:
-            _model->selectPresetByIdx(_view->getSelected());
-            _model->applyPsuPreset();
+        case PRE_SET:            
+            _model->applyPsuPresetFromIdx();
             _state = PRE_EXIT;
             break;
 
         case PRE_CHG:
             _view->showPreset(_model->getPreset(_view->getSelected()));
+            _model->setPresetIdx(_view->getSelected());
             _state = PRE_IDLE;
             break;
         

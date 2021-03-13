@@ -24,8 +24,7 @@ ModelPsu::ModelPsu(){
 void ModelPsu::init(void){
 
     _preset_list = app_getPresetList();
-    _preset_idx = app_getSavedPresetIdx();
-    _psu_preset = &_preset_list[_preset_idx];
+    _psu_preset = &_preset_list[app_getPresetIdx()];
     
     _bt_ty = 1; // 1S
     _chg_preset.v = MAX_CELL_VOLTAGE;
@@ -68,6 +67,9 @@ uint8_t ModelPsu::toggleOutputEnable(void){
 uint8_t ModelPsu::getOutputEnable(void){
     return app_isOutputEnabled();
 }
+uint8_t ModelPsu::getPresetIdx(void){    
+    return app_getPresetIdx();
+}
 
 /**
  * @brief Read model data
@@ -99,9 +101,7 @@ uint32_t ModelPsu::getOutCurrentPreset(void){
 preset_t ModelPsu::getPsuPreset(void){
     return *_psu_preset;
 }
-uint8_t ModelPsu::getPresetIdx(void){    
-    return _preset_idx;
-}
+
 preset_t ModelPsu::getPreset(uint8_t idx){
     return app_getPresetList()[idx];
 }
@@ -131,9 +131,8 @@ void ModelPsu::setOutVoltagePreset(uint32_t v){
 void ModelPsu::setOutCurrentPreset(uint32_t i){
     _psu_preset->i = i; 
 }
-void ModelPsu::selectPresetByIdx(uint8_t idx){
-    _preset_idx = idx;
-    _psu_preset = _preset_list + _preset_idx;
+void ModelPsu::setPresetIdx(uint8_t idx){
+    app_setPresetIdx(idx);
 }
 void ModelPsu::setChargerCurrentPreset(uint32_t i){
     _chg_preset.i = i;    
@@ -177,6 +176,10 @@ void ModelPsu::updateCellVoltage(uint8_t c){
  * */
 void ModelPsu::applyPsuPreset(void){
     app_applyPreset(_psu_preset);
+}
+void ModelPsu::applyPsuPresetFromIdx(void){
+    _psu_preset = _preset_list + app_getPresetIdx();
+    applyPsuPreset();
 }
 void ModelPsu::applyChargerPreset(void){
     app_applyPreset(&_chg_preset);

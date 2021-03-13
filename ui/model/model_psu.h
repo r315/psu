@@ -35,7 +35,7 @@ public:
     void setOutVoltagePreset(uint32_t v);
     void setOutCurrentPreset(uint32_t i);
     void setOutPreset(preset_t pre);
-    void selectPresetByIdx(uint8_t idx);
+    void setPresetIdx(uint8_t idx);
     void setBatteryTypePreset(uint8_t t);
     void setChargerCurrentPreset(uint32_t i);
     void setLoadVoltagePreset(uint32_t mv);
@@ -61,6 +61,7 @@ public:
     void applyChargerPreset(void);
     void applyLoadCurrent(void);
     void disableLoad(void);
+    void applyPsuPresetFromIdx();
 private:
     uint32_t _out_voltage;
     uint32_t _out_current;
@@ -72,7 +73,6 @@ private:
     preset_t *_psu_preset;
     preset_t _chg_preset;
     preset_t _load_preset;
-    uint8_t _preset_idx;
     uint8_t _bt_ty;         // Current selected battery type [1, 4]    
 
     SemaphoreHandle_t access_data;
