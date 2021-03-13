@@ -110,7 +110,7 @@ extern "C" {
     pinWrite(MUX_S3, GPIO_PIN_RESET); pinInit(MUX_S3, GPO_2MHZ); \
 }
 
-#define MUX_SELECT(CH) portWrite(PORTA, (portRead(PORTA) & ~(0xF<<4)) | CH << 4)
+#define MUX_SELECT(CH) portWrite(PORTA, (portRead(PORTA) & ~(0xF<<4)) | (CH) << 4)
 
 /**
  * Buzzer
@@ -125,7 +125,8 @@ extern "C" {
 
 static inline uint32_t ElapsedTicks(uint32_t start_ticks){ 
     uint32_t current = GetTicks(); 
-    return (current > start_ticks) ? current - start_ticks : 0xFFFFFFFF - start_ticks + current;
+    //return (current > start_ticks) ? current - start_ticks : 0xFFFFFFFF - start_ticks + current;
+    return current - start_ticks;
 }
 
 void TICK_Init(void);
@@ -309,6 +310,7 @@ uint16_t PWM_Get(uint8_t);
 #define VB1_MUX_CH                   11
 #define VB0_MUX_CH                   12
 
+#define TIMED_ADC
 #endif
 
 /**
@@ -350,6 +352,7 @@ void ADC_SetCallBack(void (*)(uint16_t));
  * 
  **/
 void ADC_Start(void);
+void ADC_Stop(void);
 
 /**
  * @brief Perform adc calibration and get resolution based on 

@@ -9,6 +9,8 @@ extern "C" {
 
 #define AN_MUX_NUM_CH       16
 
+#define ADC_SAMPLE_TIME     10 //10ms
+
 /**
  * @brief
  * */

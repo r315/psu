@@ -317,14 +317,17 @@ static void adcSampleTime(ADC_TypeDef *adc, uint16_t ch, uint16_t time){
  * internal reference
  * */
 static void adc_calibrate(adchandle_t *hadc){
-uint32_t cr1, sqr1, sqr3;
+uint32_t cr1, cr2, sqr1, sqr3;
 
     //Backup registers
     sqr3 = hadc->adc->SQR3;
     sqr1 = hadc->adc->SQR1;
     cr1 = hadc->adc->CR1;
+    cr2 = hadc->adc->CR2;
     // Clear Interrupts
     hadc->adc->CR1 = 0;
+    hadc->adc->CR2 = ADC_CR2_ADON | ADC_CR2_EXTTRIG  |  // required for sw start
+                     ADC_CR2_EXTSEL_SWSTART;            // Software start
 
     // Perform ADC calibration
     hadc->adc->CR2 |= ADC_CR2_CAL;
@@ -358,6 +361,7 @@ uint32_t cr1, sqr1, sqr3;
     hadc->adc->SQR3 = sqr3;
     hadc->adc->SQR1 = sqr1;
     hadc->adc->CR1 = cr1;
+    hadc->adc->CR2 = cr2;
     // Set resolution flag
     hadc->flags.res = 1;
 }
@@ -502,10 +506,13 @@ void ADC_SetCallBack(void (*cb)(uint16_t*)){
     eotcb = cb;
 }
 #else /* USE_ADCMUX */
-#if 0
+#if defined(TIMED_ADC)
 /* ***********************************************************
  * @brief ADC is triggered by TIM2 TRGO and performs single convertion 
- * on one channel. The result is placed on destination using the EOC interrupt
+ * on ADCMUX_CHANNEL. 
+ * 
+ * Upon conversion the EOC flag is set and interrupt handler is called,
+ * if a EOC callback is configured, it is called passing the conversion result
  * 
  * @param ms : Time between convertions
  ************************************************************ */
@@ -517,7 +524,7 @@ void ADC_Init(uint16_t ms){
 
     TIM2->CCMR1 = (3<<TIM_CCMR1_OC2M_Pos);  // Toggle OC2REF on match
     TIM2->CCER = TIM_CCER_CC2E;             // Enable compare output for CCR2
-    TIM2->PSC = (SystemCoreClock/10000) - 1; // Timer counts 100us units
+    TIM2->PSC = (SystemCoreClock/10000) - 1;// Timer counts 100us units
 
     TIM2->ARR = (ms * 5) - 1;               // Due to OC2REF toggle, timer must count half of 100us units
     TIM2->CCR2 = TIM2->ARR;
@@ -527,30 +534,63 @@ void ADC_Init(uint16_t ms){
     RCC->APB2RSTR |= RCC_APB2ENR_ADC1EN;
     RCC->APB2RSTR &= ~RCC_APB2ENR_ADC1EN;
 
-    ADC1->CR2 = ADC_CR2_ADON;               // Turn on ADC1
-    ADC1->CR2 |=
-            ADC_CR2_EXTTRIG  |              // Only the rising edge of external signal can start the conversion
-            //ADC_CR2_EXTSEL_2 |            // 0b100 Select TIM3_TRGO as Trigger source
-            ADC_CR2_EXTSEL_1 |              // 0b011 Select TIM2_CC2 Event
-            ADC_CR2_EXTSEL_0 ;              //
+    hadc1.adc = ADC1;
+
+    ADC1->CR2  = ADC_CR2_ADON;               // Turn on ADC1
+    ADC1->CR2 |= ADC_CR2_EXTTRIG  |          // Only the rising edge of external signal can start the conversion
+                 //ADC_CR2_EXTSEL_2 |        // 0b100 Select TIM3_TRGO as Trigger source
+                 ADC_CR2_EXTSEL_1 |          // 0b011 Select TIM2_CC2 Event
+                 ADC_CR2_EXTSEL_0 ;          //
+
+    adcSampleTime(hadc1.adc, ADC_VREFINT_CHANNEL, 3);  // Sample time 3 => 28.5 cycles.
+    adcSampleTime(hadc1.adc, ADC_MUX_CH, 7);           // set sample time to 239.5 cycles
+    
+    // Perform start up calibration
+    adc_calibrate(&hadc1);
 
     ADC1->CR1 = ADC_CR1_EOCIE;
 
-    ADC1->SQR1 = ADC_SQR1_L_(1 - 1);                // number of channels on sequence
-    ADC1->SQR3 = ADC_SQR3_SQ1_(ADCMUX_CHANNEL);     // Set channel to be converted                
-    ADC1->SMPR2 = ADC_SMPR2_(ADCMUX_CHANNEL, 7);    // set sample time to 239.5 cycles
+    ADC1->SQR1 = ADC_SQR1_L_(1 - 1);            // number of channels on sequence
+    ADC1->SQR3 = ADC_SQR3_SQ1_(ADC_MUX_CH);     // Set channel to be converted                
 
-    g_adceoc = NULL;                           // No callback configured
+    hadc1.cb = NULL;                            // No callback configured    
 
     NVIC_EnableIRQ(ADC1_2_IRQn);
 
     TIM2->CR1 |= TIM_CR1_CEN;
-    #else
+
+    /* ADC2 Init for reading power button */
+    RCC->APB2ENR  |= RCC_APB2ENR_ADC2EN;
+    RCC->APB2RSTR |= RCC_APB2ENR_ADC2EN;
+    RCC->APB2RSTR &= ~RCC_APB2ENR_ADC2EN;
+
+    ADC2->CR2  = ADC_CR2_ADON;                  // Turn on ADC
+    ADC2->CR2 |= ADC_CR2_EXTTRIG  |             // required for sw start
+                 ADC_CR2_EXTSEL_SWSTART;        // Software start
+
+    hadc2.adc = ADC2;
+
+    adcSampleTime(hadc2.adc, ADC_PWR_SW_CH, 7);    // set sample time to 239.5 cycles
+
+    ADC2->SQR1 = ADC_SQR1_L_(1 - 1);            // number of channels on sequence
+    ADC2->SQR3 = ADC_SQR3_SQ1_(ADC_PWR_SW_CH);  // Set channel to be converted
+}
+
+void ADC_Start(void){
+    TIM2->CR1 |= TIM_CR1_CEN;
+}
+
+void ADC_Stop(){
+    TIM2->CR1 &= ~(TIM_CR1_CEN);
+}
+#else /* TIMED_ADC */
 /** 
 * @brief ADC 1 is triggered by software and performs a single conversion on 
 * the channel defined by ADCMUX_CHANNEL.
 * After the conversion the EOC flag is set and interrupt handler is called,
 * if a callback is set, it is called with the conversion result
+* 
+* \param ms : not used
 * */
 void ADC_Init(uint16_t ms){
     /* Configure ADC 1, single convertion with EOC interrupt */
@@ -596,16 +636,20 @@ void ADC_Init(uint16_t ms){
     ADC2->SQR1 = ADC_SQR1_L_(1 - 1);            // number of channels on sequence
     ADC2->SQR3 = ADC_SQR3_SQ1_(ADC_PWR_SW_CH);  // Set channel to be converted              
 
-    #endif
-}
-
-void ADC_SetCallBack(void (*cb)(uint16_t)){
-    while(ADC1->SR & ADC_SR_EOC);
-    hadc1.cb = cb;
 }
 
 void ADC_Start(void){
     ADC1->CR2 |= ADC_CR2_SWSTART;
+}
+
+void ADC_Stop(){
+
+}
+#endif /* TIMED_ADC */
+
+void ADC_SetCallBack(void (*cb)(uint16_t)){
+    while(ADC1->SR & ADC_SR_EOC);
+    hadc1.cb = cb;
 }
 
 /**
