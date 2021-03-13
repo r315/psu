@@ -38,7 +38,9 @@ void CmdEeprom::help(void){
     console->print("Usage: eeprom <command> \n");
     console->print("EEPROM management\n\n");
     console->print("\tdump \t\tDisplay eeprom content\n");
-    console->print("\tinit \t\tInitialize EEPROM with default data\n");
+    console->print("\terase \t\tErase eeprom\n");
+    //console->print("\tinit \t\tInitialize eeprom with default data\n");
+    console->print("\tsave \t\tSave settings\n");
     console->print("\tr <addr> \t\tRead eeprom\n");
     console->print("\tw <addr> <data>\t\tWrite to eeprom\n");
 }
@@ -62,10 +64,20 @@ char CmdEeprom::execute(void *ptr){
     }
 
     if(!argcmp("init", &args)){
+        //EEPROM_Erase();
+        return CMD_OK;
+    }
+
+    if(!argcmp("erase", &args)){
         EEPROM_Erase();
         return CMD_OK;
     }
 
+    if(!argcmp("save", &args)){
+        app_saveState();
+        return CMD_OK;
+    }
+    
     if(!argcmp("r", &args)){
         if(nextHex(&args, (uint32_t*)&addr)){
             EEPROM_Read(addr, (uint8_t*)&data, 1);
@@ -81,13 +93,8 @@ char CmdEeprom::execute(void *ptr){
                 return CMD_OK;
             }
         }
-    }
+    }   
     
-    if(!argcmp("save", &args)){
-        app_saveState();
-        return CMD_OK;
-    }
-
     return CMD_BAD_PARAM;
 }
 #endif

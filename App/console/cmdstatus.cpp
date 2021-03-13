@@ -21,6 +21,8 @@ char CmdStatus::execute(void *ptr){
     console->print("USB current:\t%umA\n", psu_getUsbCurrent());
     console->print("----------------------------------\n");
     console->print("ADC Resolution:\t%.2fmv\n", ADC_GetResolution());
+    console->print("----------------------------------\n");
+    console->print("Preset idx:\t%d\n", app_getPresetIdx());
     console->print("----------------------------------\n\n");
     return CMD_OK;
 }

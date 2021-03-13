@@ -24,7 +24,7 @@ ENABLE_CLI :=yes
 
 ENABLE_UI :=yes
 
-ENABLE_EEPROM :=no
+ENABLE_EEPROM :=yes
 
 ENABLE_VCOM :=yes
 
