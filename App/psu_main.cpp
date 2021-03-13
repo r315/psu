@@ -64,6 +64,7 @@ static ConsoleCommand *commands[] = {
 static ModelPsu model_psu;
 #endif
 
+volatile uint32_t g_mgr_eoc_count = 0;
 
 const pwmcal_t default_pwm_calibration[] = {
     {490, (1<<PWM_RESOLUTION), 1024},   // pwm1 (VOUT) calibration <min, max, start>
@@ -111,8 +112,11 @@ const float default_an_channel_gain[] = {
  *
  * */
 extern "C" void psu_adc_cb(uint16_t *data){
-    psu.adc_data = data;
-    SET_AD_FLAG;
+    if(GET_AD_FLAG == 0){
+        psu.adc_data = data;
+        g_mgr_eoc_count++;
+        SET_AD_FLAG;
+    }
 }
 
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){

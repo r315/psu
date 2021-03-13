@@ -18,7 +18,6 @@ TARGET = app_psu
 ######################################
 # building options
 ######################################
-# debug build?
 ENABLE_DEBUG :=yes
 
 ENABLE_CLI :=yes

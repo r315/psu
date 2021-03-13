@@ -63,8 +63,11 @@ double floatvalue;
         if(nextInt(&str, &intvalue)){
             static TickType_t xLastWakeTime;
             while( !console->kbhit() ){
-                console->print("%d\n", psu_getChannelVoltage(intvalue));
-                vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(200));
+                uint32_t count = g_mgr_eoc_count;
+                console->print("%d,0,0\r", psu_getChannelVoltage(intvalue));
+                while(count == g_mgr_eoc_count){
+                    vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(50));
+                }
             }
             return CMD_OK;
         }

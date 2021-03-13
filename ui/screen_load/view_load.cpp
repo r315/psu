@@ -102,8 +102,8 @@ void ViewLoad::updateTime(uint32_t ts){
 
 void ViewLoad::updateGraph(void){
     uint8_t vals[2];
-    vals[0] = _wi_voltage->getValue() * LOAD_GRAPH_HIGHT / MAX_VLOAD;
-    vals[1] = _wi_ma->getValue() * LOAD_GRAPH_HIGHT / MAX_ILOAD;
+    vals[0] = (_wi_voltage->getValue() * LOAD_GRAPH_HIGHT) / MAX_VLOAD;
+    vals[1] = (_wi_ma->getValue() * LOAD_GRAPH_HIGHT) / MAX_ILOAD;
     _wi_graph->addPoint(vals, 2);
 }
 
