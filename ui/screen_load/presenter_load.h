@@ -26,6 +26,8 @@ typedef enum{
     LOAD_ABORT_SET_V,
 }stateload_e;
 
+#define LOAD_REFRESH_TIME   25000 //ms
+#define LOAD_CAPACITY_Td    (3600/(LOAD_REFRESH_TIME/1000))
 
 class PresenterLoad : public BUIPresenter{
 public:

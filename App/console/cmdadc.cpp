@@ -11,7 +11,8 @@ void CmdAdc::help(void){
     console->print("\tres\t\tADC Resolution\n");
     console->print("\tcal\t\tCalibrate ADC\n");
     console->print("\tread <ch|all>\tread channel [0-15] value\n");
-    console->print("\tplot <ch>\tplot channel value in to graph, ESC to stop\n");
+    console->print("\tplot <ch>\tprint channel value for graph plot\n");
+    console->print("\t\tch : 0-15, 16 prints channels 0,1 for I/V plot \n");
     console->print("\tgain <ch> [float]\tget/set channel gain\n");
 }
 
@@ -64,7 +65,11 @@ double floatvalue;
             static TickType_t xLastWakeTime;
             while( !console->kbhit() ){
                 uint32_t count = g_mgr_eoc_count;
-                console->print("%d,0,0\r", psu_getChannelVoltage(intvalue));
+                if(intvalue < 16){
+                    console->print("%d\r", psu_getChannelVoltage(intvalue));
+                }else{
+                    console->print("%d,%d\r", psu_getChannelVoltage(0), psu_getChannelVoltage(1));
+                }
                 while(count == g_mgr_eoc_count){
                     vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(50));
                 }

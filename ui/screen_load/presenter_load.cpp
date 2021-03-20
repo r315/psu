@@ -62,9 +62,9 @@ void PresenterLoad::tick(void){
 
             uint32_t ticks = ElapsedTicks(last_ticks);
             // Value will update every 25s, match graph size
-            if(ticks >= 25000){
+            if(ticks >= LOAD_REFRESH_TIME){
                 _elapsed_ticks += ticks;
-                _capacity += i/(3600/25);
+                _capacity += (float)i/LOAD_CAPACITY_Td;
                 last_ticks = GetTicks();
             }
 
