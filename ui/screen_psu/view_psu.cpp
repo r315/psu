@@ -3,19 +3,23 @@
 #include "wi_dro.h"
 #include "psu.h"
 
-#define VOLTAGE_POS_X           0
-#define VOLTAGE_POS_Y           16
-#define CURRENT_POS_X           0
-#define CURRENT_POS_Y           16+32
+#define VOLTAGE_POS_X           1
+#define VOLTAGE_POS_Y           15
+
+#define CURRENT_POS_X           VOLTAGE_POS_X
+#define CURRENT_POS_Y           VOLTAGE_POS_Y+32
+
 #define POWER_DRO_POS           0,0
 
 #define PSU_GRAPH_HIGHT         30
 #define PSU_GRAPH_WIDTH         60
 #define MAX_TEXT_LEN            10
 
-#define PSU_OUTPUT_ICON_POS             160-16,3
+#define PSU_OUTPUT_ICON_POS     160-16,3
 
 #define PSU_I_USB_POS           (LCD_W - 6 * 8), 12
+
+#define PSU_SCR_BG_COLOR        BLACK
 
 static const uint8_t psu_icon_out[] = {15,8,
     0x7f,0xfc,0xc5,0x46,0xd5,0x6e,0xd5,0x6e,0xd5,0x6e,0xd5,0x6e,0xc4,0x6e,0x7f,0xfc
@@ -28,7 +32,7 @@ ViewPsu::ViewPsu():
     _wi_graph(LCD_W - PSU_GRAPH_WIDTH, LCD_H - PSU_GRAPH_HIGHT - 2, 
              PSU_GRAPH_WIDTH, PSU_GRAPH_HIGHT, 
              2, 
-             (const uint16_t[]){0x18E3, RED, GREEN, YELLOW}),
+             (const uint16_t[]){0x18E3, 0xEF58, GREEN, YELLOW}),
     _wi_out_icon(PSU_OUTPUT_ICON_POS, psu_icon_out),
     _wi_usb_current(PSU_I_USB_POS)
 {
@@ -37,6 +41,9 @@ ViewPsu::ViewPsu():
     _wi_current.init(10, 100, MIN_CURRENT, MAX_CURRENT, currentFormat);
 
     _wi_out_icon.setPal((const uint16_t[]){BLACK, BLACK, RED});
+
+    _wi_voltage.setPal((const uint16_t []){0x18E3, GREEN});
+    _wi_current.setPal((const uint16_t []){0x18E3, YELLOW});
     
     addWidget(&_wi_power);
     addWidget(&_wi_voltage);
@@ -56,7 +63,8 @@ void ViewPsu::init(void){
 
 void ViewPsu::draw(){
     if(isInvalid()){
-        DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
+        DRAW_FillRect(0, 0, LCD_W, LCD_H, PSU_SCR_BG_COLOR);
+        DRAW_Rect(0,14, 86, 65, 0xEF58 );        
         setInvalid(false);
     }
 }
