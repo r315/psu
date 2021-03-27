@@ -2,12 +2,14 @@
 #include "board.h"
 #include "draw.h"
 
+#define SCRATCH_BUF_SIZE    512
+
 volatile uint8_t lcd_busy = 0;
 static uint16_t _color;
 // use dual buffer for speed
 static uint16_t _scratch[2][SCRATCH_BUF_SIZE];
 static uint8_t bufidx = 0;
-uint16_t *scratch = _scratch[0];
+static uint16_t *scratch = _scratch[0];
 
 /**
  * Called from DMA end of transfer interrupt
@@ -27,7 +29,7 @@ void spi_eot(void){
  * @param w : area width
  * @param h : area height
  */
-void drawBufferll(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, uint16_t h){
+void DRAW_BufferLL(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, uint16_t h){
     while(lcd_busy);
     lcd_busy = 1;
     LCD_Window(x, y, w, h);
@@ -91,7 +93,7 @@ void DRAW_Pixel(uint16_t x, uint16_t y, uint16_t color){
  * @param data : bitmap data
  */
 void DRAW_Bitmap(uint16_t x, uint16_t y, uint16_t *data){
-    drawBufferll(x, y, data+2, data[0], data[1]);
+    DRAW_BufferLL(x, y, data+2, data[0], data[1]);
 }
 
 /**
@@ -185,23 +187,23 @@ static void blitChar(uint16_t *buffer, uint8_t c, font_t *fnt, const uint16_t *p
  * \param pal : color palette
  * \return : x coordinate for next character
  * */
-uint16_t drawChar(uint16_t x, uint16_t y, uint8_t c, font_t *fnt, const uint16_t *pal){
+uint16_t DRAW_Char(uint16_t x, uint16_t y, uint8_t c, font_t *fnt, const uint16_t *pal){
     //Check if character fits temporary buffer
     if(fnt->w * fnt->h > SCRATCH_BUF_SIZE){
         return 0;
     }
 
     blitChar(scratch, c, fnt, pal);
-    drawBufferll(x, y, scratch, fnt->w, fnt->h);
+    DRAW_BufferLL(x, y, scratch, fnt->w, fnt->h);
     
     return x + fnt->w + fnt->spacing;
 }
 
 /**
  * */
-uint16_t drawString(uint16_t x, uint16_t y, const char* str, font_t *fnt, const uint16_t *pal){
+uint16_t DRAW_Text(uint16_t x, uint16_t y, const char* str, font_t *fnt, const uint16_t *pal){
     while(*str){
-        x = drawChar(x, y, *str++, fnt, pal);
+        x = DRAW_Char(x, y, *str++, fnt, pal);
     }
     return x;
 }

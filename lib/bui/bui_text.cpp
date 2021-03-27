@@ -36,11 +36,11 @@ void BUIText::setText(const char *text){
 void BUIText::draw(void){
     if(isInvalid()){
         if(isVisible()){
-            drawString(_x,_y, _text, _font, _pal);        
+            DRAW_Text(_x,_y, _text, _font, _pal);        
         }else{
             uint16_t x = _x;
             for(uint16_t i = 0; i < _len; i++){
-                x = drawChar(x, _y, ' ', _font, _pal);            
+                x = DRAW_Char(x, _y, ' ', _font, _pal);            
             }
         }
         setInvalid(false);

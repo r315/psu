@@ -103,18 +103,18 @@ void BUIdro::draw(void){
                 uint16_t x = _x;
                 for(uint16_t i = 0; i < _len; i++){
                     if(i == blink_digit){
-                        x = drawChar(x, _y, ' ', _font, _pal);
+                        x = DRAW_Char(x, _y, ' ', _font, _pal);
                     }else{
-                        x = drawChar(x, _y, _text[i], _font, _pal);
+                        x = DRAW_Char(x, _y, _text[i], _font, _pal);
                     }
                 }
             }else{
-                drawString(_x, _y, _text, _font, _pal);
+                DRAW_Text(_x, _y, _text, _font, _pal);
             }            
         }else{
             uint16_t x = _x;
             for(uint16_t i = 0; i < _len; i++){
-                x = drawChar(x, _y, ' ', _font, _pal);            
+                x = DRAW_Char(x, _y, ' ', _font, _pal);            
             }
         }
         setInvalid(false);

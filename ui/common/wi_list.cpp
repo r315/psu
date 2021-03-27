@@ -70,7 +70,7 @@ void BUIlist::draw(void){
         }else{
             memset(_text, ' ', _len);
         }
-        drawString(_x, _y, _text, _font, _pal);        
+        DRAW_Text(_x, _y, _text, _font, _pal);        
         setInvalid(false);
     }    
 }
