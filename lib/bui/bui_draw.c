@@ -4,12 +4,13 @@
 
 #define SCRATCH_BUF_SIZE    512
 
-volatile uint8_t lcd_busy = 0;
+static volatile uint8_t lcd_busy = 0;
 static uint16_t _color;
+
 // use dual buffer for speed
 static uint16_t _scratch[2][SCRATCH_BUF_SIZE];
-static uint8_t bufidx = 0;
 static uint16_t *scratch = _scratch[0];
+static uint8_t bufidx = 0;
 
 /**
  * Called from DMA end of transfer interrupt
@@ -17,6 +18,13 @@ static uint16_t *scratch = _scratch[0];
 void spi_eot(void){
     LCD_CS1;
     lcd_busy = 0;
+}
+
+/**
+ * @brief Wait for any draw operation to conclude
+ * */
+void DRAW_WaitOpEnd(void){
+    while(lcd_busy);    
 }
 
 /**
@@ -29,7 +37,7 @@ void spi_eot(void){
  * @param w : area width
  * @param h : area height
  */
-void DRAW_BufferLL(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, uint16_t h){
+static void DRAW_BufferLL(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, uint16_t h){
     while(lcd_busy);
     lcd_busy = 1;
     LCD_Window(x, y, w, h);
@@ -48,6 +56,7 @@ void DRAW_FillRect(uint16_t x, uint16_t y,  uint16_t w, uint16_t h, uint16_t col
     LCD_Window(x, y, w, h);
     LCD_CS0;
     _color = color;
+    // Configure transfer to send same color (w*h) times
 	SPI_WriteDMA(&_color, (w * h) | 0x80000000);
 }
 

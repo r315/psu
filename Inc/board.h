@@ -36,7 +36,7 @@ extern "C" {
 #define BUTTON_VALUE (uint8_t)BUTTON_GetValue()
 
 /**
- * Softpower, PA1, PA2
+ * Softpower pins PA1, PA2
  * 
  * PA1/ADC1 - Can measure voltage after DC jack
  * PA2 - Can detect if power key was pressed by reading ADC2.
