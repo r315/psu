@@ -14,9 +14,9 @@ extern "C" {
 
 #include "board.h"
 
-#define PSU_VERSION_MAJOR           0
-#define PSU_VERSION_MINOR           0
-#define PSU_VERSIO_PATCH            0
+#ifndef RELEASE
+#define PSU_VERSION                 "vX.X.X"
+#endif
 
 #define PRIORITY_LOW                3
 

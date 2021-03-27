@@ -786,12 +786,14 @@ void SPI_Read(uint8_t *dst, uint32_t len){
 }
 
 /**
- * @brief Sends a block of data through the spi bus using dma
- * block. Due to dma limitation, data is transffered in 64k blocks when len grater
- * than 0x10000.
+ * @brief Sends a block of data through the spi bus using DMA engine.
+ * 
+ * Due to DMA limitation, data is transferred in blocks of 64k bytes when data
+ * length is grater than 0x10000.
  * 
  * @param src : pointer to data to be sent
- * @param len : size of data, if bit 32 is set then src[0] will be transffered len times
+ * @param len : size of data, if bit 32 is set then a single value 
+ *              will be transferred lenght n times, usefull for color fill
  * */
 void SPI_WriteDMA(uint16_t *src, uint32_t len){
 

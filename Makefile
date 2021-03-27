@@ -18,7 +18,7 @@ TARGET = app_psu
 ######################################
 # building options
 ######################################
-ENABLE_DEBUG :=yes
+ENABLE_DEBUG :=no
 
 ENABLE_CLI :=yes
 
@@ -273,6 +273,18 @@ ifeq ($(ENABLE_UART),yes)
 C_DEFS +=-DENABLE_UART
 endif
 
+ifeq ($(RELEASE),yes)
+GIT_TAG := $(shell git describe --abbrev=0 --tags 2>/dev/null || true)
+VERSION := $(GIT_TAG:v%=%)
+
+ifeq ($(VERSION), )
+    VERSION :="\"v0.0.0\""
+endif
+
+C_DEFS +=-DRELEASE
+C_DEFS +=-DPSU_VERSION=$(VERSION)
+endif
+
 ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections
 CFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections -std=c99
 CPPFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections
@@ -323,9 +335,10 @@ upload: $(BUILD_DIR)/$(TARGET).bin
 	dfu-util -a 0 -s 0x08001000 -D $< -R
 
 test:
-	@echo $(CURDIR)
-	@echo ""; $(foreach d, $(VPATH), echo $(d);)
-	@echo $(filter yes $(ENABLE_EEPROM), $(ENABLE_UI))
+#@echo $(CURDIR)
+#@echo ""; $(foreach d, $(VPATH), echo $(d);)
+#@echo $(filter yes $(ENABLE_EEPROM), $(ENABLE_UI))
+	@echo $(VERSION)
 
 lib_cdc:
 	$(MAKE) -C $(USB_DIR)

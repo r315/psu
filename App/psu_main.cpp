@@ -141,7 +141,7 @@ static uint8_t app_calcCksum(uint8_t *src, uint16_t len){
  * PSU public control functions
  * */
 void psu_poweroff(void){
-    // TODO: Properly disable all peripherals (clock and pwr) and then power off
+    
     psu_setOutputEnable(FALSE);
     psu_setLoadCurrent(0);
 #if defined(ENABLE_UI)
@@ -339,7 +339,9 @@ uint8_t app_restoreState(void){
 #endif
     return 1;
 }
-
+/**
+ * @brief
+ * */
 uint8_t app_saveState(void){
 #ifdef ENABLE_EEPROM
     // Calculate cksum for current values
@@ -363,13 +365,9 @@ uint8_t app_saveState(void){
     return 1;
 }
 
-/**
- * Model
- * */
-
 
 /**
- * 
+ * @brief Task to handle user interface
  * */
 #if defined(ENABLE_UI)
 void tskBui(void *ptr){
@@ -379,15 +377,23 @@ void tskBui(void *ptr){
     BUIPresenter *presenter_preset = new PresenterPreset();
     BUIPresenter *presenter_charger = new PresenterCharger();
     BUIPresenter *presenter_load = new PresenterLoad();
+    
+    DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);    
+    char *text = (char*)bui_malloc(sizeof(PSU_VERSION));
+    xsprintf(text, "%s", PSU_VERSION);
+    DRAW_Text(100,70,text, &defaultFont, (const uint16_t[]){BLACK, GREEN});    
+    bui_free(text);
+    // Wait for lcd clear to end
+    vTaskDelay(100);
+    LCD_Bkl(TRUE);
+    vTaskDelay(1000);
 
-    BUI bui(model_psu);
-   
+    BUI bui(model_psu);   
+    
     bui.addPresenter(presenter_psu);
     bui.addPresenter(presenter_preset);
     bui.addPresenter(presenter_charger);
     bui.addPresenter(presenter_load);
-    
-    LCD_Bkl(TRUE);
 
     while(1){
         bui.handler(NULL);
@@ -396,7 +402,7 @@ void tskBui(void *ptr){
 }
 #endif
 /**
- * 
+ * @brief Main task
  * */
 void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;
@@ -437,6 +443,9 @@ uint8_t count = 0;
 #if !(defined(ENABLE_USB_CDC) || defined(ENABLE_UART))
 #error "NO SERIAL IO DEFINED"
 #endif
+/**
+ * @brief Task to handle serial commands
+ * */
 void tskCmdLine(void *ptr){
     
     stdout_t *stdio_port = (stdout_t*)ptr;
@@ -455,7 +464,7 @@ void tskCmdLine(void *ptr){
 
     console.cls();
 
-    console.print("PSU v%u.%u.%u\n", PSU_VERSION_MAJOR, PSU_VERSION_MINOR, PSU_VERSIO_PATCH);
+    console.print("PSU v%s\n", PSU_VERSION);
     console.print("FreeRTOS %s\n", tskKERNEL_VERSION_NUMBER);
     console.print("Free mem: %u bytes\n", xPortGetFreeHeapSize());
     console.print("\n");
@@ -465,6 +474,10 @@ void tskCmdLine(void *ptr){
     }
 }
 #endif
+
+/**
+ * @brief private helper to start task
+ * */
 static void startTask(void(*task)(void*), const char *name, void *args, uint32_t stack, int priority){
     if(xTaskCreate( task, name, stack, args, priority, NULL ) != pdPASS){
         DBG_PRINT("FAIL: to start task %s\n", name);    
@@ -498,10 +511,10 @@ extern "C" void app_setup(void){
     enableWatchDog(WATCHDOG_TIME);
     #endif
 
+    startTask(tskPsu, "PSU", NULL, configMINIMAL_STACK_SIZE, PRIORITY_LOW + 1);
 #if defined(ENABLE_CLI)   
     startTask(tskCmdLine, "CLI", SERIAL_IO, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
 #endif
-    startTask(tskPsu, "PSU", NULL, configMINIMAL_STACK_SIZE, PRIORITY_LOW + 1);
 #if defined(ENABLE_UI)
     startTask(tskBui, "BUI", NULL, configMINIMAL_STACK_SIZE * 8, PRIORITY_LOW);
 #endif
