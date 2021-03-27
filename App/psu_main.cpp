@@ -205,7 +205,9 @@ void psu_setOutputVoltage(uint32_t mv){
 }
 
 uint32_t psu_getOutputCurrent(void){
-    return psu_getChannelVoltage(IOUT_MUX_CH);
+    uint32_t i = psu_getChannelVoltage(IOUT_MUX_CH);
+    // Filter dead band due not using rail to rail op amps
+    return (i < 10) ? 0 : i;
 }
 
 void psu_setOutputCurrent(uint32_t ma){
@@ -229,7 +231,9 @@ uint32_t psu_getLoadVoltage(void){
 }
 
 uint32_t psu_getUsbCurrent(void){
-    return psu_getChannelVoltage(IUSB_MUX_CH);
+    uint32_t i = psu_getChannelVoltage(IUSB_MUX_CH);
+    // Filter dead band due not using rail to rail op amps
+    return (i < 10) ? 0 : i;
 }
 
 float psu_getChannelGain(uint8_t ch){
