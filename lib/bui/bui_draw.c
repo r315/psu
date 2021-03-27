@@ -2,7 +2,7 @@
 #include "board.h"
 #include "draw.h"
 
-#define SCRATCH_BUF_SIZE    512
+#define SCRATCH_BUF_SIZE    550
 
 static volatile uint8_t lcd_busy = 0;
 static uint16_t _color;
@@ -38,6 +38,7 @@ void DRAW_WaitOpEnd(void){
  * @param h : area height
  */
 static void DRAW_BufferLL(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, uint16_t h){
+#if 1
     while(lcd_busy);
     lcd_busy = 1;
     LCD_Window(x, y, w, h);
@@ -45,6 +46,15 @@ static void DRAW_BufferLL(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, ui
     SPI_WriteDMA(data, w * h);
     // swap buffer    
     scratch = _scratch[(++bufidx) & 1];
+#else
+    uint32_t count = w * h;
+    LCD_Window(x, y, w, h);
+    LCD_CS0;
+    while(count--){
+        LCD_Data(*data++);
+    }    
+    LCD_CS1;
+#endif
 }
 
 /**
@@ -80,6 +90,20 @@ void DRAW_VLine(uint16_t x, uint16_t y, uint16_t h, uint16_t color){
  * */
 void DRAW_HLine(uint16_t x, uint16_t y, uint16_t w, uint16_t color){
     DRAW_FillRect(x, y, w, 1, color);
+}
+
+/**
+ * @brief draw rectangle
+ * 
+ * @param x,y : Top left corner position
+ * @param w, h : Width, Hight
+ * @param color : Line color
+ * */
+void DRAW_Rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color){
+    DRAW_HLine(x, y, w, color);
+    DRAW_VLine(x + w, y, h, color);
+    DRAW_HLine(x, y + h, w, color);
+    DRAW_VLine(x, y, h, color);
 }
 
 /**
@@ -169,25 +193,26 @@ static void blitChar(uint16_t *buffer, uint8_t c, font_t *fnt, const uint16_t *p
         return;
 
     for(uint16_t h = 0; h < fnt->h; h++, pd++){
-        uint8_t bmap = *pd;
-        uint8_t mask = 0x80;
+        uint8_t bmap = *pd;   // Bitmap mask
+        uint8_t mask = 0x80;  // Bitmask
 
         for(uint16_t w = 0; w < fnt->w; w++, mask >>= 1, buffer++){
-            if(mask == 0){
+            if(mask == 0){ // Reset mask on byte start
                 mask = 0x80;
-                bmap = *(++pd);
+                bmap = *(++pd); // move to next byte in bitmap
             }
             *buffer = pal[!!(bmap & mask)];
+        }
+        // Fill spacing with backcolor
+        for(uint8_t s = 0; s < fnt->spacing; s++){
+            *(buffer++) = pal[0];
         }
     }
 }
 
 /**
- * draws a character using a font table.
- * the font table must be 1bpp
- */
-/**
  * @brief Draws a character into the display
+ * Draws a character using a font table. the font table must be 1bpp
  * 
  * \param x : x coordinate
  * \param y : y coordinate
@@ -203,7 +228,7 @@ uint16_t DRAW_Char(uint16_t x, uint16_t y, uint8_t c, font_t *fnt, const uint16_
     }
 
     blitChar(scratch, c, fnt, pal);
-    DRAW_BufferLL(x, y, scratch, fnt->w, fnt->h);
+    DRAW_BufferLL(x, y, scratch, fnt->w + fnt->spacing, fnt->h);
     
     return x + fnt->w + fnt->spacing;
 }
