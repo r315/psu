@@ -4,27 +4,17 @@
 
 #define SCRATCH_BUF_SIZE    550
 
-static volatile uint8_t lcd_busy = 0;
-static uint16_t _color;
-
 // use dual buffer for speed
 static uint16_t _scratch[2][SCRATCH_BUF_SIZE];
 static uint16_t *scratch = _scratch[0];
 static uint8_t bufidx = 0;
 
-/**
- * Called from DMA end of transfer interrupt
- * */
-void spi_eot(void){
-    LCD_CS1;
-    lcd_busy = 0;
-}
 
 /**
  * @brief Wait for any draw operation to conclude
  * */
 void DRAW_WaitOpEnd(void){
-    while(lcd_busy);    
+    SPI_WaitEOT(LCD_SPIDEV);
 }
 
 /**
@@ -38,36 +28,16 @@ void DRAW_WaitOpEnd(void){
  * @param h : area height
  */
 static void DRAW_BufferLL(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, uint16_t h){
-#if 1
-    while(lcd_busy);
-    lcd_busy = 1;
-    LCD_Window(x, y, w, h);
-    LCD_CS0;
-    SPI_WriteDMA(data, w * h);
-    // swap buffer    
-    scratch = _scratch[(++bufidx) & 1];
-#else
-    uint32_t count = w * h;
-    LCD_Window(x, y, w, h);
-    LCD_CS0;
-    while(count--){
-        LCD_Data(*data++);
-    }    
-    LCD_CS1;
-#endif
+    SPI_WaitEOT(LCD_SPIDEV);
+    LCD_WriteArea(x, y, w, h, data);
 }
 
 /**
  * @brief draw filled rectangle
  * */
 void DRAW_FillRect(uint16_t x, uint16_t y,  uint16_t w, uint16_t h, uint16_t color){
-    while(lcd_busy);
-    lcd_busy = 1;
-    LCD_Window(x, y, w, h);
-    LCD_CS0;
-    _color = color;
-    // Configure transfer to send same color (w*h) times
-	SPI_WriteDMA(&_color, (w * h) | 0x80000000);
+    SPI_WaitEOT(LCD_SPIDEV);
+    LCD_FillRect(x, y, w, h, color);
 }
 
 /**
@@ -114,7 +84,7 @@ void DRAW_Rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color){
  * @param color : line color
  * */
 void DRAW_Pixel(uint16_t x, uint16_t y, uint16_t color){
-    while(lcd_busy);
+    SPI_WaitEOT(LCD_SPIDEV);
     LCD_Pixel(x, y, color);
 }
 
@@ -172,6 +142,8 @@ void DRAW_Icon2Bitmap(uint16_t *bitmap, const uint8_t *icon, const uint16_t *pal
 void DRAW_Icon(uint16_t x, uint16_t y, const uint8_t *ico, const uint16_t *pal){
     DRAW_Icon2Bitmap(scratch, ico, pal);
     DRAW_Bitmap(x, y, scratch);
+    // swap buffer    
+    scratch = _scratch[(++bufidx) & 1];
 }
 
 /**
@@ -228,8 +200,11 @@ uint16_t DRAW_Char(uint16_t x, uint16_t y, uint8_t c, font_t *fnt, const uint16_
     }
 
     blitChar(scratch, c, fnt, pal);
-    DRAW_BufferLL(x, y, scratch, fnt->w + fnt->spacing, fnt->h);
     
+    DRAW_BufferLL(x, y, scratch, fnt->w + fnt->spacing, fnt->h);
+    // swap buffer    
+    scratch = _scratch[(++bufidx) & 1];
+
     return x + fnt->w + fnt->spacing;
 }
 

@@ -15,7 +15,7 @@ extern "C" {
 #include "pinName.h"
 #include "dbg.h"
 #include "eeprom.h"
-
+#include "spi.h"
 
 /**
  * Button 
@@ -130,15 +130,7 @@ static inline uint32_t ElapsedTicks(uint32_t start_ticks){
 }
 
 void TICK_Init(void);
-/**
- * SPI
- * */
-#define SPI_BLOCK_DMA
 
-void SPI_Init(void);
-uint8_t SPI_Send(uint8_t data);
-void SPI_Read(uint8_t *dst, uint32_t len);
-void SPI_WriteDMA(uint16_t *dst, uint32_t len);
 /**
  * Display
  * PB3  -> BKL
@@ -384,6 +376,9 @@ void reloadWatchDog(void);
 void BOARD_Init(void);
 
 void BOARD_Error_Handler(const char *file, int line);
+
+extern spidev_t spi2;
+#define LCD_SPIDEV &spi2
  
 #ifdef __cplusplus
 }

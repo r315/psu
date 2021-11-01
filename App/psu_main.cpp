@@ -495,7 +495,7 @@ extern "C" void app_setup(void){
 
 #if defined(ENABLE_UI)
     EXPANDER_Init();
-    LCD_Init();
+    LCD_Init(LCD_SPIDEV);
     LCD_Rotation(LCD_LANDSCAPE);
 #endif
 

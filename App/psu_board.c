@@ -20,7 +20,27 @@ void BOARD_Init(void){
     SPOWER_INIT;
     DBG_PIN_INIT;
         
-    SPI_Init();
+    (LCD_SPIDEV)->bus = SPI_BUS1;
+    (LCD_SPIDEV)->freq = 40000;
+    (LCD_SPIDEV)->cfg = SPI_SW_CS;
+    SPI_Init(LCD_SPIDEV);
+
+    /**
+     * PB15 AF
+     * PB14 GPO/CD
+     * PB13 AF
+     * PB12 GPO/CS
+     * PB3  GPO/BKL
+     * */
+    GPIOB->BSRR = (5 << 12); // CS, RS
+    GPIOB->BRR  = (1 << 3);  // BKL
+
+    GPIOB->CRH &= (0x0000FFFF);
+    GPIOB->CRH |= (0xA2A20000);
+
+    GPIOB->CRL &= (0xFFFF0FFF);
+    GPIOB->CRL |= (0x00002000);
+
 #if defined(ENABLE_I2C)
     I2C_Init();
 #endif
@@ -700,159 +720,6 @@ uint32_t cnt;
     RTC->PRLL = RTC_ONE_SECOND_PRESCALER;
 
     RTC->CRL &= ~RTC_CRL_CNF;                        // Exit configuration
-}
-
-
-/**
- * SPI API
- * This board uses SPI2
- * 
- * Pins:
- * PB12 -> CS
- * PB13 -> SCLK
- * PB14 <- MISO used for LCD_CD
- * PB15 -> MOSI
- * 
- * */
-#define DMA_CCR_PL_Medium   (1<<12)
-#define DMA_CCR_MSIZE_8     (0<<10)
-#define DMA_CCR_MSIZE_16    (1<<10)
-#define DMA_CCR_MSIZE_32    (2<<10)
-#define DMA_CCR_PSIZE_16    (1<<8)
-#define DMA_CCR_PSIZE_8     (0<<8)
-
-typedef struct spihandle{
-    DMA_Channel_TypeDef *dma;
-    volatile uint32_t count;
-}spihandle_t;
-
-static spihandle_t spi2handle;
-
-void SPI_Init(void){
-    RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
-    RCC->APB1RSTR |= RCC_APB1RSTR_SPI2RST;
-    RCC->APB1RSTR &= ~RCC_APB1RSTR_SPI2RST;
-    RCC->AHBENR |= RCC_AHBENR_DMA1EN;
-    
-    /**
-     * PB15 AF
-     * PB14 GPO
-     * PB13 AF
-     * PB12 GPO
-     * PB3  GPO
-     * */
-    GPIOB->BSRR = (5 << 12); // CS, RS
-    GPIOB->BRR  = (1 << 3);  // BKL
-
-    GPIOB->CRH &= (0x0000FFFF);
-    GPIOB->CRH |= (0xA2A20000);
-
-    GPIOB->CRL &= (0xFFFF0FFF);
-    GPIOB->CRL |= (0x00002000);
-    
-    SPI2->CR1 = (1 << 3) |       //BR[2:0] = PLK1/4 
-                //SPI_CR1_SSM |
-                //SPI_CR1_DFF |
-                SPI_CR1_MSTR;
-
-    SPI2->CR2 = SPI_CR2_SSOE;
-
-    SPI2->CR1 |= SPI_CR1_SPE;
-
-
-    spi2handle.count = 0;
-    spi2handle.dma = DMA1_Channel5;  //Channel3 for SPI1
-
-    spi2handle.dma->CPAR = (uint32_t)&SPI2->DR;
-    spi2handle.dma->CCR = 
-                DMA_CCR_PL_Medium |
-                DMA_CCR_MSIZE_16  |
-                DMA_CCR_PSIZE_16  |
-                DMA_CCR_TCIE      |
-                DMA_CCR_DIR;
-
-    NVIC_EnableIRQ(DMA1_Channel5_IRQn);
-}
-
-uint8_t SPI_Send(uint8_t data){
-    SPI2->DR = data;
-	while((SPI2->SR & SPI_SR_TXE) == 0 );
-	while((SPI2->SR & SPI_SR_BSY) != 0 );
-    return SPI2->DR;
-}
-
-void SPI_Read(uint8_t *dst, uint32_t len){
-
-}
-
-/**
- * @brief Sends a block of data through the spi bus using DMA engine.
- * 
- * Due to DMA limitation, data is transferred in blocks of 64k bytes when data
- * length is grater than 0x10000.
- * 
- * @param src : pointer to data to be sent
- * @param len : size of data, if bit 32 is set then a single value 
- *              will be transferred lenght n times, usefull for color fill
- * */
-void SPI_WriteDMA(uint16_t *src, uint32_t len){
-
-    // Configure Spi for 16bit DMA
-    SPI2->CR1 &= ~SPI_CR1_SPE;
-    SPI2->CR1 |= SPI_CR1_DFF | SPI_CR1_SPE;
-
-    if(len & 0x80000000){
-        len &= 0x7FFFFFFF;
-        spi2handle.dma->CCR &= ~(DMA_CCR_MINC);
-    }else{
-        spi2handle.dma->CCR |= DMA_CCR_MINC;
-    }
-
-    SPI2->CR2 |= SPI_CR2_TXDMAEN;
-
-    spi2handle.count = len;    
-    spi2handle.dma->CMAR = (uint32_t)src;
-    spi2handle.dma->CNDTR = (spi2handle.count > 0x10000) ? 0xFFFF : spi2handle.count;
-    
-    spi2handle.dma->CCR |= DMA_CCR_EN;
-}
-
-/**
- * @brief End of transfer callback
- * */
-__weak void spi_eot(void){
-
-}
-
-/**
- * DMA handler for spi transfers
- * */
-void DMA1_Channel5_IRQHandler(void){
-
-    if(DMA1->ISR & DMA_ISR_TCIF5){
-        spi2handle.dma->CCR &= ~(DMA_CCR_EN);
-        
-        if(spi2handle.count > 0x10000){
-            spi2handle.count -= 0x10000;
-            spi2handle.dma->CNDTR = (spi2handle.count > 0x10000) ? 0xFFFF : spi2handle.count;
-            spi2handle.dma->CCR |= DMA_CCR_EN;
-        }else{
-            // wait for the last byte to be transmitted
-            while(SPI2->SR & SPI_SR_BSY){
-                if(SPI2->SR & SPI_SR_OVR){
-                    //clr OVR flag
-                    spi2handle.count = SPI2->DR;
-                }
-            }
-            /* Restore 8bit Spi */
-	        SPI2->CR1 &= ~(SPI_CR1_SPE | SPI_CR1_DFF);
-	        SPI2->CR1 |= SPI_CR1_SPE;
-            SPI2->CR2 &= ~(SPI_CR2_TXDMAEN);
-            spi2handle.count = 0;
-            spi_eot();
-        }
-    }
-    DMA1->IFCR = DMA_IFCR_CGIF5;
 }
 
 /**

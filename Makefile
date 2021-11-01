@@ -71,6 +71,7 @@ $(APP_SRC_DIR)/components/adcmgr.c \
 $(wildcard $(APP_SRC_DIR)/*.c) \
 $(LIBEMB_PATH)/misc/strfunc.c \
 $(LIBEMB_PATH)/misc/pinName.c \
+$(LIBEMB_PATH)/drv/spi/spi_stm32f1xx.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c \
@@ -274,11 +275,13 @@ C_DEFS +=-DENABLE_UART
 endif
 
 ifeq ($(RELEASE),yes)
-GIT_TAG := $(shell git describe --abbrev=0 --tags 2>/dev/null || true)
-VERSION := $(GIT_TAG:v%=%)
+GIT_TAG :=$(shell git describe --abbrev=0 --tags 2>/dev/null || true)
+VERSION :=$(GIT_TAG)#$(GIT_TAG:v=%)
 
 ifeq ($(VERSION), )
-    VERSION :="\"v0.0.0\""
+    VERSION ="\"v0.0.0\""
+else
+    VERSION :="\"$(VERSION)\""
 endif
 
 C_DEFS +=-DRELEASE
@@ -286,8 +289,8 @@ C_DEFS +=-DPSU_VERSION=$(VERSION)
 endif
 
 ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections
-CFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections -std=c99
-CPPFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections
+CFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections -std=c11
+CPPFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections -fno-exceptions -fno-unwind-tables -fno-rtti
 
 # Generate dependency information
 #CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst))
@@ -364,7 +367,7 @@ $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 
 $(BUILD_DIR)/%.obj: %.cpp Makefile | $(BUILD_DIR)
 	@echo "Compiling  " $<
-	@$(CPP) -c $(CPPFLAGS)  -fno-exceptions -fno-unwind-tables -fno-rtti $< -o $@
+	@$(CPP) -c $(CPPFLAGS) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	@echo "Assembling " $<
