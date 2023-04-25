@@ -30,18 +30,18 @@ ViewLoad::ViewLoad(){
     _wi_graph = new BUIGraph(LOAD_GRAPH_POS,
             LOAD_GRAPH_WIDTH, LOAD_GRAPH_HIGHT, 
             2,
-            (const uint16_t[]){0x18E3, RGB565(0x58,0x7c,0x0c), GREEN, YELLOW});
+            (const uint16_t[]){0x18E3, RGB565(0x58,0x7c,0x0c), LCD_GREEN, LCD_YELLOW});
 
     _wi_load_icon = new BUIicon(LOAD_ICON_POS, icon_load);    
-    _wi_load_icon->setPal((const uint16_t[]){BLACK, BLACK, RGB565(0xAC, 0x2A, 0x77)});
+    _wi_load_icon->setPal((const uint16_t[]){LCD_BLACK, LCD_BLACK, RGB565(0xAC, 0x2A, 0x77)});
 
     _wi_ma->init(10, 100, MIN_ILOAD, MAX_ILOAD, currentFormat);
     _wi_ma->setFont(&courierFont);
-    _wi_ma->setPal((const uint16_t[]){BLACK, YELLOW});
+    _wi_ma->setPal((const uint16_t[]){LCD_BLACK, LCD_YELLOW});
     _wi_voltage->init(100,100, MIN_VLOAD, MAX_VLOAD, voltageFormat);
-    _wi_voltage->setPal((const uint16_t[]){BLACK, GREEN});
+    _wi_voltage->setPal((const uint16_t[]){LCD_BLACK, LCD_GREEN});
     _wi_voltage->setFont(&courierFont);    
-    _wi_pwr->setPal((const uint16_t[]){BLACK, RGB565(0x54, 0x9c, 0xd6)});
+    _wi_pwr->setPal((const uint16_t[]){LCD_BLACK, RGB565(0x54, 0x9c, 0xd6)});
     
     addWidget(_wi_graph);
     addWidget(_wi_ah);
@@ -65,7 +65,7 @@ void ViewLoad::init(void){
 
 void ViewLoad::draw(void){
     if(isInvalid()){
-        DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
+        DRAW_FillRect(0, 0, LCD_W, LCD_H, LCD_BLACK);
         setInvalid(false);
     }
 }

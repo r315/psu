@@ -40,7 +40,7 @@ char CmdPwm::execute(void *ptr){
             PWM_Set(ch, val);
         }else{
             val = PWM_Get(ch);
-            while( (c = console->xgetchar()) != 'q'){
+            while( (c = console->getChar()) != 'q'){
                 switch(c){
                     case '+':
                         if(val < PWM_MAX_VALUE){
@@ -65,7 +65,7 @@ char CmdPwm::execute(void *ptr){
                         break;
                 }       
             }
-            console->xputchar('\n');
+            console->putChar('\n');
         }
         return CMD_OK;       
     }

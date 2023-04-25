@@ -32,11 +32,11 @@ ViewCharger::ViewCharger(){
     _wi_ma->setFont(&courierFont);    
     
     _wi_chg_icon = new BUIicon(CHG_CHARGING_ICON_POS,icon_chr);    
-    _wi_chg_icon->setPal((const uint16_t[]){BLACK, BLACK, BLUE});
+    _wi_chg_icon->setPal((const uint16_t[]){LCD_BLACK, LCD_BLACK, LCD_BLUE});
 
     _wi_bt = new BUIlist(CF_POS);
     _wi_bt->setList(bt_types, sizeof(bt_types)/sizeof(size_t));
-    _wi_bt->setPal((const uint16_t[]){BLACK, YELLOW});
+    _wi_bt->setPal((const uint16_t[]){LCD_BLACK, LCD_YELLOW});
     _wi_bt->select(1);
 
     _wi_ah = new BUIText(AH_POS);
@@ -62,7 +62,7 @@ void ViewCharger::init(void){
 
 void ViewCharger::draw(void){
     if(isInvalid()){
-        DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
+        DRAW_FillRect(0, 0, LCD_W, LCD_H, LCD_BLACK);
         setInvalid(false);
     }
 }

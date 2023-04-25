@@ -96,7 +96,7 @@ public:
         BUIGraph(0,0,
             64,20,
             1,
-            (const uint16_t[]){WHITE, BLUE,RED})
+            (const uint16_t[]){LCD_WHITE, LCD_BLUE, LCD_RED})
     {}
     ~BUIGraph();
     /**

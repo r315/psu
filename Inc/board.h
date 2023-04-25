@@ -5,17 +5,17 @@
 extern "C" {
 #endif
 
-#include <button.h>
-#include <stdout.h>
+#include "button.h"
+#include "stdout.h"
 #include "stm32f1xx.h"
 #include "pcf8574.h"
-#include "lcd.h"
+#include "liblcd.h"
 #include "st7735.h"
 #include "adcmgr.h"
-#include "pinName.h"
+#include "gpio.h"
+#include "gpio_stm32f1xx.h"
 #include "dbg.h"
 #include "eeprom.h"
-#include "spi.h"
 
 /**
  * Button 
@@ -50,14 +50,14 @@ extern "C" {
 
 #define SOFT_POWER_OFF                     \
 {                                          \
-    pinWrite(PWR_BTN_PIN, GPIO_PIN_RESET); \
-    pinInit(PWR_BTN_PIN, GPO_2MHZ);        \
+    GPIO_Write(PWR_BTN_PIN, GPIO_PIN_RESET); \
+    GPIO_Config(PWR_BTN_PIN, GPO_2MHZ);        \
     while(1);                              \
 }
 
 #define SPOWER_INIT                   \
 {                                     \
-    pinInit(PWR_BTN_PIN, GPI_ANALOG); \
+    GPIO_Config(PWR_BTN_PIN, GPI_ANALOG); \
 }
 
 #define GET_PWR_BTN         (ADC2_Read(ADC_PWR_SW_CH) > PWR_BTN_PRESSED)
@@ -67,16 +67,16 @@ extern "C" {
  * LEDS and debug pin
  * */
 #define LED_PIN         PC_13
-#define LED_INIT        pinInit(LED_PIN, GPO_2MHZ)
+#define LED_INIT        GPIO_Config(LED_PIN, GPO_2MHZ)
 #define LED_TOGGLE      HAL_GPIO_TogglePin(PIN_NAME_TO_PORT(LED_PIN), PIN_NAME_TO_PIN(LED_PIN))
-#define LED_OFF         pinWrite(LED_PIN, GPIO_PIN_SET)
-#define LED_ON          pinWrite(LED_PIN, GPIO_PIN_RESET)
+#define LED_OFF         GPIO_Write(LED_PIN, GPIO_PIN_SET)
+#define LED_ON          GPIO_Write(LED_PIN, GPIO_PIN_RESET)
 
 #define DBG_PIN         PB_6
-#define DBG_PIN_INIT    pinInit(DBG_PIN, GPO_2MHZ);
-#define DBG_PIN_HIGH    pinWrite(DBG_PIN, GPIO_PIN_SET)
-#define DBG_PIN_LOW     pinWrite(DBG_PIN, GPIO_PIN_RESET)
-#define DBG_PIN_TOGGLE  pinToggle(DBG_PIN)
+#define DBG_PIN_INIT    GPIO_Config(DBG_PIN, GPO_2MHZ);
+#define DBG_PIN_HIGH    GPIO_Write(DBG_PIN, GPIO_PIN_SET)
+#define DBG_PIN_LOW     GPIO_Write(DBG_PIN, GPIO_PIN_RESET)
+#define DBG_PIN_TOGGLE  GPIO_Toggle(DBG_PIN)
 
 #if defined(ENABLE_DEBUG)
     #define DBG_PRINT dbg_printf
@@ -90,8 +90,8 @@ extern "C" {
  * Output enable pin
  * */
 #define PSU_OE_PIN      PB_1
-#define PSU_OE_INIT     pinWrite(PSU_OE_PIN, GPIO_PIN_RESET); pinInit(PSU_OE_PIN, GPO_2MHZ)
-#define PSU_OE_SET(_X)  pinWrite(PSU_OE_PIN, _X)
+#define PSU_OE_INIT     GPIO_Write(PSU_OE_PIN, GPIO_PIN_RESET); GPIO_Config(PSU_OE_PIN, GPO_2MHZ)
+#define PSU_OE_SET(_X)  GPIO_Write(PSU_OE_PIN, _X)
 
 /**
  * Analog mux selectors
@@ -104,13 +104,13 @@ extern "C" {
 
 #define MUX_SEL_INIT \
 {                                                                \
-    pinWrite(MUX_S0, GPIO_PIN_RESET); pinInit(MUX_S0, GPO_2MHZ); \
-    pinWrite(MUX_S1, GPIO_PIN_RESET); pinInit(MUX_S1, GPO_2MHZ); \
-    pinWrite(MUX_S2, GPIO_PIN_RESET); pinInit(MUX_S2, GPO_2MHZ); \
-    pinWrite(MUX_S3, GPIO_PIN_RESET); pinInit(MUX_S3, GPO_2MHZ); \
+    GPIO_Write(MUX_S0, GPIO_PIN_RESET); GPIO_Config(MUX_S0, GPO_2MHZ); \
+    GPIO_Write(MUX_S1, GPIO_PIN_RESET); GPIO_Config(MUX_S1, GPO_2MHZ); \
+    GPIO_Write(MUX_S2, GPIO_PIN_RESET); GPIO_Config(MUX_S2, GPO_2MHZ); \
+    GPIO_Write(MUX_S3, GPIO_PIN_RESET); GPIO_Config(MUX_S3, GPO_2MHZ); \
 }
 
-#define MUX_SELECT(CH) portWrite(PORTA, (portRead(PORTA) & ~(0xF<<4)) | (CH) << 4)
+#define MUX_SELECT(CH) GPIO_PORT_Write(PORTA, (GPIO_PORT_Read(PORTA) & ~(0xF<<4)) | (CH) << 4)
 
 /**
  * Buzzer
@@ -120,11 +120,11 @@ extern "C" {
 /**
  * Delay and tick count
  * */
-#define GetTicks HAL_GetTick
+#define GetTick HAL_GetTick
 #define DelayMs(d) HAL_Delay(d)
 
 static inline uint32_t ElapsedTicks(uint32_t start_ticks){ 
-    uint32_t current = GetTicks(); 
+    uint32_t current = GetTick(); 
     //return (current > start_ticks) ? current - start_ticks : 0xFFFFFFFF - start_ticks + current;
     return current - start_ticks;
 }
@@ -376,9 +376,6 @@ void reloadWatchDog(void);
 void BOARD_Init(void);
 
 void BOARD_Error_Handler(const char *file, int line);
-
-extern spidev_t spi2;
-#define LCD_SPIDEV &spi2
  
 #ifdef __cplusplus
 }

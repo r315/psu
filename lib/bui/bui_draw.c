@@ -9,14 +9,6 @@ static uint16_t _scratch[2][SCRATCH_BUF_SIZE];
 static uint16_t *scratch = _scratch[0];
 static uint8_t bufidx = 0;
 
-
-/**
- * @brief Wait for any draw operation to conclude
- * */
-void DRAW_WaitOpEnd(void){
-    SPI_WaitEOT(LCD_SPIDEV);
-}
-
 /**
  * @brief Draws buffer in to the lcd, blocking if the last transfer has not finished yet.
  * Other access lcd access should be avoided.
@@ -28,7 +20,6 @@ void DRAW_WaitOpEnd(void){
  * @param h : area height
  */
 static void DRAW_BufferLL(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, uint16_t h){
-    SPI_WaitEOT(LCD_SPIDEV);
     LCD_WriteArea(x, y, w, h, data);
 }
 
@@ -36,7 +27,6 @@ static void DRAW_BufferLL(uint16_t x, uint16_t y, uint16_t *data, uint16_t w, ui
  * @brief draw filled rectangle
  * */
 void DRAW_FillRect(uint16_t x, uint16_t y,  uint16_t w, uint16_t h, uint16_t color){
-    SPI_WaitEOT(LCD_SPIDEV);
     LCD_FillRect(x, y, w, h, color);
 }
 
@@ -84,7 +74,6 @@ void DRAW_Rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color){
  * @param color : line color
  * */
 void DRAW_Pixel(uint16_t x, uint16_t y, uint16_t color){
-    SPI_WaitEOT(LCD_SPIDEV);
     LCD_Pixel(x, y, color);
 }
 
@@ -154,7 +143,7 @@ void DRAW_Icon(uint16_t x, uint16_t y, const uint8_t *ico, const uint16_t *pal){
  * \param fnt : font to be used
  * \param pal : color palette
  * */
-static void blitChar(uint16_t *buffer, uint8_t c, font_t *fnt, const uint16_t *pal){
+static void blitChar(uint16_t *buffer, uint8_t c, const font_t *fnt, const uint16_t *pal){
     const uint8_t *pd;
     
     c -= fnt->offset;
@@ -193,7 +182,7 @@ static void blitChar(uint16_t *buffer, uint8_t c, font_t *fnt, const uint16_t *p
  * \param pal : color palette
  * \return : x coordinate for next character
  * */
-uint16_t DRAW_Char(uint16_t x, uint16_t y, uint8_t c, font_t *fnt, const uint16_t *pal){
+uint16_t DRAW_Char(uint16_t x, uint16_t y, uint8_t c, const font_t *fnt, const uint16_t *pal){
     //Check if character fits temporary buffer
     if(fnt->w * fnt->h > SCRATCH_BUF_SIZE){
         return 0;
@@ -210,7 +199,7 @@ uint16_t DRAW_Char(uint16_t x, uint16_t y, uint8_t c, font_t *fnt, const uint16_
 
 /**
  * */
-uint16_t DRAW_Text(uint16_t x, uint16_t y, const char* str, font_t *fnt, const uint16_t *pal){
+uint16_t DRAW_Text(uint16_t x, uint16_t y, const char* str, const font_t *fnt, const uint16_t *pal){
     while(*str){
         x = DRAW_Char(x, y, *str++, fnt, pal);
     }

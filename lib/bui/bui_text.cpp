@@ -6,7 +6,7 @@ BUIText::BUIText(uint16_t x = 0, uint16_t y = 0) : BUIWidget(x ,y){
     _font = BUI_DEFAULT_FONT;
     _text = NULL;
     _len = 0;
-    _pal = (const uint16_t[]){BLACK, WHITE};
+    _pal = (const uint16_t[]){LCD_BLACK, LCD_WHITE};
 }
 
 BUIText::~BUIText(void){

@@ -19,7 +19,7 @@
 
 #define PSU_I_USB_POS           (LCD_W - 6 * 8), 12
 
-#define PSU_SCR_BG_COLOR        BLACK
+#define PSU_SCR_BG_COLOR        LCD_BLACK
 
 static const uint8_t psu_icon_out[] = {15,8,
     0x7f,0xfc,0xc5,0x46,0xd5,0x6e,0xd5,0x6e,0xd5,0x6e,0xd5,0x6e,0xc4,0x6e,0x7f,0xfc
@@ -32,7 +32,7 @@ ViewPsu::ViewPsu():
     _wi_graph(LCD_W - PSU_GRAPH_WIDTH, LCD_H - PSU_GRAPH_HIGHT - 2, 
              PSU_GRAPH_WIDTH, PSU_GRAPH_HIGHT, 
              2, 
-             (const uint16_t[]){0x18E3, 0xEF58, GREEN, YELLOW}),
+             (const uint16_t[]){0x18E3, 0xEF58, LCD_GREEN, LCD_YELLOW}),
     _wi_out_icon(PSU_OUTPUT_ICON_POS, psu_icon_out),
     _wi_usb_current(PSU_I_USB_POS)
 {
@@ -40,10 +40,10 @@ ViewPsu::ViewPsu():
     _wi_voltage.init(100, 100, MIN_VOLTAGE, MAX_VOLTAGE, voltageFormat);
     _wi_current.init(10, 100, MIN_CURRENT, MAX_CURRENT, currentFormat);
 
-    _wi_out_icon.setPal((const uint16_t[]){BLACK, BLACK, RED});
+    _wi_out_icon.setPal((const uint16_t[]){LCD_BLACK, LCD_BLACK, LCD_RED});
 
-    _wi_voltage.setPal((const uint16_t []){0x18E3, GREEN});
-    _wi_current.setPal((const uint16_t []){0x18E3, YELLOW});
+    _wi_voltage.setPal((const uint16_t []){0x18E3, LCD_GREEN});
+    _wi_current.setPal((const uint16_t []){0x18E3, LCD_YELLOW});
     
     addWidget(&_wi_power);
     addWidget(&_wi_voltage);

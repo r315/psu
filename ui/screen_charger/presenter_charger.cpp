@@ -28,7 +28,7 @@ void PresenterCharger::tick(void){
             _model->applyChargerPreset();
             _view->showChargingIcon(true);            
             _state = CHG_CHARGING;
-            _ticks = GetTicks();
+            _ticks = GetTick();
             break;
         }
 
@@ -220,7 +220,7 @@ void PresenterCharger::computeCapacity(uint32_t ma){
     // Value will update every 30s
     if(elapsed >= 30000){
         _capacity += ma/(3600/30);
-        _ticks = GetTicks();
+        _ticks = GetTick();
     }
 
 }

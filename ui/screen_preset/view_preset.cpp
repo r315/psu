@@ -6,8 +6,8 @@
 #define PRESET_POS_X                108
 #define PRESET_INFO1_POS            PRESET_POS_X, 16
 #define PRESET_INFO2_POS            PRESET_POS_X, 32
-#define PRESET_UNSELECTED_COLOR       WHITE
-#define PRESET_SELECTED_COLOR         CYAN
+#define PRESET_UNSELECTED_COLOR     LCD_WHITE
+#define PRESET_SELECTED_COLOR       LCD_CYAN
 
 const uint8_t preset_icon[]{16,16,
    0,0,0,0,
@@ -28,14 +28,14 @@ ViewPreset::ViewPreset(): _wi_pre_v(PRESET_INFO1_POS), _wi_pre_i(PRESET_INFO2_PO
         uint8_t x = i % (MAX_PRESETS >> 1);
         uint8_t y = (i - x) / (MAX_PRESETS >> 1);
         _wi_ico[i] = new BUIicon(x*32 + 16, y*32 + 16, preset_icon);
-        _wi_ico[i]->setPal((const uint16_t []){BLACK, PRESET_UNSELECTED_COLOR, PRESET_SELECTED_COLOR});
+        _wi_ico[i]->setPal((const uint16_t []){LCD_BLACK, PRESET_UNSELECTED_COLOR, PRESET_SELECTED_COLOR});
         addWidget(_wi_ico[i]);
     }
 
     addWidget(&_wi_pre_v);
     addWidget(&_wi_pre_i);
-    _wi_pre_v.setPal((const uint16_t []){BLACK, YELLOW});
-    _wi_pre_i.setPal((const uint16_t []){BLACK, YELLOW});
+    _wi_pre_v.setPal((const uint16_t []){LCD_BLACK, LCD_YELLOW});
+    _wi_pre_i.setPal((const uint16_t []){LCD_BLACK, LCD_YELLOW});
     _selected = 0;
 }
 
@@ -48,7 +48,7 @@ void ViewPreset::init(void){
 
 void ViewPreset::draw(void){
     if(isInvalid()){
-        DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
+        DRAW_FillRect(0, 0, LCD_W, LCD_H, LCD_BLACK);
         setInvalid(false);
     }
 }

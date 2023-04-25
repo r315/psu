@@ -37,6 +37,8 @@ RELEASE :=no
 # source path
 
 APP_SRC_DIR :=$(CURDIR)/App
+DRIVERS_PATH =$(LIBEMB_PATH)/drv
+CMSIS_PATH =$(DRIVERS_PATH)/CMSIS
 
 ifeq ($(shell uname -s), Linux)
 REPO_F1 :=STM32Cube_FW_F1_V1.8.0
@@ -69,9 +71,9 @@ Src/system_stm32f1xx.c \
 Src/stm32f1xx_hal_msp.c \
 $(APP_SRC_DIR)/components/adcmgr.c \
 $(wildcard $(APP_SRC_DIR)/*.c) \
-$(LIBEMB_PATH)/misc/strfunc.c \
-$(LIBEMB_PATH)/misc/pinName.c \
-$(LIBEMB_PATH)/drv/spi/spi_stm32f1xx.c \
+$(LIBEMB_PATH)/src/strfunc.c \
+$(DRIVERS_PATH)/gpio/gpio_stm32f1xx.c \
+$(DRIVERS_PATH)/spi/spi_stm32f1xx.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c \
@@ -114,10 +116,10 @@ endif
 
 ifeq ($(ENABLE_UI),yes)
 C_SOURCES +=  \
-$(LIBEMB_PATH)/drv/tft/st7735.c \
-$(LIBEMB_PATH)/display/lcd.c \
-$(LIBEMB_PATH)/button/button.c \
-$(LIBEMB_PATH)/display/font.c \
+$(DRIVERS_PATH)/tft/st7735.c \
+$(LIBEMB_PATH)/src/liblcd.c \
+$(LIBEMB_PATH)/src/button.c \
+$(LIBEMB_PATH)/src/font.c \
 $(APP_SRC_DIR)/components/pcf8574.c \
 $(BUI_DIR)/bui_draw.c
 endif
@@ -171,7 +173,6 @@ C_INCLUDES =  \
 -I$(APP_SRC_DIR)/components \
 -I$(APP_SRC_DIR)/console \
 -I$(APP_SRC_DIR)/screen \
--I"$(LIBEMB_PATH)"/include \
 -I$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Inc \
 -I$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
 -I$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Inc \
@@ -182,6 +183,8 @@ C_INCLUDES =  \
 -I$(FREERTOS_DIR)/CMSIS_RTOS \
 -I$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
 -I$(BUI_DIR) \
+-I$(LIBEMB_PATH)/inc \
+-I$(DRIVERS_PATH)/inc \
 -I$(UI_DIR)/model \
 -I$(UI_DIR)/common \
 -I$(UI_DIR)/screen_psu \
@@ -375,7 +378,7 @@ $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) #Makefile
 	@echo "--- Linking ---"
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	@$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@

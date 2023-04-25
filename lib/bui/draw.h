@@ -19,10 +19,8 @@ void DRAW_VLine(uint16_t x, uint16_t y, uint16_t h, uint16_t color);
 void DRAW_HLine(uint16_t x, uint16_t y, uint16_t w, uint16_t color);
 void DRAW_Pixel(uint16_t x, uint16_t y, uint16_t color);
 
-void DRAW_WaitOpEnd(void);
-
-uint16_t DRAW_Char(uint16_t x, uint16_t y, uint8_t c, font_t *fnt, const uint16_t *pal);
-uint16_t DRAW_Text(uint16_t x, uint16_t y, const char* str, font_t *fnt, const uint16_t *pal);
+uint16_t DRAW_Char(uint16_t x, uint16_t y, uint8_t c, const font_t *fnt, const uint16_t *pal);
+uint16_t DRAW_Text(uint16_t x, uint16_t y, const char* str, const font_t *fnt, const uint16_t *pal);
 
 #ifdef __cplusplus
 }

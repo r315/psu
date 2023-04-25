@@ -1,5 +1,5 @@
 #include "bui.h"
-#include "lcd.h"
+#include "liblcd.h"
 #include "font.h"
 
 

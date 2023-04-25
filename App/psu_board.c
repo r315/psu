@@ -1,14 +1,17 @@
 
+#include <stdout.h>
 #include "board.h"
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
 #include "usbd_cdc_if.h"
-#include <stdout.h>
+#include "spi.h"
 
 #if defined(ENABLE_I2C)
 static I2C_HandleTypeDef hi2c2;
 #endif
+
+static spibus_t lcd_spi;
 
 void BOARD_Init(void){
     
@@ -20,10 +23,10 @@ void BOARD_Init(void){
     SPOWER_INIT;
     DBG_PIN_INIT;
         
-    (LCD_SPIDEV)->bus = SPI_BUS1;
-    (LCD_SPIDEV)->freq = 40000;
-    (LCD_SPIDEV)->cfg = SPI_SW_CS;
-    SPI_Init(LCD_SPIDEV);
+    lcd_spi.bus = SPI_BUS1;
+    lcd_spi.freq = 40000;
+    lcd_spi.flags = SPI_IDLE;
+    SPI_Init(&lcd_spi);
 
     /**
      * PB15 AF
@@ -45,6 +48,12 @@ void BOARD_Init(void){
     I2C_Init();
 #endif
     RTC_Init();
+
+#if defined(ENABLE_UI)
+    EXPANDER_Init();
+    LCD_Init(&lcd_spi);
+    LCD_SetOrientation(LCD_LANDSCAPE);
+#endif
 }
 
 /**
@@ -143,7 +152,7 @@ void stdin_queue_char(uint8_t *c){
     xQueueSendToBackFromISR(stdin_queue, c, NULL);
 }
 
-static uint8_t stdin_try_dequeue(char *c){
+static int stdin_try_dequeue(char *c){
     if(stdin_queue == NULL)
         return 0;
     return xQueueReceive(stdin_queue, c, 0) == pdPASS;
@@ -155,7 +164,7 @@ static char stdin_wait_char(void){
     return c;
 }
 
-uint8_t stdin_queued(void){
+int stdin_queued(void){
     return STDIN_QUEUE_LENGTH - uxQueueSpacesAvailable(stdin_queue);
 }
 

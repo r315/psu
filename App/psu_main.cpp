@@ -382,10 +382,10 @@ void tskBui(void *ptr){
     BUIPresenter *presenter_charger = new PresenterCharger();
     BUIPresenter *presenter_load = new PresenterLoad();
     
-    DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);    
+    DRAW_FillRect(0, 0, LCD_W, LCD_H, LCD_BLACK);    
     char *text = (char*)bui_malloc(sizeof(PSU_VERSION));
     xsprintf(text, "%s", PSU_VERSION);
-    DRAW_Text(100,70,text, &defaultFont, (const uint16_t[]){BLACK, GREEN});    
+    DRAW_Text(100, 70, text, &defaultFont, (const uint16_t[]){LCD_BLACK, LCD_GREEN});    
     bui_free(text);
     // Wait for lcd clear to end
     vTaskDelay(100);
@@ -492,12 +492,6 @@ extern "C" void app_setup(void){
     BOARD_Init();  
 
     app_setOutputEnable(FALSE);
-
-#if defined(ENABLE_UI)
-    EXPANDER_Init();
-    LCD_Init(LCD_SPIDEV);
-    LCD_Rotation(LCD_LANDSCAPE);
-#endif
 
 #ifdef ENABLE_EEPROM
     EEPROM_Init();

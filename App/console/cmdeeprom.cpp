@@ -15,7 +15,7 @@ void CmdEeprom::dumpAddress(uint16_t addr){
 
     for(uint8_t i = 0; i < 16; i++){
         if((i&7) == 0){
-            console->xputchar(' ');
+            console->putChar(' ');
         }
         console->print("%02X ",buf[i]);
     }
@@ -24,9 +24,9 @@ void CmdEeprom::dumpAddress(uint16_t addr){
 
 	for(uint8_t i=0; i < 16; i++){
 		if(buf[i] > (' '-1) && buf[i] < 0x7F)
-			console->xputchar(buf[i]);
+			console->putChar(buf[i]);
 		else{
-			console->xputchar(' ');
+			console->putChar(' ');
 		}
 	}
 

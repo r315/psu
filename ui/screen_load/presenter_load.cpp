@@ -49,7 +49,7 @@ void PresenterLoad::tick(void){
             _model->applyLoadCurrent();
             _view->showLoadIcon(true);
             _state = LOAD_RUNNING;
-            last_ticks = GetTicks();
+            last_ticks = GetTick();
 
         case LOAD_RUNNING:
         {            
@@ -65,7 +65,7 @@ void PresenterLoad::tick(void){
             if(ticks >= LOAD_REFRESH_TIME){
                 _elapsed_ticks += ticks;
                 _capacity += (float)i/LOAD_CAPACITY_Td;
-                last_ticks = GetTicks();
+                last_ticks = GetTick();
             }
 
             _view->updateCapacity(_capacity);
