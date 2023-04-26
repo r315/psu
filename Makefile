@@ -73,6 +73,7 @@ $(APP_SRC_DIR)/components/adcmgr.c \
 $(wildcard $(APP_SRC_DIR)/*.c) \
 $(LIBEMB_PATH)/src/strfunc.c \
 $(DRIVERS_PATH)/gpio/gpio_stm32f1xx.c \
+$(DRIVERS_PATH)/dma/dma_stm32f1xx.c \
 $(DRIVERS_PATH)/spi/spi_stm32f1xx.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c \
@@ -167,31 +168,31 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
--IInc \
--ISrc \
--I$(APP_SRC_DIR) \
--I$(APP_SRC_DIR)/components \
--I$(APP_SRC_DIR)/console \
--I$(APP_SRC_DIR)/screen \
--I$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Inc \
--I$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
--I$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Inc \
--I$(REPOSITORY)/Drivers/CMSIS/Device/ST/STM32F1xx/Include \
--I$(REPOSITORY)/Drivers/CMSIS/Include \
--I$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
--I$(FREERTOS_DIR)/include \
--I$(FREERTOS_DIR)/CMSIS_RTOS \
--I$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
--I$(BUI_DIR) \
--I$(LIBEMB_PATH)/inc \
--I$(DRIVERS_PATH)/inc \
--I$(UI_DIR)/model \
--I$(UI_DIR)/common \
--I$(UI_DIR)/screen_psu \
--I$(UI_DIR)/screen_preset \
--I$(UI_DIR)/screen_charger \
--I$(UI_DIR)/screen_load \
--I$(USB_DIR) \
+Inc \
+Src \
+$(APP_SRC_DIR) \
+$(APP_SRC_DIR)/components \
+$(APP_SRC_DIR)/console \
+$(APP_SRC_DIR)/screen \
+$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Inc \
+$(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
+$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Inc \
+$(REPOSITORY)/Drivers/CMSIS/Device/ST/STM32F1xx/Include \
+$(REPOSITORY)/Drivers/CMSIS/Include \
+$(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
+$(FREERTOS_DIR)/include \
+$(FREERTOS_DIR)/CMSIS_RTOS \
+$(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
+$(BUI_DIR) \
+$(LIBEMB_PATH)/inc \
+$(DRIVERS_PATH)/inc \
+$(UI_DIR)/model \
+$(UI_DIR)/common \
+$(UI_DIR)/screen_psu \
+$(UI_DIR)/screen_preset \
+$(UI_DIR)/screen_charger \
+$(UI_DIR)/screen_load \
+$(USB_DIR) \
 
 ######################################
 # firmware library
@@ -216,7 +217,7 @@ BIN = $(CP) -O binary -S
 # CFLAGS
 #######################################
 # cpu
-CPU = -mcpu=cortex-m3
+CPU =-mcpu=cortex-m3 -mthumb
 
 # fpu
 # NONE for Cortex-M0/M0+/M3
@@ -225,7 +226,7 @@ CPU = -mcpu=cortex-m3
 #FLOAT-ABI =-u_printf_float
 
 # mcu
-MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
+MCU = $(CPU) $(FPU) $(FLOAT-ABI)
 
 # macros for gcc
 # AS defines
@@ -233,9 +234,9 @@ AS_DEFS =
 
 # C defines
 C_DEFS =  \
--DUSE_HAL_DRIVER \
--DSTM32F103xB \
--DUSE_ADCMGR
+USE_HAL_DRIVER \
+STM32F103xB \
+USE_ADCMGR
 
 # compile gcc flags
 ifeq ($(RELEASE),yes)
@@ -245,36 +246,36 @@ OPT =-Og -g# -gdwarf-2
 endif
 
 ifeq ($(ENABLE_DEBUG),yes)
-C_DEFS +=-DENABLE_DEBUG
+C_DEFS +=ENABLE_DEBUG
 endif
 
 ifeq ($(ENABLE_CLI),yes)
 C_DEFS +=\
--DENABLE_CLI \
--DCONSOLE_BLOCKING
+ENABLE_CLI \
+CONSOLE_BLOCKING
 endif
 
 ifeq ($(ENABLE_UI),yes)
 C_DEFS +=\
--DENABLE_UI \
--DUSE_COURIER_FONT \
--DUSE_GROTESKBOLD_FONT
+ENABLE_UI \
+USE_COURIER_FONT \
+USE_GROTESKBOLD_FONT
 endif
 
 ifeq ($(ENABLE_EEPROM),yes)
-C_DEFS +=-DENABLE_EEPROM
+C_DEFS +=ENABLE_EEPROM
 endif
 
 ifeq ($(filter yes $(ENABLE_EEPROM), $(ENABLE_UI)), yes)
-C_DEFS +=-DENABLE_I2C
+C_DEFS +=ENABLE_I2C
 endif
 
 ifeq ($(ENABLE_VCOM),yes)
-C_DEFS +=-DENABLE_USB_CDC
+C_DEFS +=ENABLE_USB_CDC
 endif
 
 ifeq ($(ENABLE_UART),yes)
-C_DEFS +=-DENABLE_UART
+C_DEFS +=ENABLE_UART
 endif
 
 ifeq ($(RELEASE),yes)
@@ -287,13 +288,16 @@ else
     VERSION :="\"$(VERSION)\""
 endif
 
-C_DEFS +=-DRELEASE
-C_DEFS +=-DPSU_VERSION=$(VERSION)
+C_DEFS +=RELEASE
+C_DEFS +=PSU_VERSION=$(VERSION)
 endif
 
+SYMBOLS =$(addprefix -D, $(C_DEFS))
+C_INCS =$(addprefix -I, $(C_INCLUDES))
+
 ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections
-CFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections -std=c11
-CPPFLAGS =$(MCU) $(OPT) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections -fno-exceptions -fno-unwind-tables -fno-rtti
+CFLAGS =$(MCU) $(OPT) $(C_INCS) $(SYMBOLS) -Wall -fdata-sections -ffunction-sections -std=c11
+CPPFLAGS =$(MCU) $(OPT) $(C_INCS) $(SYMBOLS) -Wall -fdata-sections -ffunction-sections -fno-exceptions -fno-unwind-tables -fno-rtti
 
 # Generate dependency information
 #CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst))
