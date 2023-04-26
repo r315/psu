@@ -18,15 +18,17 @@ void CmdPwm::help(void){
                 "\tPWM3 (PB0): %d\n", PWM_Get(0), PWM_Get(1), PWM_Get(2));
 }
 
-char CmdPwm::execute(void *ptr){
-    char *str = (char*)ptr, c;
+char CmdPwm::execute(int argc, char **argv){
+    char c;
     int32_t ch, val;
     char line[5];
 
-    if(!nextInt(&str, &ch)){
+    if(argc == 1){
         help(); 
         return CMD_BAD_PARAM;
     }
+
+    yatoi(argv[1], &ch);
 
     if(ch < 1 || ch > 3){
         help(); 
@@ -35,8 +37,8 @@ char CmdPwm::execute(void *ptr){
 
     ch--;
 
-    if(isNextWord(&str, "val")){
-        if(nextInt(&str, &val)){
+    if(!xstrcmp(argv[2], "val")){
+        if(yatoi(argv[3], &val)){
             PWM_Set(ch, val);
         }else{
             val = PWM_Get(ch);
@@ -70,10 +72,10 @@ char CmdPwm::execute(void *ptr){
         return CMD_OK;       
     }
 
-    if(isNextWord(&str, "cfg")){        
+    if(xstrcmp(argv[2], "cfg")){        
         int32_t min, max;        
-        if(nextInt(&str, &min)){
-            if(nextInt(&str, &max)){
+        if(yatoi(argv[2], &min)){
+            if(yatoi(argv[3], &max)){
                 psu_setPwmChannelCalibration(ch, min, max);
                 return CMD_OK;
             }

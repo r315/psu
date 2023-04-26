@@ -15,7 +15,7 @@ class CmdEeprom : public ConsoleCommand{
 public:
     void init(void *params) { console = static_cast<Console*>(params); }
     CmdEeprom () : ConsoleCommand("eeprom") { }
-    char execute(void *ptr);
+    char execute(int argc, char **argv);
     void help(void);
 };
 

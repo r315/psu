@@ -8,7 +8,7 @@ void CmdDfu::help(void){
 //console->print("Adc Command\n");
 }
 
-char CmdDfu::execute(void *ptr){
+char CmdDfu::execute(int argc, char **argv){
 
 
     console->print("Entering DFU mode\n");

@@ -13,7 +13,7 @@ class CmdAdc : public ConsoleCommand{
 public:
     void init(void *params) { console = static_cast<Console*>(params); }
     CmdAdc () : ConsoleCommand("adc") { }
-    char execute(void *ptr);
+    char execute(int argc, char **argv);
     void help(void);
 private:
     void printResolution(void);

@@ -5,7 +5,7 @@ void CmdStatus::help(void){
     console->print("System status\n");
 }
 
-char CmdStatus::execute(void *ptr){
+char CmdStatus::execute(int argc, char **argv){
     console->print("\n----------------------------------\n");
     console->print("PSU %s\n", PSU_VERSION);
     console->print("----------------------------------\n");

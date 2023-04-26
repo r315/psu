@@ -45,16 +45,15 @@ void CmdEeprom::help(void){
     console->print("\tw <addr> <data>\t\tWrite to eeprom\n");
 }
 
-char CmdEeprom::execute(void *ptr){
+char CmdEeprom::execute(int argc, char **argv){
     int32_t addr, data;
-    char *args = (char*)ptr;  
     
-    if(*args == '\0'){
+    if(argc == 1){
         help();
         return CMD_OK;
     }
 
-    if(!argcmp("dump", &args)){
+    if(!xstrcmp(argv[1], "dump")){
         console->print("\n");
 	    for(uint16_t i = 0; i < EEPROM_SIZE ; i += 16){
 		    dumpAddress(i);
@@ -63,32 +62,32 @@ char CmdEeprom::execute(void *ptr){
         return CMD_OK;
     }
 
-    if(!argcmp("init", &args)){
+    if(!xstrcmp(argv[1], "init")){
         //EEPROM_Erase();
         return CMD_OK;
     }
 
-    if(!argcmp("erase", &args)){
+    if(!xstrcmp(argv[1], "erase")){
         EEPROM_Erase();
         return CMD_OK;
     }
 
-    if(!argcmp("save", &args)){
+    if(!xstrcmp(argv[1], "save")){
         app_saveState();
         return CMD_OK;
     }
     
-    if(!argcmp("r", &args)){
-        if(nextHex(&args, (uint32_t*)&addr)){
+    if(!xstrcmp(argv[1], "r")){
+        if(hatoi(argv[2], (uint32_t*)&addr)){
             EEPROM_Read(addr, (uint8_t*)&data, 1);
             console->print("%02X\n", data);
             return CMD_OK;
         }
     }
 
-    if(!argcmp("w", &args)){
-        if(nextHex(&args, (uint32_t*)&addr)){
-            if(nextHex(&args, (uint32_t*)&data)){
+    if(!xstrcmp(argv[1], "w")){
+        if(hatoi(argv[2], (uint32_t*)&addr)){
+            if(hatoi(argv[3], (uint32_t*)&data)){
                 EEPROM_Write(addr, (uint8_t*)&data, 1);            
                 return CMD_OK;
             }

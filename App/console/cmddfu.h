@@ -21,7 +21,7 @@ class CmdDfu : public ConsoleCommand{
 public:
     void init(void *params) { DISABLE_DFU_MAGIC; console = static_cast<Console*>(params); }
     CmdDfu () : ConsoleCommand("dfu") { }
-    char execute(void *ptr);
+    char execute(int argc, char **argv);
     void help(void);
 };
 

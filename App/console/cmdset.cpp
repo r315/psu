@@ -14,13 +14,11 @@ void CmdSet::help(void){
     console->print("\toutput <on|off>\t\tEnable output\n");
 }
 
-char CmdSet::execute(void *ptr){
-    char *argv[4], *param;
-    uint32_t argc;
-    argc = strToArray((char*)ptr, argv);
+char CmdSet::execute(int argc, char **argv){
+    char *param;
     uint16_t value;
 
-    if(argc == 0){
+    if(argc == 1){
         help();
         return CMD_OK;
     }

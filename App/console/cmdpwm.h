@@ -13,7 +13,7 @@ class CmdPwm : public ConsoleCommand{
 public:
     void init(void *params) { console = static_cast<Console*>(params); }
     CmdPwm () : ConsoleCommand("pwm") { }
-    char execute(void *ptr);
+    char execute(int argc, char **argv);
     void help(void);
 };
 

@@ -16,7 +16,7 @@ public:
 
 	void help(void);
 
-	char execute(void *ptr);
+	char execute(int argc, char **argv);
 };
 
 

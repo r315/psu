@@ -30,38 +30,35 @@ void CmdAdc::printChannelVoltage(uint8_t channel){
     }
 }
 
-char CmdAdc::execute(void *ptr){ 
-char *str = (char*)ptr;
+char CmdAdc::execute(int argc, char **argv){ 
 int32_t intvalue;
 double floatvalue;
     
-    if(isNextWord(&str, "res")){
+    if(!xstrcmp(argv[1], "res")){
         printResolution();
         return CMD_OK;
     }
 
-    if(isNextWord(&str, "cal")){
+    if(!xstrcmp(argv[1], "cal")){
         ADC_Calibrate();
         printCalibrationData();        
         return CMD_OK;
     }
 
-    if(isNextWord(&str, "read")){
-        if(nextInt(&str, &intvalue)){
+    if(!xstrcmp(argv[1], "read")){
+        if(yatoi(argv[2], &intvalue)){
             printChannelVoltage(intvalue);
             return CMD_OK;
         }
-
-        if(isNextWord(&str, "all")){
-            for (size_t i = 0; i < AN_MUX_NUM_CH; i++){
-                printChannelVoltage(i);
-            }
-            return CMD_OK;
+        
+        for (size_t i = 0; i < AN_MUX_NUM_CH; i++){
+            printChannelVoltage(i);
         }
+        return CMD_OK;
     }
 
-    if(isNextWord(&str, "plot")){
-        if(nextInt(&str, &intvalue)){
+    if(!xstrcmp(argv[1], "plot")){
+        if(yatoi(argv[2], &intvalue)){
             static TickType_t xLastWakeTime;
             while( !console->kbhit() ){
                 uint32_t count = g_mgr_eoc_count;
@@ -78,9 +75,9 @@ double floatvalue;
         }
     }
 
-    if(isNextWord(&str, "gain")){
-        if(nextInt(&str, &intvalue)){
-            if(nextDouble(&str, &floatvalue)){
+    if(!xstrcmp(argv[1], "gain")){
+        if(yatoi(argv[2], &intvalue)){
+            if(fatoi(argv[3], &floatvalue)){
                 psu_setChannelGain(intvalue, floatvalue);
             }else{
                 console->print("%.2f\n", psu_getChannelGain(intvalue));

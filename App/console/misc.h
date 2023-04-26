@@ -16,7 +16,7 @@ class CmdPwr : public ConsoleCommand{
 public:
     void init(void *params) { console = static_cast<Console*>(params); }
     CmdPwr () : ConsoleCommand("pwroff") { }
-    char execute(void *ptr){
+    char execute(int argc, char **argv){
         //app_saveState();
         psu_poweroff();
         return CMD_OK;
@@ -34,7 +34,7 @@ public:
 	void help(void) {
 		
 	}
-	char execute(void *ptr){
+	char execute(int argc, char **argv){
         uint8_t data;
 #if defined(ENABLE_I2C)
         data = EXPANDER_Read();

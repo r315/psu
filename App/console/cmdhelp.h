@@ -23,7 +23,7 @@ public:
 		console->putChar('\n');
 	}
 
-	char execute(void *ptr) {
+	char execute(int argc, char **argv) {
 		help();
 		return CMD_OK;
 	}	
@@ -36,7 +36,7 @@ public:
 
 	void help(void) { }
 
-	char execute(void *ptr) {
+	char execute(int argc, char **argv) {
 		NVIC_SystemReset();
 		return CMD_OK;
 	}	
