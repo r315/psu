@@ -30,6 +30,8 @@ ENABLE_VCOM :=yes
 
 ENABLE_UART :=no
 
+ENABLE_SOFT_POWER :=yes
+
 RELEASE :=no
 #######################################
 # paths
@@ -276,6 +278,10 @@ endif
 
 ifeq ($(ENABLE_UART),yes)
 C_DEFS +=ENABLE_UART
+endif
+
+ifeq ($(ENABLE_SOFT_POWER),yes)
+C_DEFS +=ENABLE_SOFT_POWER
 endif
 
 ifeq ($(RELEASE),yes)

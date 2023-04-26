@@ -417,8 +417,10 @@ uint8_t count = 0;
     model_psu.init();
 #endif
     while(1){
-        //DBG_PIN_LOW;        
+        //DBG_PIN_LOW;
+        #if defined(ENABLE_SOFT_POWER)        
         app_processPowerButton();
+        #endif
         
         if(GET_AD_FLAG){
             #if defined(ENABLE_UI)
