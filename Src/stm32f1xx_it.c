@@ -86,14 +86,22 @@ void NMI_Handler(void)
   */
 void HardFault_Handler(void)
 {
-  /* USER CODE BEGIN HardFault_IRQn 0 */
+    __asm volatile
+    (
+        "bkpt #01 \n"
+        "b .      \n"
+    );
+}
 
-  /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    /* USER CODE END W1_HardFault_IRQn 0 */
-  }
+void NoHandler_Handler(void){
+    volatile uint8_t isr_number = (SCB->ICSR & 255) - 16;
+    // See position number on Table 61 from RM0008
+    (void)isr_number;
+    __asm volatile
+    (
+        "bkpt #01 \n"
+        "b .      \n"
+    );
 }
 
 /**

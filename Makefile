@@ -238,10 +238,10 @@ C_DEFS =  \
 -DUSE_ADCMGR
 
 # compile gcc flags
-ifneq ($(RELEASE),yes)
-OPT =-Og -g# -gdwarf-2
-else
+ifeq ($(RELEASE),yes)
 OPT =-Os
+else
+OPT =-Og -g# -gdwarf-2
 endif
 
 ifeq ($(ENABLE_DEBUG),yes)
