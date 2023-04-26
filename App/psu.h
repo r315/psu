@@ -14,7 +14,7 @@ extern "C" {
 
 #include "board.h"
 
-#ifndef RELEASE
+#ifndef PSU_VERSION
 #define PSU_VERSION                 "vX.X.X"
 #endif
 

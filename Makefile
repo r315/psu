@@ -33,6 +33,8 @@ ENABLE_UART :=no
 ENABLE_SOFT_POWER :=yes
 
 RELEASE :=no
+
+RELEASE_DFU :=no
 #######################################
 # paths
 #######################################
@@ -243,6 +245,8 @@ USE_ADCMGR
 # compile gcc flags
 ifeq ($(RELEASE),yes)
 OPT =-Os
+else ifeq ($(RELEASE_DFU),yes)
+OPT =-Os
 else
 OPT =-Og -g# -gdwarf-2
 endif
@@ -287,16 +291,18 @@ endif
 ifeq ($(RELEASE),yes)
 GIT_TAG :=$(shell git describe --abbrev=0 --tags 2>/dev/null || true)
 VERSION :=$(GIT_TAG)#$(GIT_TAG:v=%)
-
-ifeq ($(VERSION), )
-    VERSION ="\"v0.0.0\""
 else
-    VERSION :="\"$(VERSION)\""
+VERSION =v0.0.0
 endif
 
-C_DEFS +=RELEASE
-C_DEFS +=PSU_VERSION=$(VERSION)
+ifeq ($(RELEASE_DFU),yes)
+C_DEFS +=ENABLE_DFU
+LDSCRIPT =startup/f103c8tx_dfu.ld
+else
+LDSCRIPT =startup/STM32F103C8Tx_FLASH.ld
 endif
+
+C_DEFS +=PSU_VERSION=\"$(VERSION)\"
 
 SYMBOLS =$(addprefix -D, $(C_DEFS))
 C_INCS =$(addprefix -I, $(C_INCLUDES))
@@ -312,8 +318,6 @@ CPPFLAGS =$(MCU) $(OPT) $(C_INCS) $(SYMBOLS) -Wall -fdata-sections -ffunction-se
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT =startup/STM32F103C8Tx_FLASH.ld
-#LDSCRIPT =startup/f103c8tx_dfu.ld
 
 # libraries
 #-nostdlib, -nostartfiles: Missign reference to _init
@@ -326,7 +330,6 @@ LDFLAGS = $(MCU) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET)
 
 # default action: build all
 all: elf #$(BUILD_DIR)/$(TARGET).bin #$(BUILD_DIR)/$(TARGET).hex
-#@echo $(OBJECTS)
 
 size: 
 	@echo "--- Size ---"
@@ -354,12 +357,11 @@ test:
 #@echo $(CURDIR)
 #@echo ""; $(foreach d, $(VPATH), echo $(d);)
 #@echo $(filter yes $(ENABLE_EEPROM), $(ENABLE_UI))
-	@echo $(VERSION)
+	@echo $(SYMBOLS)
 
 lib_cdc:
 	$(MAKE) -C $(USB_DIR)
 
-#@echo $(C_SOURCES)
 #######################################
 # build the application
 #######################################

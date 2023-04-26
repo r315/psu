@@ -12,7 +12,7 @@ char CmdDfu::execute(int argc, char **argv){
 
 
     console->print("Entering DFU mode\n");
-    DRAW_FillRect(0, 0, LCD_W, LCD_H, BLACK);
+    DRAW_FillRect(0, 0, LCD_W, LCD_H, LCD_BLACK);
 	ENABLE_DFU_MAGIC;
     NVIC_SystemReset();
     
