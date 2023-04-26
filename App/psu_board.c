@@ -38,11 +38,11 @@ void BOARD_Init(void){
     GPIOB->BSRR = (5 << 12); // CS, RS
     GPIOB->BRR  = (1 << 3);  // BKL
 
-    GPIOB->CRH &= (0x0000FFFF);
-    GPIOB->CRH |= (0xA2A20000);
-
-    GPIOB->CRL &= (0xFFFF0FFF);
-    GPIOB->CRL |= (0x00002000);
+    GPIO_Config(PB_15, GPO_AF | GPO_10MHZ);
+    GPIO_Config(PB_13, GPO_AF | GPO_10MHZ);
+    GPIO_Config(PB_12, GPO_10MHZ);
+    GPIO_Config(PB_3,  GPO_10MHZ);
+    GPIO_Config(PB_14, GPO_10MHZ);
 
 #if defined(ENABLE_I2C)
     I2C_Init();
@@ -52,7 +52,7 @@ void BOARD_Init(void){
 #if defined(ENABLE_UI)
     EXPANDER_Init();
     LCD_Init(&lcd_spi);
-    LCD_SetOrientation(LCD_LANDSCAPE);
+    LCD_SetOrientation(LCD_REVERSE_LANDSCAPE);
 #endif
 }
 
@@ -743,10 +743,10 @@ uint32_t cnt;
 void I2C_Init(void){
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
-    //gpioInit(GPIOB, 10, GPO_10MHZ | GPO_AF | GPO_OD);
-    //gpioInit(GPIOB, 11, GPO_10MHZ | GPO_AF | GPO_OD);
-    GPIOB->BSRR = (1<<11) | (1<<10);
-    GPIOB->CRH = (GPIOB->CRH & ~(15 << 8)) | (0xFF << 8);
+
+    GPIO_Config(PB_10, GPO_AF_OD | GPO_10MHZ);
+    GPIO_Config(PB_11, GPO_AF_OD | GPO_10MHZ);
+
     __HAL_RCC_I2C2_CLK_ENABLE();
     HAL_NVIC_SetPriority(I2C2_EV_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(I2C2_EV_IRQn);
@@ -762,6 +762,7 @@ void I2C_Init(void){
     hi2c2.Init.OwnAddress2 = 0;
     hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
     hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+
     if(HAL_I2C_Init(&hi2c2) != HAL_OK) {
         BOARD_Error_Handler(__FILE__, __LINE__);
     }

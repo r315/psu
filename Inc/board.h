@@ -142,10 +142,6 @@ void TICK_Init(void);
 #define TFT_W               80
 #define TFT_H               160  // 162 on GRAM
 
-#define TFT_OFFSET_SOURCE	26
-#define TFT_OFFSET_GATE		1
-#define TFT_BGR_FILTER
-
 #define LCD_CD_Pin          GPIO_PIN_14
 #define LCD_CD_GPIO_Port    GPIOB
 #define LCD_BKL_Pin         GPIO_PIN_3
