@@ -40,7 +40,7 @@ extern "C" {
  * 
  * PA1/ADC1 - Can measure voltage after DC jack
  * PA2 - Can detect if power key was pressed by reading ADC2.
- *       Seting this pin as digital output and writing low perform
+ *       Setting this pin as digital output and writing low perform
  *       poweroff
  * */
 

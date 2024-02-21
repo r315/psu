@@ -18,7 +18,7 @@ TARGET = app_psu
 ######################################
 # building options
 ######################################
-ENABLE_DEBUG :=no
+ENABLE_DEBUG :=yes
 
 ENABLE_CLI :=yes
 
@@ -30,11 +30,11 @@ ENABLE_VCOM :=yes
 
 ENABLE_UART :=no
 
-ENABLE_SOFT_POWER :=yes
+ENABLE_SOFT_POWER :=no #TODO: Fix voltage fluctuation on PA2 with different input voltages
 
 RELEASE :=no
 
-RELEASE_DFU :=no
+RELEASE_DFU :=yes
 #######################################
 # paths
 #######################################
@@ -48,7 +48,7 @@ ifeq ($(shell uname -s), Linux)
 REPO_F1 :=STM32Cube_FW_F1_V1.8.0
 REPOSITORY :=$(HOME)/STM32Cube/Repository/$(REPO_F1)
 else
-REPOSITORY :=$(REPO_F1)
+REPOSITORY :=$(STM32REPO_F1)
 endif
 
 FREERTOS_DIR :=$(REPOSITORY)/Middlewares/Third_Party/FreeRTOS/Source
