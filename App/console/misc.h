@@ -36,11 +36,8 @@ public:
 	}
 	char execute(int argc, char **argv){
         uint8_t data;
-#if defined(ENABLE_I2C)
+
         data = EXPANDER_Read(PSU_I2C_BUS);
-#else
-        data = 0;
-#endif
         console->printf("IO: b%08b\n", data);
         console->printf("PWR: %s\n", GET_PWR_BTN ? "ON" : "OFF");
 

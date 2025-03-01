@@ -10,11 +10,12 @@ TARGET = app_psu
 ENABLE_DEBUG 		:=no
 ENABLE_CLI 			:=yes
 ENABLE_UI 			:=no
-ENABLE_EEPROM 		:=no
+ENABLE_EEPROM 		:=yes
+ENABLE_IOEXPANDER   :=yes
 ENABLE_VCOM 		:=no
 ENABLE_UART 		:=yes
 ENABLE_SOFT_POWER	:=no #TODO: Fix voltage fluctuation on PA2 with different input voltages
-ENABLE_ACDMGR 		:=yes
+ENABLE_ADCMGR 		:=yes
 RELEASE 			:=no
 RELEASE_DFU 		:=no
 #######################################
@@ -23,9 +24,10 @@ RELEASE_DFU 		:=no
 
 APP_SRC_DIR 	:=$(CURDIR)/App
 LIB_PATH        =$(LIBEMB_PATH)/lib
-CMSIS_PATH 		=$(DRIVERS_PATH)/CMSIS
+CMSIS_PATH 		=$(LIBEMB_PATH)/CMSIS
 DRIVERS_PATH 	=$(LIBEMB_PATH)/drv
-DRIVERS_CORE    =$(CMSIS_PATH)
+DRIVERS_CORE    =$(CMSIS_PATH)/Core
+DRIVERS_CMSIS   =$(CMSIS_PATH)/Device/ST/STM32F10x
 DRIVERS_SOC     =$(DRIVERS_PATH)
 DRIVER_COMPONENT =$(LIBEMB_PATH)/component
 
@@ -56,17 +58,17 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
-Inc \
-Src \
+$(CURDIR)/Inc \
+$(CURDIR)/Src \
 $(APP_SRC_DIR) \
 $(APP_SRC_DIR)/components \
 $(APP_SRC_DIR)/console \
 $(APP_SRC_DIR)/screen \
+$(DRIVERS_CMSIS)/inc \
+$(DRIVERS_CORE)/Include \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Inc \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy \
 $(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Inc \
-$(REPOSITORY)/Drivers/CMSIS/Device/ST/STM32F1xx/Include \
-$(REPOSITORY)/Drivers/CMSIS/Include \
 $(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
 $(FREERTOS_DIR)/include \
 $(FREERTOS_DIR)/CMSIS_RTOS \
@@ -110,16 +112,15 @@ $(APP_SRC_DIR)/components/adcmgr.c \
 C_SOURCES =  \
 $(DRIVRES_SOC_SRC) \
 $(FREERTOS_SRC) \
-$(APP_SRC) \
-Src/main.c \
-Src/stm32f1xx_it.c \
-Src/system_stm32f1xx.c \
-Src/stm32f1xx_hal_msp.c \
-$(LIB_PATH)/src/strfunc.c \
 $(DRIVERS_SOC)/gpio/gpio_stm32f1xx.c \
 $(DRIVERS_SOC)/dma/dma_stm32f1xx.c \
 $(DRIVERS_SOC)/spi/spi_stm32f1xx.c \
 $(DRIVERS_SOC)/wdt/wdt_stm32f1xx.c \
+$(CURDIR)/Src/main.c \
+$(CURDIR)/Src/stm32f1xx_it.c \
+$(CURDIR)/Src/system_stm32f1xx.c \
+$(CURDIR)/Src/stm32f1xx_hal_msp.c \
+$(APP_SRC) \
 
 USB_CDC_SOURCES =\
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
@@ -132,9 +133,14 @@ $(USB_DIR)/usbd_desc.c \
 $(USB_DIR)/usbd_conf.c \
 $(USB_DIR)/usb_device.c
 
-ifeq ($(filter yes $(ENABLE_EEPROM), $(ENABLE_UI)), yes)
-C_SOURCES += \
+ifeq ($(filter $(ENABLE_EEPROM) $(ENABLE_UI),yes),yes)
+DRIVRES_SOC_SRC += \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c
+endif
+
+ifeq ($(ENABLE_IOEXPANDER),yes)
+C_SOURCES +=  \
+$(APP_SRC_DIR)/components/pcf8574.c
 endif
 
 ifeq ($(ENABLE_DEBUG),yes)
@@ -148,7 +154,6 @@ $(DRIVER_COMPONENT)/tft/st7735.c \
 $(LIB_PATH)/src/liblcd.c \
 $(LIB_PATH)/src/button.c \
 $(LIB_PATH)/src/font.c \
-$(APP_SRC_DIR)/components/pcf8574.c \
 $(BUI_PATH)/bui_draw.c
 endif
 
@@ -169,6 +174,8 @@ ifeq ($(ENABLE_CLI),yes)
 CPP_SOURCES += \
 $(LIB_PATH)/console/console.cpp \
 $(wildcard $(APP_SRC_DIR)/console/*.cpp)
+C_SOURCES += \
+$(LIB_PATH)/src/strfunc.c
 endif
 
 ifeq ($(ENABLE_UI),yes)
@@ -184,7 +191,7 @@ endif
 
 # ASM sources
 ASM_SOURCES =  \
-startup/startup_stm32f103xb.s
+$(CURDIR)/startup/startup_stm32f103xb.s
 
 ######################################
 # firmware library
@@ -198,7 +205,7 @@ BINPATH =
 PREFIX = arm-none-eabi-
 CC = $(BINPATH)$(PREFIX)gcc
 CPP = $(BINPATH)$(PREFIX)g++
-AS = $(BINPATH)$(PREFIX)gcc -x assembler-with-cpp
+AS = $(BINPATH)$(PREFIX)gcc
 CP = $(BINPATH)$(PREFIX)objcopy
 AR = $(BINPATH)$(PREFIX)ar
 SZ = $(BINPATH)$(PREFIX)size
@@ -235,6 +242,7 @@ endif
 ifeq ($(ENABLE_UI),yes)
 C_DEFS +=\
 ENABLE_UI \
+ENABLE_IOEXPANDER \
 USE_COURIER_FONT \
 USE_GROTESKBOLD_FONT
 endif
@@ -243,7 +251,11 @@ ifeq ($(ENABLE_EEPROM),yes)
 C_DEFS +=ENABLE_EEPROM
 endif
 
-ifeq ($(filter yes $(ENABLE_EEPROM), $(ENABLE_UI)), yes)
+ifeq ($(ENABLE_IOEXPANDER),yes)
+C_DEFS +=ENABLE_IOEXPANDER
+endif
+
+ifeq ($(filter $(ENABLE_EEPROM) $(ENABLE_IOEXPANDER) $(ENABLE_UI),yes), yes)
 C_DEFS +=ENABLE_I2C
 endif
 
@@ -293,7 +305,7 @@ else
 OPT =-Og -g# -gdwarf-2
 endif
 
-ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections
+ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections -x assembler-with-cpp
 CFLAGS =$(MCU) $(OPT) $(C_INCS) $(SYMBOLS) -Wall -fdata-sections -ffunction-sections -std=c11
 CPPFLAGS =$(MCU) $(OPT) $(C_INCS) $(SYMBOLS) -Wall -fdata-sections -ffunction-sections -fno-exceptions -fno-unwind-tables -fno-rtti
 

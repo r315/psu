@@ -54,8 +54,11 @@ void BOARD_Init(void){
 #endif
     RTC_Init();
 
-#if defined(ENABLE_UI)
+#if defined(ENABLE_IOEXPANDER) || defined(ENABLE_UI)
     EXPANDER_Init(PSU_I2C_BUS);
+#endif
+
+#if defined(ENABLE_UI)
     LCD_Init(&lcd_spi);
     LCD_SetOrientation(LCD_REVERSE_LANDSCAPE);
 #endif

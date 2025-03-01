@@ -23,7 +23,9 @@ static CmdHelp help;
 static CmdAdc adc1;
 static CmdPwm pwm;
 static CmdPwr pwr;
+#if defined(ENABLE_IOEXPANDER)
 static CmdIo io;
+#endif
 static CmdSet set;
 static CmdReset reset;
 #ifdef ENABLE_EEPROM
@@ -40,7 +42,9 @@ static ConsoleCommand *commands[] = {
     &adc1,
     &pwm,
     &pwr,
+#if defined(ENABLE_IOEXPANDER)
     &io,
+#endif
     &set,
 #ifdef ENABLE_DFU
     &dfu,
