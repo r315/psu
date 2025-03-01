@@ -147,27 +147,20 @@ uint16_t PWM_Get(uint8_t ch){
 /**
  * Console stdout, stdin
  * */
-#if defined(ENABLE_CLI)
-#define STDIN_QUEUE_LENGTH 128
-#define STDOUT_QUEUE_LENGTH 128
-#define STDIO_QUEUE_ITEM_SIZE 1
+#define STDIN_QUEUE_LENGTH      128
+#define STDOUT_QUEUE_LENGTH     128
+#define STDIO_QUEUE_ITEM_SIZE   1
 
+#if defined(ENABLE_UART) || defined(ENABLE_VCOM)
 static QueueHandle_t serial_rx_queue;
+#endif
 #if defined(ENABLE_UART)
 static QueueHandle_t serial_tx_queue;
 #endif
 
-void serial_init(void)
+#ifdef ENABLE_UART
+void UART_Init()
 {
-    serial_rx_queue = xQueueCreate( STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE );
-    configASSERT( serial_rx_queue != NULL );
-
-    #if defined(ENABLE_VCOM)
-    MX_USB_DEVICE_Init();
-    #elif defined(ENABLE_UART)
-    serial_tx_queue = xQueueCreate( STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE );
-    configASSERT( serial_tx_queue != NULL );
-
     RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
     RCC->APB2RSTR |= RCC_APB2RSTR_USART1RST;
     RCC->APB2RSTR &= ~RCC_APB2RSTR_USART1RST;
@@ -175,15 +168,53 @@ void serial_init(void)
     GPIO_Config(UART_TX_PIN, GPO_LS_AF);
     GPIO_Config(UART_RX_PIN, GPI_PU);
 
-    USART1->BRR = 0x271;        //115200
+    USART1->BRR = 0x271; // 115200
     USART1->CR1 = USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
 
-    HAL_NVIC_SetPriority(USART1_IRQn, IRQ_PRIORITY_LOW ,0);
+    HAL_NVIC_SetPriority(USART1_IRQn, IRQ_PRIORITY_LOW, 0);
     NVIC_EnableIRQ(USART1_IRQn);
-    #endif
+}
+
+void USART1_IRQHandler(void)
+{
+    volatile uint32_t status = USART1->SR;
+
+    // Data received
+    if (status & USART_SR_RXNE) {
+        USART1->SR &= ~USART_SR_RXNE;
+        xQueueSendToBackFromISR(serial_rx_queue, (uint8_t*)&USART1->DR, NULL);
+    }
+
+    // Check if data transmiter if empty
+    if (status & USART_SR_TXE) {
+        USART1->SR &= ~USART_SR_TXE;	          // clear interrupt
+        // Check if data is available to send
+        if(xQueueReceiveFromISR(serial_tx_queue, (uint8_t*)&USART1->DR, NULL) != pdPASS){
+            // No more data, disable interrupt
+            USART1->CR1 &= ~USART_CR1_TXEIE;      // disable TX interrupt if nothing to send
+        }
+    }
 }
 #endif
 
+void serial_init(void)
+{
+    #if defined(ENABLE_UART) || defined(ENABLE_VCOM)
+    serial_rx_queue = xQueueCreate( STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE );
+    configASSERT( serial_rx_queue != NULL );
+    #endif
+
+    #if defined(ENABLE_VCOM)
+    MX_USB_DEVICE_Init();
+    #elif defined(ENABLE_UART)
+    serial_tx_queue = xQueueCreate(STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE);
+    configASSERT(serial_tx_queue != NULL);
+
+    UART_Init();
+    #endif
+}
+
+#if defined(ENABLE_CLI)
 int serial_available(void)
 {
     return STDIN_QUEUE_LENGTH - uxQueueSpacesAvailable(serial_rx_queue);
@@ -221,32 +252,10 @@ int serial_write(const char *data, int len)
 void serial_receive(const uint8_t *data, uint16_t len)
 {
     while(len--){
-        while(xQueueSendToBack(serial_rx_queue, data++, pdMS_TO_TICKS(100)));
+        xQueueSendToBackFromISR(serial_rx_queue, data++, NULL);
     }
 }
-
-#ifdef ENABLE_UART
-void USART1_IRQHandler(void)
-{
-    volatile uint32_t status = USART1->SR;
-
-    // Data received
-    if (status & USART_SR_RXNE) {
-        USART1->SR &= ~USART_SR_RXNE;
-        xQueueSendToBackFromISR(serial_rx_queue, (uint8_t*)&USART1->DR, NULL);
-    }
-
-    // Check if data transmiter if empty
-    if (status & USART_SR_TXE) {
-        USART1->SR &= ~USART_SR_TXE;	          // clear interrupt
-        // Check if data is available to send
-        if(xQueueReceiveFromISR(serial_tx_queue, (uint8_t*)&USART1->DR, NULL) != pdPASS){
-            // No more data, disable interrupt
-            USART1->CR1 &= ~USART_CR1_TXEIE;      // disable TX interrupt if nothing to send
-        }
-    }
-}
-#endif
+#endif /* ENABLE_CLI */
 
 /**
  * ADC Driver
