@@ -376,7 +376,7 @@ uint32_t cr1, cr2, sqr1, sqr3;
 void ADC_Calibrate(void){
     adc_calibrate(&hadc1);
 }
-#ifndef USE_ADCMGR
+#ifndef ENABLE_ADCMGR
 static void (*eotcb)(uint16_t*);
 // Each index holds two conversion results
 static uint32_t adcres[ADC_SEQ_LEN];

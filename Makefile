@@ -7,15 +7,16 @@ TARGET = app_psu
 ######################################
 # building options
 ######################################
-ENABLE_DEBUG :=no
-ENABLE_CLI :=yes
-ENABLE_UI :=no
-ENABLE_EEPROM :=no
-ENABLE_VCOM :=yes
-ENABLE_UART :=no
-ENABLE_SOFT_POWER :=no #TODO: Fix voltage fluctuation on PA2 with different input voltages
-RELEASE :=no
-RELEASE_DFU :=no
+ENABLE_DEBUG 		:=no
+ENABLE_CLI 			:=yes
+ENABLE_UI 			:=no
+ENABLE_EEPROM 		:=no
+ENABLE_VCOM 		:=no
+ENABLE_UART 		:=yes
+ENABLE_SOFT_POWER	:=no #TODO: Fix voltage fluctuation on PA2 with different input voltages
+ENABLE_ACDMGR 		:=yes
+RELEASE 			:=no
+RELEASE_DFU 		:=no
 #######################################
 # paths
 #######################################
@@ -119,7 +120,6 @@ $(DRIVERS_SOC)/gpio/gpio_stm32f1xx.c \
 $(DRIVERS_SOC)/dma/dma_stm32f1xx.c \
 $(DRIVERS_SOC)/spi/spi_stm32f1xx.c \
 
-
 USB_CDC_SOURCES =\
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
 $(REPOSITORY)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
@@ -207,17 +207,6 @@ BIN = $(CP) -O binary -S
 #######################################
 # CFLAGS
 #######################################
-# cpu
-CPU =-mcpu=cortex-m3 -mthumb
-
-# fpu
-# NONE for Cortex-M0/M0+/M3
-
-# float-abi
-#FLOAT-ABI =-u_printf_float
-
-# mcu
-MCU = $(CPU) $(FPU) $(FLOAT-ABI)
 
 # macros for gcc
 # AS defines
@@ -225,17 +214,11 @@ AS_DEFS =
 
 # C defines
 C_DEFS =  \
-USE_HAL_DRIVER \
 STM32F103xB \
-USE_ADCMGR
+USE_HAL_DRIVER \
 
-# compile gcc flags
-ifeq ($(RELEASE),yes)
-OPT =-Os
-else ifeq ($(RELEASE_DFU),yes)
-OPT =-Os
-else
-OPT =-Og -g# -gdwarf-2
+ifeq ($(ENABLE_ADCMGR),yes)
+C_DEFS +=ENABLE_ADCMGR
 endif
 
 ifeq ($(ENABLE_DEBUG),yes)
@@ -293,6 +276,21 @@ C_DEFS +=PSU_VERSION=\"$(VERSION)\"
 
 SYMBOLS =$(addprefix -D, $(C_DEFS))
 C_INCS =$(addprefix -I, $(C_INCLUDES))
+
+# cpu
+CPU =-mcpu=cortex-m3 -mthumb
+
+# mcu
+MCU = $(CPU)
+
+# compile gcc flags
+ifeq ($(RELEASE),yes)
+OPT =-Os
+else ifeq ($(RELEASE_DFU),yes)
+OPT =-Os
+else
+OPT =-Og -g# -gdwarf-2
+endif
 
 ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections
 CFLAGS =$(MCU) $(OPT) $(C_INCS) $(SYMBOLS) -Wall -fdata-sections -ffunction-sections -std=c11

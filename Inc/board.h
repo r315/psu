@@ -254,7 +254,7 @@ uint16_t PWM_Get(uint8_t);
 /**
  * ADC
  * */
-#ifndef USE_ADCMGR
+#ifndef ENABLE_ADCMGR
 /**
  * ADC
  *
@@ -303,7 +303,7 @@ uint16_t PWM_Get(uint8_t);
  **/
 void ADC_Init(uint16_t);
 
-#ifndef USE_ADCMGR
+#ifndef ENABLE_ADCMGR
 /**
  *  @brief Configure callback for end of transfer of ADC convertions
  *
