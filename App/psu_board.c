@@ -766,46 +766,6 @@ uint16_t I2C_Read(i2cbus_t *i2c, uint8_t addr, uint8_t *data, uint16_t size){
     return size;
 }
 #endif
-/**
- * @brief Configure watchdog timer according a given interval
- *  in wich the timer will expire and a system reset is performed
- *
- * @param interval : Interval in wich the watchdog will perform a system reset
- * */
-void enableWatchDog(uint32_t interval){
-uint32_t timeout = 4096;
-uint8_t pres = 0;
-
-    interval *= 10;
-
-    if(interval > 0xFFFF){
-        interval = 0xFFFF;
-    }
-
-    while( interval > timeout){
-        timeout <<= 1;
-        pres++;
-    }
-
-    if(IWDG->SR != 0){
-        // other update is in progress
-        return;
-    }
-
-    IWDG->KR = 0x5555; // Enable access to PR and RLR registers
-    IWDG->PR = pres;
-    IWDG->RLR = (interval * 0xFFFF) / timeout;
-    IWDG->KR = 0xAAAA;  // Reload
-    IWDG->KR = 0xCCCC;  // Start IWDG
-}
-/**
- * @brief Watchdog reset that mus be called before the interval
- *          specified on configuration
- *
- * */
-void reloadWatchDog(void){
-    IWDG->KR = 0xAAAA; // Reload RLR on counter
-}
 
 /**
  * */

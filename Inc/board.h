@@ -14,6 +14,7 @@ extern "C" {
 #include "gpio_stm32f1xx.h"
 #include "dbg.h"
 #include "eeprom.h"
+#include "wdt.h"
 
 /**
  * Button

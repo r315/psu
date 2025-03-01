@@ -4,6 +4,7 @@
 #include "task.h"
 
 #include "psu.h"
+
 #if defined(ENABLE_CLI)
 #include "misc.h"
 #include "cmdhelp.h"
@@ -28,6 +29,7 @@ static CmdReset reset;
 #ifdef ENABLE_EEPROM
 static CmdEeprom eeprom;
 #endif
+
 #ifdef ENABLE_DFU
 static CmdDfu dfu;
 #endif
@@ -436,7 +438,7 @@ uint8_t count = 0;
         }
 
         #ifndef ENABLE_DEBUG
-        reloadWatchDog();
+        WDT_Reset();
         #endif
         //DBG_PIN_HIGH;
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
@@ -508,7 +510,7 @@ extern "C" void app_setup(void){
 
     // Configure watchdog
     #ifndef ENABLE_DEBUG
-    enableWatchDog(WATCHDOG_TIME);
+    WDT_Init(WATCHDOG_TIME);
     #endif
 
     startTask(tskPsu, "PSU", NULL, configMINIMAL_STACK_SIZE, PRIORITY_LOW + 1);

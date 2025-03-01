@@ -119,6 +119,7 @@ $(LIB_PATH)/src/strfunc.c \
 $(DRIVERS_SOC)/gpio/gpio_stm32f1xx.c \
 $(DRIVERS_SOC)/dma/dma_stm32f1xx.c \
 $(DRIVERS_SOC)/spi/spi_stm32f1xx.c \
+$(DRIVERS_SOC)/wdt/wdt_stm32f1xx.c \
 
 USB_CDC_SOURCES =\
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
