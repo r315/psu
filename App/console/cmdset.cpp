@@ -27,9 +27,9 @@ char CmdSet::execute(int argc, char **argv){
         if(xstrcmp("on", param) == 0){
             app_setOutputEnable(true);
         }else if(xstrcmp("off", param) == 0){
-            app_setOutputEnable(false);            
+            app_setOutputEnable(false);
         }else{
-            console->print("output: %s\n", app_isOutputEnabled()?"on":"off");
+            console->printf("output: %s\n", app_isOutputEnabled()?"on":"off");
         }
         return CMD_OK;
     }

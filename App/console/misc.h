@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-#include <console.h>
+#include "console.h"
 #include "board.h"
 #include "psu.h"
 
@@ -22,27 +22,27 @@ public:
         return CMD_OK;
     }
     void help(void){}
-}; 
+};
 
 
 class CmdIo : public ConsoleCommand {
 	Console *console;
 public:
-    CmdIo() : ConsoleCommand("keys") {}	
+    CmdIo() : ConsoleCommand("keys") {}
 	void init(void *params) { console = static_cast<Console*>(params); }
 
 	void help(void) {
-		
+
 	}
 	char execute(int argc, char **argv){
         uint8_t data;
 #if defined(ENABLE_I2C)
-        data = EXPANDER_Read();
+        data = EXPANDER_Read(PSU_I2C_BUS);
 #else
         data = 0;
 #endif
-        console->print("IO: b%08b\n", data);
-        console->print("PWR: %s\n", GET_PWR_BTN ? "ON" : "OFF");
+        console->printf("IO: b%08b\n", data);
+        console->printf("PWR: %s\n", GET_PWR_BTN ? "ON" : "OFF");
 
         return CMD_OK;
     }

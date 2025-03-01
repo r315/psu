@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 #ifdef ENABLE_DFU
-#include <console.h>
+#include "console.h"
 
 //dfu-util -a 0 -s 0x08001000 -D ../build/psu_v3.bin -R
 

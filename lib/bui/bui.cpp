@@ -1,10 +1,10 @@
 #include "bui.h"
-#include "liblcd.h"
+#include "lib2d.h"
 #include "font.h"
 
 
-void BUI::handler(void *ptr){   
-    
+void BUI::handler(void *ptr){
+
     if(_active_presenter == NULL){
         return;
     }
@@ -24,7 +24,7 @@ void BUI::handler(void *ptr){
         buievt_e res = presenter->eventHandler(&evt);
         switch(res){
             case BUI_EVT_CHG_SCR:
-                presenter->destroy();            
+                presenter->destroy();
                 activateNextPresenter();
                 return;
 
@@ -48,7 +48,7 @@ void BUI::handler(void *ptr){
         if(wi != NULL){
             wi->draw();
         }
-        node = node->next;            
+        node = node->next;
     }
     // update model
     _model.tick();
@@ -63,7 +63,7 @@ BUI::BUI(BUIModel &m) : _model(m){
 /**
  * @brief Add a screen and make it active if there is no
  * active screen
- * 
+ *
  * \param screen : poiter to screen to be addded
  * \return : index given to the screen
  * */
@@ -74,9 +74,9 @@ uint8_t BUI::addPresenter(BUIPresenter *presenter){
     }
 
     presenter->setModel(&_model);
-    
+
     uint8_t idx = listInsert(&_presenter_list, (void *)presenter);
-    
+
     if(_active_presenter == NULL){
         activatePresenter(presenter);
     }
@@ -114,7 +114,7 @@ void BUI::activateNextPresenter(void){
         }
         head = head->next;
     }
-    
+
     if(head->next != NULL){
         pre = (BUIPresenter *)head->next->elem;
     }else{
@@ -131,7 +131,7 @@ uint16_t listInsert(struct list_node *head, void *elem){
     // Check for empty list
     if(head->elem == NULL){
         head->elem = (struct list_node*)elem;
-        return idx;        
+        return idx;
     }
 
     idx++;

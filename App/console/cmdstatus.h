@@ -6,16 +6,16 @@
 extern "C" {
 #endif
 
-#include <console.h>
+#include "console.h"
 
 class CmdStatus : public ConsoleCommand {
 	Console *console;
 public:
 	void init(void *params) { console = static_cast<Console*>(params); }
-    CmdStatus() : ConsoleCommand("status") {}	
+    CmdStatus() : ConsoleCommand("status") {}
 
 	void help(void);
-    
+
 	char execute(int argc, char **argv);
 };
 

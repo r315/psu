@@ -11,27 +11,27 @@ extern "C" {
 class CmdHelp : public ConsoleCommand {
 	Console *console;
 public:
-    CmdHelp() : ConsoleCommand("help") {}	
+    CmdHelp() : ConsoleCommand("help") {}
 	void init(void *params) { console = static_cast<Console*>(params); }
 
 	void help(void) {
-		console->putString("Available commands:\n\n");
-		
-		for (uint8_t i = 0; i < console->getCmdListSize(); i++) {			
-				console->print("\t%s\n", console->getCmdIndexed(i)->getName());
+		console->print("Available commands:\n\n");
+
+		for (uint8_t i = 0; i < console->getCmdListSize(); i++) {
+				console->printf("\t%s\n", console->getCmdIndexed(i)->getName());
 		}
-		console->putChar('\n');
+		console->printchar('\n');
 	}
 
 	char execute(int argc, char **argv) {
 		help();
 		return CMD_OK;
-	}	
+	}
 };
 
 class CmdReset : public ConsoleCommand {
 public:
-    CmdReset() : ConsoleCommand("reset") {}	
+    CmdReset() : ConsoleCommand("reset") {}
 	void init(void *params) { }
 
 	void help(void) { }
@@ -39,7 +39,7 @@ public:
 	char execute(int argc, char **argv) {
 		NVIC_SystemReset();
 		return CMD_OK;
-	}	
+	}
 };
 
 

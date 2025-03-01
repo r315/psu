@@ -4,7 +4,7 @@
 
 char *getOptValue(const char *opt, uint32_t argc, char **argv);
 
-void CmdAdc::help(void){ 
+void CmdAdc::help(void){
     console->print("\nUsage: adc <command>\n");
     console->print("Adc configuration\n\n");
     console->print("Commands:\n");
@@ -17,23 +17,23 @@ void CmdAdc::help(void){
 }
 
 void CmdAdc::printResolution(void){
-    console->print("Resolution: %.2fmv\n", ADC_GetResolution());
+    console->printf("Resolution: %.2fmv\n", ADC_GetResolution());
 }
 
 void CmdAdc::printCalibrationData(void){
-    console->print("Calibration data: %u\n", ADC_GetCalibration());
+    console->printf("Calibration data: %u\n", ADC_GetCalibration());
 }
 
 void CmdAdc::printChannelVoltage(uint8_t channel){
     if(channel < AN_MUX_NUM_CH){
-        console->print("CH %u:\t%umv\n", channel, psu_getChannelVoltage(channel));
+        console->printf("CH %u:\t%umv\n", channel, psu_getChannelVoltage(channel));
     }
 }
 
-char CmdAdc::execute(int argc, char **argv){ 
+char CmdAdc::execute(int argc, char **argv){
 int32_t intvalue;
 double floatvalue;
-    
+
     if(!xstrcmp(argv[1], "res")){
         printResolution();
         return CMD_OK;
@@ -41,16 +41,16 @@ double floatvalue;
 
     if(!xstrcmp(argv[1], "cal")){
         ADC_Calibrate();
-        printCalibrationData();        
+        printCalibrationData();
         return CMD_OK;
     }
 
     if(!xstrcmp(argv[1], "read")){
-        if(yatoi(argv[2], &intvalue)){
+        if(ia2i(argv[2], &intvalue)){
             printChannelVoltage(intvalue);
             return CMD_OK;
         }
-        
+
         for (size_t i = 0; i < AN_MUX_NUM_CH; i++){
             printChannelVoltage(i);
         }
@@ -58,14 +58,14 @@ double floatvalue;
     }
 
     if(!xstrcmp(argv[1], "plot")){
-        if(yatoi(argv[2], &intvalue)){
+        if(ia2i(argv[2], &intvalue)){
             static TickType_t xLastWakeTime;
-            while( !console->kbhit() ){
+            while( !console->available() ){
                 uint32_t count = g_mgr_eoc_count;
                 if(intvalue < 16){
-                    console->print("%d\r", psu_getChannelVoltage(intvalue));
+                    console->printf("%d\r", psu_getChannelVoltage(intvalue));
                 }else{
-                    console->print("%d,%d\r", psu_getChannelVoltage(0), psu_getChannelVoltage(1));
+                    console->printf("%d,%d\r", psu_getChannelVoltage(0), psu_getChannelVoltage(1));
                 }
                 while(count == g_mgr_eoc_count){
                     vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(50));
@@ -76,11 +76,11 @@ double floatvalue;
     }
 
     if(!xstrcmp(argv[1], "gain")){
-        if(yatoi(argv[2], &intvalue)){
-            if(fatoi(argv[3], &floatvalue)){
+        if(ia2i(argv[2], &intvalue)){
+            if(da2d(argv[3], &floatvalue)){
                 psu_setChannelGain(intvalue, floatvalue);
             }else{
-                console->print("%.2f\n", psu_getChannelGain(intvalue));
+                console->printf("%.2f\n", psu_getChannelGain(intvalue));
             }
             return CMD_OK;
         }

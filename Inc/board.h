@@ -6,10 +6,8 @@ extern "C" {
 #endif
 
 #include "button.h"
-#include "stdout.h"
 #include "stm32f1xx.h"
 #include "pcf8574.h"
-#include "liblcd.h"
 #include "st7735.h"
 #include "adcmgr.h"
 #include "gpio.h"
@@ -18,7 +16,7 @@ extern "C" {
 #include "eeprom.h"
 
 /**
- * Button 
+ * Button
  * */
 #define BUTTON_UP       (1<<2)
 #define BUTTON_DOWN     (1<<3)
@@ -30,14 +28,14 @@ extern "C" {
 #define BUTTON_PRE      (1<<7)
 
 #define BUTTON_HW_INIT
-#define BUTTON_HW_READ (255 - EXPANDER_Read())
+#define BUTTON_HW_READ (255 - EXPANDER_Read(PSU_I2C_BUS))
 #define BUTTON_MASK (BUTTON_LEFT | BUTTON_RIGHT | BUTTON_UP   | BUTTON_DOWN |\
                      BUTTON_SET  | BUTTON_OUT   | BUTTON_MODE | BUTTON_MEM)
 #define BUTTON_VALUE (uint8_t)BUTTON_GetValue()
 
 /**
  * Softpower pins PA1, PA2
- * 
+ *
  * PA1/ADC1 - Can measure voltage after DC jack
  * PA2 - Can detect if power key was pressed by reading ADC2.
  *       Setting this pin as digital output and writing low perform
@@ -51,7 +49,7 @@ extern "C" {
 #define SOFT_POWER_OFF                     \
 {                                          \
     GPIO_Write(PWR_BTN_PIN, GPIO_PIN_RESET); \
-    GPIO_Config(PWR_BTN_PIN, GPO_2MHZ);        \
+    GPIO_Config(PWR_BTN_PIN, GPO_LS);        \
     while(1);                              \
 }
 
@@ -67,13 +65,13 @@ extern "C" {
  * LEDS and debug pin
  * */
 #define LED_PIN         PC_13
-#define LED_INIT        GPIO_Config(LED_PIN, GPO_2MHZ)
+#define LED_INIT        GPIO_Config(LED_PIN, GPO_LS)
 #define LED_TOGGLE      HAL_GPIO_TogglePin(PIN_NAME_TO_PORT(LED_PIN), PIN_NAME_TO_PIN(LED_PIN))
 #define LED_OFF         GPIO_Write(LED_PIN, GPIO_PIN_SET)
 #define LED_ON          GPIO_Write(LED_PIN, GPIO_PIN_RESET)
 
 #define DBG_PIN         PB_6
-#define DBG_PIN_INIT    GPIO_Config(DBG_PIN, GPO_2MHZ);
+#define DBG_PIN_INIT    GPIO_Config(DBG_PIN, GPO_LS);
 #define DBG_PIN_HIGH    GPIO_Write(DBG_PIN, GPIO_PIN_SET)
 #define DBG_PIN_LOW     GPIO_Write(DBG_PIN, GPIO_PIN_RESET)
 #define DBG_PIN_TOGGLE  GPIO_Toggle(DBG_PIN)
@@ -90,7 +88,7 @@ extern "C" {
  * Output enable pin
  * */
 #define PSU_OE_PIN      PB_1
-#define PSU_OE_INIT     GPIO_Write(PSU_OE_PIN, GPIO_PIN_RESET); GPIO_Config(PSU_OE_PIN, GPO_2MHZ)
+#define PSU_OE_INIT     GPIO_Write(PSU_OE_PIN, GPIO_PIN_RESET); GPIO_Config(PSU_OE_PIN, GPO_LS)
 #define PSU_OE_SET(_X)  GPIO_Write(PSU_OE_PIN, _X)
 
 /**
@@ -104,10 +102,10 @@ extern "C" {
 
 #define MUX_SEL_INIT \
 {                                                                \
-    GPIO_Write(MUX_S0, GPIO_PIN_RESET); GPIO_Config(MUX_S0, GPO_2MHZ); \
-    GPIO_Write(MUX_S1, GPIO_PIN_RESET); GPIO_Config(MUX_S1, GPO_2MHZ); \
-    GPIO_Write(MUX_S2, GPIO_PIN_RESET); GPIO_Config(MUX_S2, GPO_2MHZ); \
-    GPIO_Write(MUX_S3, GPIO_PIN_RESET); GPIO_Config(MUX_S3, GPO_2MHZ); \
+    GPIO_Write(MUX_S0, GPIO_PIN_RESET); GPIO_Config(MUX_S0, GPO_LS); \
+    GPIO_Write(MUX_S1, GPIO_PIN_RESET); GPIO_Config(MUX_S1, GPO_LS); \
+    GPIO_Write(MUX_S2, GPIO_PIN_RESET); GPIO_Config(MUX_S2, GPO_LS); \
+    GPIO_Write(MUX_S3, GPIO_PIN_RESET); GPIO_Config(MUX_S3, GPO_LS); \
 }
 
 #define MUX_SELECT(CH) GPIO_PORT_Write(PORTA, (GPIO_PORT_Read(PORTA) & ~(0xF<<4)) | (CH) << 4)
@@ -123,8 +121,8 @@ extern "C" {
 #define GetTick HAL_GetTick
 #define DelayMs(d) HAL_Delay(d)
 
-static inline uint32_t ElapsedTicks(uint32_t start_ticks){ 
-    uint32_t current = GetTick(); 
+static inline uint32_t ElapsedTicks(uint32_t start_ticks){
+    uint32_t current = GetTick();
     //return (current > start_ticks) ? current - start_ticks : 0xFFFFFFFF - start_ticks + current;
     return current - start_ticks;
 }
@@ -161,19 +159,7 @@ void TICK_Init(void);
 #define LCD_W LCD_GetWidth()
 #define LCD_H LCD_GetHeight()
 
-/** 
- * stdout
- * */
-#if defined(ENABLE_USB_CDC) || defined(ENABLE_UART)
-extern StdOut stdio_ops;
-#define SERIAL_IO &stdio_ops
-#elif defined(ENABLE_DEBUG)
-extern stdout_t dummy_out;
-#define SERIAL_IO &dummy_out
-#endif
-
-
-#if defined(ENABLE_USB_CDC)
+#if defined(ENABLE_VCOM)
 void MX_USB_DEVICE_Init(void);
 #elif defined(ENABLE_UART)
 
@@ -181,27 +167,34 @@ void MX_USB_DEVICE_Init(void);
 #define UART_RX_PIN     PA_10
 
 #define IRQ_PRIORITY_LOW            5 //configLIBRARY_LOWEST_INTERRUPT_PRIORITY
-
-void UART_Init(void);
 #endif
+
+void serial_init(void);
+int serial_available(void);
+int serial_write(const char *data, int len);
+int serial_read(char *data, int len);
+void serial_receive(const uint8_t *data, uint16_t len);
 
 /**
  * I2C
- * 
+ *
  * PB10 SCL
  * PB11 SDA
  * */
-void I2C_Init(void);
+#define PSU_I2C_BUS     &psu_i2c_bus
+
+void BOARD_I2C_Init(void);
 //#define I2C_Read(_A, _D, _S) HAL_I2C_Master_Receive(&hi2c2, _A << 1, _D, _S, 100)
 //#define I2C_Write(_A, _D, _S) HAL_I2C_Master_Transmit(&hi2c2, _A << 1, _D, _S, 100)
 //#define I2C_WriteDMA(_A, _D, _S) i2cSendDMA(_A << 1, _D, _S)
-uint16_t I2C_Write(uint8_t addr, uint8_t *data, uint32_t size);
-uint16_t I2C_Read(uint8_t addr, uint8_t *dst, uint32_t size);
+uint16_t BOARD_I2C_Write(uint8_t addr, uint8_t *data, uint32_t size);
+uint16_t BOARD_I2C_Read(uint8_t addr, uint8_t *dst, uint32_t size);
+extern i2cbus_t psu_i2c_bus;
 
 
 /**
  * USB
- * 
+ *
  * Vile hack to reenumerate, physically _drag_ d+ low.
  * (need at least 2.5us to trigger usb disconnect)
  * */
@@ -216,7 +209,7 @@ static inline void reenumerate_usb(void){
 
 /**
  * PWM
- * 
+ *
  * PB4 PWM1 -> V set
  * PB5 PWM2 -> I set
  * PB0 PWM3 -> I load
@@ -234,25 +227,25 @@ static inline void reenumerate_usb(void){
  * Initialize PWM signal on PB5-4 and PB0 pins
  * Timer 3 is used to generate pwm signals with 10bit resolution,
  * which using a 72MHz system frequency results in a 35,156KHz frequency
- * 
+ *
  * \param  pwm1 : PWM1 initial value
  * \param  pwm2 : PWM2 initial value
  * \param  pwm3 : PWM3 initial value
- * */ 
+ * */
 void PWM_Init(uint16_t pwm1, uint16_t pwm2, uint16_t pwm3);
 
 /**
  * Sets duty cycle for the given channel
  * \param  ch     Channel 0-3 -> channel 1-4
  * \param  value  10bit value
- * 
+ *
  * \return none
  * */
 void PWM_Set(uint8_t, uint16_t);
 
 /**
  * Returns the current value for the given channel
- * \param  ch   
+ * \param  ch
  * \return 16bit pwm value
  * */
 uint16_t PWM_Get(uint8_t);
@@ -266,7 +259,7 @@ uint16_t PWM_Get(uint8_t);
  * ADC
  *
  * Convertions channel sequence:
- *       1st 2nd 3rd 4th 5th 
+ *       1st 2nd 3rd 4th 5th
  * ADC1:  0   1   2   3   5    V
  * ADC2:  4   4   4   4   6    I
  * */
@@ -305,7 +298,7 @@ uint16_t PWM_Get(uint8_t);
  * @brief Configure ADC in continuos mode using TIM2.
  * Simultaneous convertions are taken and transffered using DMA.
  * Single conversion is performed if adc mux is used
- * 
+ *
  * \param ms    Time between convertions
  **/
 void ADC_Init(uint16_t);
@@ -313,7 +306,7 @@ void ADC_Init(uint16_t);
 #ifndef USE_ADCMGR
 /**
  *  @brief Configure callback for end of transfer of ADC convertions
- * 
+ *
  * \param  cb : call back function for eot
  * \return none
  ************************************************************ */
@@ -323,13 +316,13 @@ void ADC_SetCallBack(void (*)(uint16_t*));
  * @brief Get the last performed convertions
  * Not thread safe
  * \param  none
- * \return uint16_t *last_adc_convertions 
+ * \return uint16_t *last_adc_convertions
  ************************************************************ */
 uint16_t *ADC_LastConvertion(void);
 #else
 /**
  * @brief Configure callback for end of ADC convertion
- * 
+ *
  * \param  cb : call back function for eoc
  * \return none
  **/
@@ -337,15 +330,15 @@ void ADC_SetCallBack(void (*)(uint16_t));
 
 /**
  * @brief Pause ADC conversions
- * 
+ *
  **/
 void ADC_Start(void);
 void ADC_Stop(void);
 
 /**
- * @brief Perform adc calibration and get resolution based on 
+ * @brief Perform adc calibration and get resolution based on
  * internal 1.2V reference
- * 
+ *
  * */
 void ADC_Calibrate(void);
 
@@ -357,7 +350,7 @@ uint32_t ADC2_Read(uint8_t ch);
 
 /**
  * RTC
- */  
+ */
 void RTC_Init(void);
 
 /**
@@ -372,7 +365,7 @@ void reloadWatchDog(void);
 void BOARD_Init(void);
 
 void BOARD_Error_Handler(const char *file, int line);
- 
+
 #ifdef __cplusplus
 }
 #endif

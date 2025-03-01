@@ -6,12 +6,12 @@
 extern "C" {
 #endif
 
-#include <console.h>
+#include "console.h"
 
 class CmdEeprom : public ConsoleCommand{
     Console *console;
     void dumpAddress(uint16_t addr);
-    
+
 public:
     void init(void *params) { console = static_cast<Console*>(params); }
     CmdEeprom () : ConsoleCommand("eeprom") { }

@@ -1,28 +1,31 @@
 
-#include <stdout.h>
 #include "board.h"
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
 #include "usbd_cdc_if.h"
 #include "spi.h"
+#include "console.h"
 
 #if defined(ENABLE_I2C)
 static I2C_HandleTypeDef hi2c2;
+i2cbus_t psu_i2c_bus;
 #endif
 
 static spibus_t lcd_spi;
 
 void BOARD_Init(void){
-    
+
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPCEN;
-    
+
     LED_INIT;
     PSU_OE_INIT;
     MUX_SEL_INIT;
     SPOWER_INIT;
     DBG_PIN_INIT;
-        
+
+    serial_init();
+
     lcd_spi.bus = SPI_BUS1;
     lcd_spi.freq = 40000;
     lcd_spi.flags = SPI_IDLE;
@@ -38,19 +41,21 @@ void BOARD_Init(void){
     GPIOB->BSRR = (5 << 12); // CS, RS
     GPIOB->BRR  = (1 << 3);  // BKL
 
-    GPIO_Config(PB_15, GPO_AF | GPO_10MHZ);
-    GPIO_Config(PB_13, GPO_AF | GPO_10MHZ);
-    GPIO_Config(PB_12, GPO_10MHZ);
-    GPIO_Config(PB_3,  GPO_10MHZ);
-    GPIO_Config(PB_14, GPO_10MHZ);
+    GPIO_Config(PB_15, GPO_MS_AF);
+    GPIO_Config(PB_13, GPO_MS_AF);
+    GPIO_Config(PB_12, GPO_MS);
+    GPIO_Config(PB_3,  GPO_MS);
+    GPIO_Config(PB_14, GPO_MS);
 
 #if defined(ENABLE_I2C)
-    I2C_Init();
+    psu_i2c_bus.bus_num = I2C_BUS2;
+    psu_i2c_bus.speed = 100000;
+    BOARD_I2C_Init();
 #endif
     RTC_Init();
 
 #if defined(ENABLE_UI)
-    EXPANDER_Init();
+    EXPANDER_Init(PSU_I2C_BUS);
     LCD_Init(&lcd_spi);
     LCD_SetOrientation(LCD_REVERSE_LANDSCAPE);
 #endif
@@ -58,7 +63,7 @@ void BOARD_Init(void){
 
 /**
  * @brief Time base configuration.
- * SysTick is assigned to FreeRTOS, 
+ * SysTick is assigned to FreeRTOS,
  * Timer 4 is used to generate a 1ms time base instead
  * */
 void TICK_Init(void){
@@ -83,13 +88,13 @@ void TIM4_IRQHandler(void){
 
 /**
  * PWM Driver
- * 
+ *
  * PWM1 - PB4
  * PWM2 - PB5
  * PWM3 - PB0
- * 
+ *
  * \param initial - startup duty for each channel
- * 
+ *
  * */
 void PWM_Init(uint16_t pwm1, uint16_t pwm2, uint16_t pwm3){
 
@@ -100,7 +105,7 @@ void PWM_Init(uint16_t pwm1, uint16_t pwm2, uint16_t pwm3){
 
     TIM3->CR1 = TIM_CR1_ARPE;
     TIM3->CCMR1 = (6<<TIM_CCMR1_OC2M_Pos) | (6<<TIM_CCMR1_OC1M_Pos) | (TIM_CCMR1_OC2PE) | (TIM_CCMR1_OC1PE);  // PWM Mode 1
-    TIM3->CCMR2 = (6<<TIM_CCMR2_OC3M_Pos) | (TIM_CCMR2_OC3PE); 
+    TIM3->CCMR2 = (6<<TIM_CCMR2_OC3M_Pos) | (TIM_CCMR2_OC3PE);
     TIM3->CCER = TIM_CCER_CC3E | TIM_CCER_CC2E | TIM_CCER_CC1E;
     TIM3->PSC = 1; // Timer3 freq = SystemClock / 2
 
@@ -108,14 +113,14 @@ void PWM_Init(uint16_t pwm1, uint16_t pwm2, uint16_t pwm3){
     TIM3->CCR1 = pwm1;
     TIM3->CCR2 = pwm2;
     TIM3->CCR3 = pwm3;
-    
+
     TIM3->CR1 |= TIM_CR1_CEN;     // Start pwm before enable outputs
 
     /* Configure PWM pins */
     GPIOB->CRL &= ~(0xFF000F << 0); // PB5-PB4, PB0
     GPIOB->CRL |= (0xAA000A << 0);
     // remap PB5-PB4
-    AFIO->MAPR |= (2 << 10);    
+    AFIO->MAPR |= (2 << 10);
 }
 
 /**
@@ -125,14 +130,14 @@ void PWM_Init(uint16_t pwm1, uint16_t pwm2, uint16_t pwm3){
  * */
 void PWM_Set(uint8_t ch, uint16_t newvalue){
 
-    if(newvalue >  PWM_MAX_VALUE || newvalue < PWM_MIN_VALUE)    
+    if(newvalue >  PWM_MAX_VALUE || newvalue < PWM_MIN_VALUE)
         return;
 
     ((uint32_t*)&TIM3->CCR1)[ch & 3] = newvalue;
 }
 
 uint16_t PWM_Get(uint8_t ch){
-    uint32_t *ccr = (uint32_t*)&TIM3->CCR1;     
+    uint32_t *ccr = (uint32_t*)&TIM3->CCR1;
     return ccr[ch&3];
 }
 
@@ -144,67 +149,67 @@ uint16_t PWM_Get(uint8_t ch){
 #define STDOUT_QUEUE_LENGTH 128
 #define STDIO_QUEUE_ITEM_SIZE 1
 
-static QueueHandle_t stdin_queue;
-static QueueHandle_t stdout_queue;
+static QueueHandle_t serial_rx_queue;
+#if defined(ENABLE_UART)
+static QueueHandle_t serial_tx_queue;
+#endif
 
-// called from ISR
-void stdin_queue_char(uint8_t *c){
-    xQueueSendToBackFromISR(stdin_queue, c, NULL);
+int serial_available(void)
+{
+    return STDIN_QUEUE_LENGTH - uxQueueSpacesAvailable(serial_rx_queue);
 }
 
-static int stdin_try_dequeue(char *c){
-    if(stdin_queue == NULL)
-        return 0;
-    return xQueueReceive(stdin_queue, c, 0) == pdPASS;
-}
+void serial_init(void)
+{
+    serial_rx_queue = xQueueCreate( STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE );
+    configASSERT( serial_rx_queue != NULL );
 
-static char stdin_wait_char(void){
-    char c;
-    xQueueReceive(stdin_queue, &c, portMAX_DELAY);
-    return c;
-}
-
-int stdin_queued(void){
-    return STDIN_QUEUE_LENGTH - uxQueueSpacesAvailable(stdin_queue);
-}
-
-static void stdio_init(void){
-    stdin_queue = xQueueCreate( STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE );
-    configASSERT( stdin_queue != NULL );
-
-    stdout_queue = xQueueCreate( STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE );
-    configASSERT( stdout_queue != NULL );
-
-    #if defined(ENABLE_USB_CDC)
+    #if defined(ENABLE_VCOM)
     MX_USB_DEVICE_Init();
     #elif defined(ENABLE_UART)
+    serial_tx_queue = xQueueCreate( STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE );
+    configASSERT( serial_tx_queue != NULL );
+
     UART_Init();
     #endif
 }
 #endif
 
-#ifdef ENABLE_USB_CDC
-static void putAndRetry(uint8_t *data, uint16_t len){
-uint32_t retries = 1000;
+
+int serial_write(const char *data, int len)
+{
+    uint32_t retries = 1000;
 	while(retries--){
-		if(	CDC_Transmit_FS(data, len) == USBD_OK)
+        #ifdef ENABLE_VCOM
+		if(CDC_Transmit_FS((uint8_t*)data, len) == USBD_OK)
 			break;
+        #else
+        while(len--){
+            xQueueSendToBack(serial_tx_queue, data++, pdMS_TO_TICKS(100));
+        }
+        USART1->CR1 |= USART_CR1_TXEIE;
+        #endif
 	}
+    return len;
 }
 
-static void stdout_enqueue_char(char c){
-	putAndRetry((uint8_t*)&c, 1);
+int serial_read(char *data, int len)
+{
+    uint32_t count = len;
+    while(count--){
+        while(xQueueReceive(serial_rx_queue, data++, portMAX_DELAY));
+    }
+
+    return len;
 }
 
-static void stdout_puts(const char *s){
-uint16_t len = 0;
-	
-	while( *((const char*)(s + len)) != '\0'){
-		len++;	
-	}
-	putAndRetry((uint8_t*)s, len);
+// Receive data from USB
+void serial_receive(const uint8_t *data, uint16_t len)
+{
+    while(len--){
+        while(xQueueSendToBack(serial_rx_queue, data++, pdMS_TO_TICKS(100)));
+    }
 }
-#endif
 
 #if defined(ENABLE_UART)
 void UART_Init(void){
@@ -212,7 +217,7 @@ void UART_Init(void){
     RCC->APB2RSTR |= RCC_APB2RSTR_USART1RST;
     RCC->APB2RSTR &= ~RCC_APB2RSTR_USART1RST;
 
-    pinInit(UART_TX_PIN, GPO_AF | GPO_2MHZ);  // TX
+    pinInit(UART_TX_PIN, GPO_LS_AF);  // TX
     pinInit(UART_RX_PIN, GPI_PU);            // RX
 
     USART1->BRR = 0x271;        //115200
@@ -220,56 +225,31 @@ void UART_Init(void){
 
     //USART1->CR1 |= USART_CR1_UE;
     //while((USART1->SR & USART_SR_TC) == 0);
-    //NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );  
+    //NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );
     HAL_NVIC_SetPriority(USART1_IRQn, IRQ_PRIORITY_LOW ,0);
     NVIC_EnableIRQ(USART1_IRQn);
 }
 
-static void stdout_enqueue_char(char c){
-    xQueueSendToBack(stdout_queue, &c, pdMS_TO_TICKS(100));
-    USART1->CR1 |= USART_CR1_TXEIE;
-}
-
-static void stdout_puts(const char *s){
-    while(*s){
-        xQueueSendToBack(stdout_queue, s++, pdMS_TO_TICKS(100));
-    }
-    USART1->CR1 |= USART_CR1_TXEIE;
-}
-
-void USART1_IRQHandler(void){
-volatile uint32_t status = USART1->SR;
-uint8_t data;
+void USART1_IRQHandler(void)
+{
+    volatile uint32_t status = USART1->SR;
 
     // Data received
     if (status & USART_SR_RXNE) {
         USART1->SR &= ~USART_SR_RXNE;
-        stdin_queue_char((uint8_t*)&USART1->DR);
+        xQueueSendToBackFromISR(serial_rx_queue, (uint8_t*)&USART1->DR, NULL);
     }
-    
-    // Check if data transmiter if empty 
+
+    // Check if data transmiter if empty
     if (status & USART_SR_TXE) {
         USART1->SR &= ~USART_SR_TXE;	          // clear interrupt
         // Check if data is available to send
-        if(xQueueReceiveFromISR( stdout_queue, &data, NULL) == pdPASS){        
-            USART1->DR = data;            
-        }else{
+        if(xQueueReceiveFromISR(serial_tx_queue, (uint8_t*)&USART1->DR, NULL) != pdPASS){
             // No more data, disable interrupt
             USART1->CR1 &= ~USART_CR1_TXEIE;      // disable TX interrupt if nothing to send
         }
-    }    
+    }
 }
-#endif
-
-#if defined(ENABLE_USB_CDC) || defined(ENABLE_UART)
-StdOut stdio_ops = {
-    .init = stdio_init,
-    .xgetchar = stdin_wait_char,
-    .xputchar = stdout_enqueue_char,
-    .xputs = stdout_puts,
-    .getCharNonBlocking = stdin_try_dequeue,
-    .kbhit = stdin_queued
-};
 #endif
 
 /**
@@ -339,8 +319,8 @@ static void adcSampleTime(ADC_TypeDef *adc, uint16_t ch, uint16_t time){
     }
 }
 /**
- * @brief Perform adc internal calibration and 
- * calculate resolution based on the 1.20V 
+ * @brief Perform adc internal calibration and
+ * calculate resolution based on the 1.20V
  * internal reference
  * */
 static void adc_calibrate(adchandle_t *hadc){
@@ -358,18 +338,18 @@ uint32_t cr1, cr2, sqr1, sqr3;
 
     // Perform ADC calibration
     hadc->adc->CR2 |= ADC_CR2_CAL;
-    while(hadc->adc->CR2 & ADC_CR2_CAL){               
+    while(hadc->adc->CR2 & ADC_CR2_CAL){
         __asm volatile("nop");
     }
 
     hadc->calibration_code = hadc->adc->DR;
     // Set calibration flag
-    hadc->flags.cal = 1;    
+    hadc->flags.cal = 1;
     // select VREFINT channel for first conversion
     hadc->adc->SQR3 = (ADC_VREFINT_CHANNEL << 0);
     // Ensure one conversion
-    hadc->adc->SQR1 = 0; 
-    // wake up Vrefint 
+    hadc->adc->SQR1 = 0;
+    // wake up Vrefint
     hadc->adc->CR2 |= ADC_CR2_TSVREFE;
     // wait power up
     for(int t = 1000; t > 0; t--){
@@ -401,13 +381,13 @@ static void (*eotcb)(uint16_t*);
 // Each index holds two conversion results
 static uint32_t adcres[ADC_SEQ_LEN];
 /* ***********************************************************
- * ADC is triggered by TIM2 TRGO and performs dual 
- * simultaneous convertion on regular simultaneous mode. 
- * It performs the conversion of 4 channels and transfers 
+ * ADC is triggered by TIM2 TRGO and performs dual
+ * simultaneous convertion on regular simultaneous mode.
+ * It performs the conversion of 4 channels and transfers
  * the result to memory using DMA
- * At the end of convertion, optionaly a callback function 
+ * At the end of convertion, optionaly a callback function
  * may be invoked
- * 
+ *
  * \param ms    Time between convertions
  ************************************************************ */
 void ADC_Init(uint16_t ms){
@@ -423,7 +403,7 @@ void ADC_Init(uint16_t ms){
                             DMA_CCR_PSIZE_1 |   // 32bit src size
                             DMA_CCR_MINC |      // increment memory pointer after transference
                             DMA_CCR_CIRC |      // Circular mode
-                            DMA_CCR_TCIE;       // Enable end of transfer interrupt    
+                            DMA_CCR_TCIE;       // Enable end of transfer interrupt
     DMA1_Channel1->CCR |=   DMA_CCR_EN;
 
      /* Configure Timer 2 */
@@ -454,7 +434,7 @@ void ADC_Init(uint16_t ms){
             ADC_CR2_EXTTRIG  |              // Only the rising edge of external signal can start the conversion
             //ADC_CR2_EXTSEL_2 |              // 0b100 Select TIM3_TRGO as Trigger source
             ADC_CR2_EXTSEL_1 |              // 0b011 Select TIM2_CC2 Event
-            ADC_CR2_EXTSEL_0 |              // 
+            ADC_CR2_EXTSEL_0 |              //
             ADC_CR2_DMA;                    // Enable DMA Request
 
     ADC1->CR1 = ADC_CR1_DUALMOD_SIMULTANEOUS |
@@ -468,11 +448,11 @@ void ADC_Init(uint16_t ms){
                  ADC_SQR3_SQ5_(ADC_CH_V_LOAD);
 
     ADC1->SMPR2 = ADC_SMPR2_(ADC_CH_VOLTAGE1, 7) |      // set sample time to 239.5 cycles
-                  ADC_SMPR2_(ADC_CH_VOLTAGE2, 7) | 
-                  ADC_SMPR2_(ADC_CH_VOLTAGE3, 7) | 
-                  ADC_SMPR2_(ADC_CH_VOLTAGE4, 7) | 
+                  ADC_SMPR2_(ADC_CH_VOLTAGE2, 7) |
+                  ADC_SMPR2_(ADC_CH_VOLTAGE3, 7) |
+                  ADC_SMPR2_(ADC_CH_VOLTAGE4, 7) |
                   ADC_SMPR2_(ADC_CH_V_LOAD, 7);
-                
+
     /* Configure ADC 2 current measuments*/
     RCC->APB2ENR  |= RCC_APB2ENR_ADC2EN;    // Enable Adc2
     RCC->APB2RSTR |= RCC_APB2ENR_ADC2EN;
@@ -485,13 +465,13 @@ void ADC_Init(uint16_t ms){
 				ADC_CR2_ADON;
 
     ADC2->SQR1 = ADC_SQR1_L_(ADC_SEQ_LEN - 1);           // number of channels on sequence
-    ADC2->SQR3 = ADC_SQR3_SQ1_(ADC_CH_CURRENT) |         // first convertion CH1, second CH3 
+    ADC2->SQR3 = ADC_SQR3_SQ1_(ADC_CH_CURRENT) |         // first convertion CH1, second CH3
                  ADC_SQR3_SQ2_(ADC_CH_CURRENT) |
                  ADC_SQR3_SQ3_(ADC_CH_CURRENT) |
                  ADC_SQR3_SQ4_(ADC_CH_CURRENT) |
                  ADC_SQR3_SQ5_(ADC_CH_I_LOAD);
 
-    ADC2->SMPR2 = ADC_SMPR2_(ADC_CH_CURRENT, 7) |      // CH1 and CH3 sample time, 239.5 cycles                  
+    ADC2->SMPR2 = ADC_SMPR2_(ADC_CH_CURRENT, 7) |      // CH1 and CH3 sample time, 239.5 cycles
                   ADC_SMPR2_(ADC_CH_I_LOAD, 7);
 
     ADC2->CR1 = ADC_CR1_SCAN;
@@ -535,12 +515,12 @@ void ADC_SetCallBack(void (*cb)(uint16_t*)){
 #else /* USE_ADCMUX */
 #if defined(TIMED_ADC)
 /* ***********************************************************
- * @brief ADC is triggered by TIM2 TRGO and performs single convertion 
- * on ADCMUX_CHANNEL. 
- * 
+ * @brief ADC is triggered by TIM2 TRGO and performs single convertion
+ * on ADCMUX_CHANNEL.
+ *
  * Upon conversion the EOC flag is set and interrupt handler is called,
  * if a EOC callback is configured, it is called passing the conversion result
- * 
+ *
  * @param ms : Time between convertions
  ************************************************************ */
 void ADC_Init(uint16_t ms){
@@ -571,16 +551,16 @@ void ADC_Init(uint16_t ms){
 
     adcSampleTime(hadc1.adc, ADC_VREFINT_CHANNEL, 3);  // Sample time 3 => 28.5 cycles.
     adcSampleTime(hadc1.adc, ADC_MUX_CH, 7);           // set sample time to 239.5 cycles
-    
+
     // Perform start up calibration
     adc_calibrate(&hadc1);
 
     ADC1->CR1 = ADC_CR1_EOCIE;
 
     ADC1->SQR1 = ADC_SQR1_L_(1 - 1);            // number of channels on sequence
-    ADC1->SQR3 = ADC_SQR3_SQ1_(ADC_MUX_CH);     // Set channel to be converted                
+    ADC1->SQR3 = ADC_SQR3_SQ1_(ADC_MUX_CH);     // Set channel to be converted
 
-    hadc1.cb = NULL;                            // No callback configured    
+    hadc1.cb = NULL;                            // No callback configured
 
     NVIC_EnableIRQ(ADC1_2_IRQn);
 
@@ -611,12 +591,12 @@ void ADC_Stop(){
     TIM2->CR1 &= ~(TIM_CR1_CEN);
 }
 #else /* TIMED_ADC */
-/** 
-* @brief ADC 1 is triggered by software and performs a single conversion on 
+/**
+* @brief ADC 1 is triggered by software and performs a single conversion on
 * the channel defined by ADCMUX_CHANNEL.
 * After the conversion the EOC flag is set and interrupt handler is called,
 * if a callback is set, it is called with the conversion result
-* 
+*
 * \param ms : not used
 * */
 void ADC_Init(uint16_t ms){
@@ -630,19 +610,19 @@ void ADC_Init(uint16_t ms){
     ADC1->CR2  = ADC_CR2_ADON;                  // Turn on ADC
     ADC1->CR2 |= ADC_CR2_EXTTRIG  |             // required for sw start
                  ADC_CR2_EXTSEL_SWSTART;        // Software start
-                
+
     adcSampleTime(hadc1.adc, ADC_VREFINT_CHANNEL, 3);      // Sample time 3 => 28.5 cycles.
     adcSampleTime(hadc1.adc, ADC_MUX_CH, 7);           // set sample time to 239.5 cycles
 
     // Perform start up calibration
     adc_calibrate(&hadc1);
-    
+
     ADC1->CR1 = ADC_CR1_EOCIE;                  // Enable end of convertion interrupt
 
     ADC1->SQR1 = ADC_SQR1_L_(1 - 1);            // number of channels on sequence
-    ADC1->SQR3 = ADC_SQR3_SQ1_(ADC_MUX_CH);     // Set channel to be converted                
-    
-    hadc1.cb = NULL;                             // No callback configured    
+    ADC1->SQR3 = ADC_SQR3_SQ1_(ADC_MUX_CH);     // Set channel to be converted
+
+    hadc1.cb = NULL;                             // No callback configured
 
     NVIC_EnableIRQ(ADC1_2_IRQn);
 
@@ -661,7 +641,7 @@ void ADC_Init(uint16_t ms){
     adcSampleTime(hadc2.adc, ADC_PWR_SW_CH, 7);    // set sample time to 239.5 cycles
 
     ADC2->SQR1 = ADC_SQR1_L_(1 - 1);            // number of channels on sequence
-    ADC2->SQR3 = ADC_SQR3_SQ1_(ADC_PWR_SW_CH);  // Set channel to be converted              
+    ADC2->SQR3 = ADC_SQR3_SQ1_(ADC_PWR_SW_CH);  // Set channel to be converted
 
 }
 
@@ -680,7 +660,7 @@ void ADC_SetCallBack(void (*cb)(uint16_t)){
 }
 
 /**
- * 
+ *
  * */
 void ADC1_2_IRQHandler(void){
     if(ADC1->SR & ADC_SR_EOC){
@@ -704,7 +684,7 @@ uint32_t ADC2_Read(uint8_t ch){
 
 /**
  * RTC
- * 
+ *
  */
 #define RTC_ONE_SECOND_PRESCALER        0x7FFF
 #define RTC_TIMEOUT                     1000
@@ -735,17 +715,16 @@ uint32_t cnt;
 * @brief I2C MSP Initialization
 * This function configures the hardware resources used in this example
 * PB10     ------> I2C2_SCL
-* PB11     ------> I2C2_SDA 
+* PB11     ------> I2C2_SDA
 * @param hi2c: I2C handle pointer
 * @retval None
 */
 #if defined(ENABLE_I2C)
-void I2C_Init(void){
-
+void BOARD_I2C_Init(void){
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    GPIO_Config(PB_10, GPO_AF_OD | GPO_10MHZ);
-    GPIO_Config(PB_11, GPO_AF_OD | GPO_10MHZ);
+    GPIO_Config(PB_10, GPO_MS_AF_OD);
+    GPIO_Config(PB_11, GPO_MS_AF_OD);
 
     __HAL_RCC_I2C2_CLK_ENABLE();
     HAL_NVIC_SetPriority(I2C2_EV_IRQn, 0, 0);
@@ -768,11 +747,11 @@ void I2C_Init(void){
     }
 }
 
-uint16_t I2C_Write(uint8_t addr, uint8_t *data, uint32_t size){
+uint16_t I2C_Write(i2cbus_t *i2c, uint8_t addr, const uint8_t *data, uint16_t size){
 
     taskENTER_CRITICAL();
     {
-        if(HAL_I2C_Master_Transmit(&hi2c2, addr << 1, data, size, 100) != HAL_OK){
+        if(HAL_I2C_Master_Transmit(&hi2c2, addr << 1, (uint8_t*)data, size, 100) != HAL_OK){
             DBG_PRINT("Fail write to I2C\n");
             return 0;
         }
@@ -781,8 +760,8 @@ uint16_t I2C_Write(uint8_t addr, uint8_t *data, uint32_t size){
     return size;
 }
 
-uint16_t I2C_Read(uint8_t addr, uint8_t *data, uint32_t size){
-    
+uint16_t I2C_Read(i2cbus_t *i2c, uint8_t addr, uint8_t *data, uint16_t size){
+
     taskENTER_CRITICAL();
     {
         if(HAL_I2C_Master_Receive(&hi2c2, addr << 1, data, size, 100) != HAL_OK){
@@ -797,7 +776,7 @@ uint16_t I2C_Read(uint8_t addr, uint8_t *data, uint32_t size){
 /**
  * @brief Configure watchdog timer according a given interval
  *  in wich the timer will expire and a system reset is performed
- * 
+ *
  * @param interval : Interval in wich the watchdog will perform a system reset
  * */
 void enableWatchDog(uint32_t interval){
@@ -808,7 +787,7 @@ uint8_t pres = 0;
 
     if(interval > 0xFFFF){
         interval = 0xFFFF;
-    }    
+    }
 
     while( interval > timeout){
         timeout <<= 1;
@@ -829,7 +808,7 @@ uint8_t pres = 0;
 /**
  * @brief Watchdog reset that mus be called before the interval
  *          specified on configuration
- * 
+ *
  * */
 void reloadWatchDog(void){
     IWDG->KR = 0xAAAA; // Reload RLR on counter

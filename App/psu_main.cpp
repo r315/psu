@@ -1,6 +1,5 @@
 
-#include <console.h>
-
+#include "console.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -106,8 +105,8 @@ const float default_an_channel_gain[] = {
 
 /**
  * @brief Callback from adc manager
- * 
- * \param data : pointer to raw adc data. The number of results is equal 
+ *
+ * \param data : pointer to raw adc data. The number of results is equal
  * to the size of the conversion sequence, and only valid until the next call tp ADCMGR_Start()
  *
  * */
@@ -141,7 +140,7 @@ static uint8_t app_calcCksum(uint8_t *src, uint16_t len){
  * PSU public control functions
  * */
 void psu_poweroff(void){
-    
+
     psu_setOutputEnable(FALSE);
     psu_setLoadCurrent(0);
 #if defined(ENABLE_UI)
@@ -179,8 +178,8 @@ void app_setLoadEnable(uint8_t en){
 
 /**
  * @brief Get channel voltage
- * 
- * \param channel : Channel 
+ *
+ * \param channel : Channel
  * \return : voltage in mv
  * */
 uint32_t psu_getChannelVoltage(uint8_t channel){
@@ -200,7 +199,7 @@ uint32_t psu_getOutputVoltage(void){
     return psu_getChannelVoltage(VOUT_MUX_CH);
 }
 
-void psu_setOutputVoltage(uint32_t mv){    
+void psu_setOutputVoltage(uint32_t mv){
     mapAndSetPwm(mv, MIN_VOLTAGE, MAX_VOLTAGE, PWM_CH_VOLTAGE);
 }
 
@@ -245,7 +244,7 @@ float psu_getChannelGain(uint8_t ch){
 
 void psu_setChannelGain(uint8_t ch, float g){
     if(ch < AN_MUX_NUM_CH){
-        psu.an_channel_gain[ch] = g;        
+        psu.an_channel_gain[ch] = g;
     }
 }
 
@@ -322,14 +321,14 @@ void app_defaultState(void){
 
 /**
  * @brief
- * 
+ *
  * */
 uint8_t app_restoreState(void){
 #ifdef ENABLE_EEPROM
     uint16_t size = (uint8_t*)&psu.cksum - (uint8_t*)&psu;
 
-    EEPROM_Read(EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1);
-    
+    EEPROM_Read(PSU_I2C_BUS, EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1);
+
     uint8_t cksum = app_calcCksum((uint8_t*)&psu, size);
     if( psu.cksum != cksum){
         DBG_PRINT("Invalid data on EEPROM, using default values!\n");
@@ -353,7 +352,7 @@ uint8_t app_saveState(void){
     psu.cksum = app_calcCksum((uint8_t*)&psu, size);
     // Read cksum from eeprom and compare with previous calculated cksum
     uint8_t cksum;
-    EEPROM_Read(EEPROM_APP_OFFSET + size, (uint8_t*)&cksum, 1);
+    EEPROM_Read(PSU_I2C_BUS, EEPROM_APP_OFFSET + size, (uint8_t*)&cksum, 1);
     DBG_PRINT("EEPROM cksum: %2X, settings cksum: %2X\n", cksum, psu.cksum);
     if(cksum == psu.cksum){
         // No changes made on settings
@@ -361,7 +360,7 @@ uint8_t app_saveState(void){
     }
 
     DBG_PRINT("Writting %u bytes to EEPROM\n", size + 1);
-    if(!EEPROM_Write(EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1)){
+    if(!EEPROM_Write(PSU_I2C_BUS, EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1)){
         return 0;
     }
     DBG_PRINT("done\n");
@@ -381,19 +380,19 @@ void tskBui(void *ptr){
     BUIPresenter *presenter_preset = new PresenterPreset();
     BUIPresenter *presenter_charger = new PresenterCharger();
     BUIPresenter *presenter_load = new PresenterLoad();
-    
-    DRAW_FillRect(0, 0, LCD_W, LCD_H, LCD_BLACK);    
+
+    DRAW_FillRect(0, 0, LCD_W, LCD_H, LCD_BLACK);
     char *text = (char*)bui_malloc(sizeof(PSU_VERSION));
     xsprintf(text, "%s", PSU_VERSION);
-    DRAW_Text(100, 70, text, &defaultFont, (const uint16_t[]){LCD_BLACK, LCD_GREEN});    
+    DRAW_Text(100, 70, text, &defaultFont, (const uint16_t[]){LCD_BLACK, LCD_GREEN});
     bui_free(text);
     // Wait for lcd clear to end
     vTaskDelay(100);
     LCD_Bkl(TRUE);
     vTaskDelay(1000);
 
-    BUI bui(model_psu);   
-    
+    BUI bui(model_psu);
+
     bui.addPresenter(presenter_psu);
     bui.addPresenter(presenter_preset);
     bui.addPresenter(presenter_charger);
@@ -410,7 +409,7 @@ void tskBui(void *ptr){
  * */
 void tskPsu(void *ptr){
 static TickType_t xLastWakeTime;
-uint8_t count = 0;   
+uint8_t count = 0;
 
     ADCMGR_Start();
 #if defined(ENABLE_UI)
@@ -418,10 +417,10 @@ uint8_t count = 0;
 #endif
     while(1){
         //DBG_PIN_LOW;
-        #if defined(ENABLE_SOFT_POWER)        
+        #if defined(ENABLE_SOFT_POWER)
         app_processPowerButton();
         #endif
-        
+
         if(GET_AD_FLAG){
             #if defined(ENABLE_UI)
             model_psu.update();
@@ -435,7 +434,7 @@ uint8_t count = 0;
         }else{
             LED_OFF;
         }
-        
+
         #ifndef ENABLE_DEBUG
         reloadWatchDog();
         #endif
@@ -446,23 +445,25 @@ uint8_t count = 0;
 
 #if defined(ENABLE_CLI)
 
-#if !(defined(ENABLE_USB_CDC) || defined(ENABLE_UART))
+#if !(defined(ENABLE_VCOM) || defined(ENABLE_UART))
 #error "NO SERIAL IO DEFINED"
 #endif
 /**
  * @brief Task to handle serial commands
  * */
-void tskCmdLine(void *ptr){
-    
-    stdout_t *stdio_port = (stdout_t*)ptr;
-
-    stdio_port->init();
+void tskCmdLine(void *ptr)
+{
+    stdout_t stdio_ops = {
+        .available = serial_available,
+        .read = serial_read,
+        .write = serial_write
+    };
 
     #ifdef ENABLE_DEBUG
     dbg_init(SERIAL_IO);
     #endif
 
-    console.init(stdio_port, CONSOLE_PROMPT);
+    console.init(&stdio_ops, CONSOLE_PROMPT);
     console.registerCommandList(commands);
 
     // wait for usb to start if connected
@@ -470,10 +471,9 @@ void tskCmdLine(void *ptr){
 
     console.cls();
 
-    console.print("PSU v%s\n", PSU_VERSION);
-    console.print("FreeRTOS %s\n", tskKERNEL_VERSION_NUMBER);
-    console.print("Free mem: %u bytes\n", xPortGetFreeHeapSize());
-    console.print("\n");
+    console.printf("PSU v%s\n", PSU_VERSION);
+    console.printf("FreeRTOS %s\n", tskKERNEL_VERSION_NUMBER);
+    console.printf("Free mem: %u bytes\n\n", xPortGetFreeHeapSize());
 
     while(1){
         console.process();
@@ -486,17 +486,17 @@ void tskCmdLine(void *ptr){
  * */
 static void startTask(void(*task)(void*), const char *name, void *args, uint32_t stack, int priority){
     if(xTaskCreate( task, name, stack, args, priority, NULL ) != pdPASS){
-        DBG_PRINT("FAIL: to start task %s\n", name);    
+        DBG_PRINT("FAIL: to start task %s\n", name);
     }
 }
 
-extern "C" void app_setup(void){  
-    BOARD_Init();  
+extern "C" void app_setup(void){
+    BOARD_Init();
 
     app_setOutputEnable(FALSE);
 
 #ifdef ENABLE_EEPROM
-    EEPROM_Init();
+    EEPROM_Init(PSU_I2C_BUS);
 #endif
     app_restoreState();
 
@@ -512,8 +512,8 @@ extern "C" void app_setup(void){
     #endif
 
     startTask(tskPsu, "PSU", NULL, configMINIMAL_STACK_SIZE, PRIORITY_LOW + 1);
-#if defined(ENABLE_CLI)   
-    startTask(tskCmdLine, "CLI", SERIAL_IO, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
+#if defined(ENABLE_CLI)
+    startTask(tskCmdLine, "CLI", NULL, configMINIMAL_STACK_SIZE * 2, PRIORITY_LOW);
 #endif
 #if defined(ENABLE_UI)
     startTask(tskBui, "BUI", NULL, configMINIMAL_STACK_SIZE * 8, PRIORITY_LOW);

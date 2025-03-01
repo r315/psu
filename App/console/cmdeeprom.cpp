@@ -7,26 +7,26 @@
 void CmdEeprom::dumpAddress(uint16_t addr){
     uint8_t buf[16];
 
-    if(!EEPROM_Read(addr, buf, 16)){
+    if(!EEPROM_Read(PSU_I2C_BUS, addr, buf, 16)){
         return;
     }
 
-    console->print("%02X ",addr);
+    console->printf("%02X ",addr);
 
     for(uint8_t i = 0; i < 16; i++){
         if((i&7) == 0){
-            console->putChar(' ');
+            console->printchar(' ');
         }
-        console->print("%02X ",buf[i]);
+        console->printf("%02X ",buf[i]);
     }
 
     console->print(" |");
 
 	for(uint8_t i=0; i < 16; i++){
 		if(buf[i] > (' '-1) && buf[i] < 0x7F)
-			console->putChar(buf[i]);
+			console->printchar(buf[i]);
 		else{
-			console->putChar(' ');
+			console->printchar(' ');
 		}
 	}
 
@@ -47,18 +47,18 @@ void CmdEeprom::help(void){
 
 char CmdEeprom::execute(int argc, char **argv){
     int32_t addr, data;
-    
+
     if(argc == 1){
         help();
         return CMD_OK;
     }
 
     if(!xstrcmp(argv[1], "dump")){
-        console->print("\n");
+        console->printchar('\n');
 	    for(uint16_t i = 0; i < EEPROM_SIZE ; i += 16){
 		    dumpAddress(i);
 	    }
-        console->print("\n");
+        console->printchar('\n');
         return CMD_OK;
     }
 
@@ -68,7 +68,7 @@ char CmdEeprom::execute(int argc, char **argv){
     }
 
     if(!xstrcmp(argv[1], "erase")){
-        EEPROM_Erase();
+        EEPROM_Erase(PSU_I2C_BUS);
         return CMD_OK;
     }
 
@@ -76,24 +76,24 @@ char CmdEeprom::execute(int argc, char **argv){
         app_saveState();
         return CMD_OK;
     }
-    
+
     if(!xstrcmp(argv[1], "r")){
-        if(hatoi(argv[2], (uint32_t*)&addr)){
-            EEPROM_Read(addr, (uint8_t*)&data, 1);
-            console->print("%02X\n", data);
+        if(ha2i(argv[2], (uint32_t*)&addr)){
+            EEPROM_Read(PSU_I2C_BUS, addr, (uint8_t*)&data, 1);
+            console->printf("%02X\n", data);
             return CMD_OK;
         }
     }
 
     if(!xstrcmp(argv[1], "w")){
-        if(hatoi(argv[2], (uint32_t*)&addr)){
-            if(hatoi(argv[3], (uint32_t*)&data)){
-                EEPROM_Write(addr, (uint8_t*)&data, 1);            
+        if(ha2i(argv[2], (uint32_t*)&addr)){
+            if(ha2i(argv[3], (uint32_t*)&data)){
+                EEPROM_Write(PSU_I2C_BUS, addr, (uint8_t*)&data, 1);
                 return CMD_OK;
             }
         }
-    }   
-    
+    }
+
     return CMD_BAD_PARAM;
 }
 #endif

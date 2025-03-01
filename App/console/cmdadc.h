@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-#include <console.h>
+#include "console.h"
 
 class CmdAdc : public ConsoleCommand{
     Console *console;
