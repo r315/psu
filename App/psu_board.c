@@ -154,11 +154,6 @@ static QueueHandle_t serial_rx_queue;
 static QueueHandle_t serial_tx_queue;
 #endif
 
-int serial_available(void)
-{
-    return STDIN_QUEUE_LENGTH - uxQueueSpacesAvailable(serial_rx_queue);
-}
-
 void serial_init(void)
 {
     serial_rx_queue = xQueueCreate( STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE );
@@ -170,11 +165,36 @@ void serial_init(void)
     serial_tx_queue = xQueueCreate( STDIN_QUEUE_LENGTH, STDIO_QUEUE_ITEM_SIZE );
     configASSERT( serial_tx_queue != NULL );
 
-    UART_Init();
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+    RCC->APB2RSTR |= RCC_APB2RSTR_USART1RST;
+    RCC->APB2RSTR &= ~RCC_APB2RSTR_USART1RST;
+
+    GPIO_Config(UART_TX_PIN, GPO_LS_AF);
+    GPIO_Config(UART_RX_PIN, GPI_PU);
+
+    USART1->BRR = 0x271;        //115200
+    USART1->CR1 = USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
+
+    HAL_NVIC_SetPriority(USART1_IRQn, IRQ_PRIORITY_LOW ,0);
+    NVIC_EnableIRQ(USART1_IRQn);
     #endif
 }
 #endif
 
+int serial_available(void)
+{
+    return STDIN_QUEUE_LENGTH - uxQueueSpacesAvailable(serial_rx_queue);
+}
+
+int serial_read(char *data, int len)
+{
+    uint32_t count = len;
+    while(count--){
+        xQueueReceive(serial_rx_queue, data++, portMAX_DELAY);
+    }
+
+    return len;
+}
 
 int serial_write(const char *data, int len)
 {
@@ -188,18 +208,9 @@ int serial_write(const char *data, int len)
             xQueueSendToBack(serial_tx_queue, data++, pdMS_TO_TICKS(100));
         }
         USART1->CR1 |= USART_CR1_TXEIE;
+        break;
         #endif
 	}
-    return len;
-}
-
-int serial_read(char *data, int len)
-{
-    uint32_t count = len;
-    while(count--){
-        while(xQueueReceive(serial_rx_queue, data++, portMAX_DELAY));
-    }
-
     return len;
 }
 
@@ -211,25 +222,7 @@ void serial_receive(const uint8_t *data, uint16_t len)
     }
 }
 
-#if defined(ENABLE_UART)
-void UART_Init(void){
-    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
-    RCC->APB2RSTR |= RCC_APB2RSTR_USART1RST;
-    RCC->APB2RSTR &= ~RCC_APB2RSTR_USART1RST;
-
-    pinInit(UART_TX_PIN, GPO_LS_AF);  // TX
-    pinInit(UART_RX_PIN, GPI_PU);            // RX
-
-    USART1->BRR = 0x271;        //115200
-    USART1->CR1 = USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
-
-    //USART1->CR1 |= USART_CR1_UE;
-    //while((USART1->SR & USART_SR_TC) == 0);
-    //NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );
-    HAL_NVIC_SetPriority(USART1_IRQn, IRQ_PRIORITY_LOW ,0);
-    NVIC_EnableIRQ(USART1_IRQn);
-}
-
+#ifdef ENABLE_UART
 void USART1_IRQHandler(void)
 {
     volatile uint32_t status = USART1->SR;
