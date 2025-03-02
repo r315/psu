@@ -12,7 +12,6 @@ extern "C" {
 #include "adcmgr.h"
 #include "gpio.h"
 #include "gpio_stm32f1xx.h"
-#include "dbg.h"
 #include "eeprom.h"
 #include "wdt.h"
 
@@ -120,7 +119,7 @@ extern "C" {
  * Delay and tick count
  * */
 #define GetTick HAL_GetTick
-#define DelayMs(d) HAL_Delay(d)
+void DelayMs(uint32_t);
 
 static inline uint32_t ElapsedTicks(uint32_t start_ticks){
     uint32_t current = GetTick();
@@ -138,27 +137,18 @@ void TICK_Init(void);
  * PB14 -> RS
  * PB15 -> SDO
  * */
-#define TFT_W               80
-#define TFT_H               160  // 162 on GRAM
+//#define TFT_W               80
+//#define TFT_H               160  // 162 on GRAM
 
-#define LCD_CD_Pin          GPIO_PIN_14
-#define LCD_CD_GPIO_Port    GPIOB
-#define LCD_BKL_Pin         GPIO_PIN_3
-#define LCD_BKL_GPIO_Port   GPIOB
-#define LCD_CS_Pin          GPIO_PIN_12
-#define LCD_CS_GPIO_Port    GPIOB
+#define LCD_CS      PB_12
+#define LCD_SCLK    PB_13
+#define LCD_CD      PB_14
+#define LCD_DI      PB_15
+#define LCD_BKL     PB_3
+#define LCD_RST     -1
 
-#define LCD_CD0             LCD_CD_GPIO_Port->BRR = LCD_CD_Pin
-#define LCD_CD1             LCD_CD_GPIO_Port->BSRR = LCD_CD_Pin
-#define LCD_BKL0            LCD_BKL_GPIO_Port->BRR = LCD_BKL_Pin
-#define LCD_BKL1            LCD_BKL_GPIO_Port->BSRR = LCD_BKL_Pin
-#define LCD_CS0             LCD_CS_GPIO_Port->BRR = LCD_CS_Pin
-#define LCD_CS1             LCD_CS_GPIO_Port->BSRR = LCD_CS_Pin
-#define LCD_RST0
-#define LCD_RST1
-
-#define LCD_W LCD_GetWidth()
-#define LCD_H LCD_GetHeight()
+#define LCD_W       LCD_GetWidth()
+#define LCD_H       LCD_GetHeight()
 
 #if defined(ENABLE_VCOM)
 void MX_USB_DEVICE_Init(void);

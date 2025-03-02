@@ -6,13 +6,14 @@
 #include "usbd_cdc_if.h"
 #include "spi.h"
 #include "console.h"
+#include "drvlcd.h"
 
 #if defined(ENABLE_I2C)
 static I2C_HandleTypeDef hi2c2;
 i2cbus_t psu_i2c_bus;
 #endif
 
-static spibus_t lcd_spi;
+static drvlcdspi_t lcd0;
 
 void BOARD_Init(void){
 
@@ -26,11 +27,6 @@ void BOARD_Init(void){
 
     serial_init();
 
-    lcd_spi.bus = SPI_BUS1;
-    lcd_spi.freq = 40000;
-    lcd_spi.flags = SPI_IDLE;
-    SPI_Init(&lcd_spi);
-
     /**
      * PB15 AF
      * PB14 GPO/CD
@@ -41,11 +37,11 @@ void BOARD_Init(void){
     GPIOB->BSRR = (5 << 12); // CS, RS
     GPIOB->BRR  = (1 << 3);  // BKL
 
-    GPIO_Config(PB_15, GPO_MS_AF);
-    GPIO_Config(PB_13, GPO_MS_AF);
-    GPIO_Config(PB_12, GPO_MS);
-    GPIO_Config(PB_3,  GPO_MS);
-    GPIO_Config(PB_14, GPO_MS);
+    GPIO_Config(LCD_DI, GPO_MS_AF);
+    GPIO_Config(LCD_SCLK, GPO_MS_AF);
+    GPIO_Config(LCD_CS, GPO_MS);
+    GPIO_Config(LCD_BKL,  GPO_MS);
+    GPIO_Config(LCD_CD, GPO_MS);
 
 #if defined(ENABLE_I2C)
     psu_i2c_bus.bus_num = I2C_BUS2;
@@ -59,9 +55,22 @@ void BOARD_Init(void){
 #endif
 
 #if defined(ENABLE_UI)
-    LCD_Init(&lcd_spi);
+    lcd0.spidev.bus = SPI_BUS1;
+    lcd0.w = TFT_W;
+    lcd0.h = TFT_H;
+    lcd0.cs = LCD_CS;
+    lcd0.cd = LCD_CD;
+    lcd0.bkl = LCD_BKL;
+    lcd0.rst = LCD_RST;
+
+    LCD_Init(&lcd0);
     LCD_SetOrientation(LCD_REVERSE_LANDSCAPE);
 #endif
+}
+
+void DelayMs(uint32_t d)
+{
+    HAL_Delay(d);
 }
 
 /**

@@ -9,7 +9,7 @@ TARGET = app_psu
 ######################################
 ENABLE_DEBUG 		:=no
 ENABLE_CLI 			:=yes
-ENABLE_UI 			:=no
+ENABLE_UI 			:=yes
 ENABLE_EEPROM 		:=yes
 ENABLE_IOEXPANDER   :=yes
 ENABLE_VCOM 		:=no
@@ -244,7 +244,9 @@ C_DEFS +=\
 ENABLE_UI \
 ENABLE_IOEXPANDER \
 USE_COURIER_FONT \
-USE_GROTESKBOLD_FONT
+USE_GROTESKBOLD_FONT \
+TFT_W=80 \
+TFT_H=160
 endif
 
 ifeq ($(ENABLE_EEPROM),yes)
