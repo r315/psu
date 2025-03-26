@@ -25,13 +25,12 @@ void ModelPsu::init(void){
 
     _preset_list = app_getPresetList();
     _psu_preset = &_preset_list[app_getPresetIdx()];
-    
+
     _bt_ty = 1; // 1S
     _chg_preset.v = MAX_CELL_VOLTAGE;
     _chg_preset.i = 100;
 
-    _load_preset.v = 0;     // End voltage,
-    _load_preset.i = 200;
+    _load_preset = app_getLoadPreset();
 }
 
 /**
@@ -67,7 +66,7 @@ uint8_t ModelPsu::toggleOutputEnable(void){
 uint8_t ModelPsu::getOutputEnable(void){
     return app_isOutputEnabled();
 }
-uint8_t ModelPsu::getPresetIdx(void){    
+uint8_t ModelPsu::getPresetIdx(void){
     return app_getPresetIdx();
 }
 
@@ -112,10 +111,10 @@ uint32_t ModelPsu::getChargeCurrent(void){
     return _chg_preset.i;
 }
 uint32_t ModelPsu::getLoadVoltagePreset(void){
-    return _load_preset.v;
+    return _load_preset->v;
 }
 uint32_t ModelPsu::getLoadCurrentPreset(void){
-    return _load_preset.i;
+    return _load_preset->i;
 }
 
 /**
@@ -126,32 +125,32 @@ void ModelPsu::setOutPreset(preset_t pre){
     _psu_preset->i = pre.i;
 }
 void ModelPsu::setOutVoltagePreset(uint32_t v){
-    _psu_preset->v = v; 
+    _psu_preset->v = v;
 }
 void ModelPsu::setOutCurrentPreset(uint32_t i){
-    _psu_preset->i = i; 
+    _psu_preset->i = i;
 }
 void ModelPsu::setPresetIdx(uint8_t idx){
     app_setPresetIdx(idx);
 }
 void ModelPsu::setChargerCurrentPreset(uint32_t i){
-    _chg_preset.i = i;    
+    _chg_preset.i = i;
 }
 void ModelPsu::setBatteryTypePreset(uint8_t t){
      _bt_ty = t;
      _chg_preset.v = batVoltages[_bt_ty - 1];
 }
 void ModelPsu::setLoadCurrentPreset(uint32_t ma){
-    _load_preset.i = ma;
+    _load_preset->i = ma;
 }
 void ModelPsu::setLoadVoltagePreset(uint32_t mv){
-    _load_preset.v = mv;
+    _load_preset->v = mv;
 }
 
 /**
  * @brief Update internal data model with latest data from app,
  * called from presenter class
- * */ 
+ * */
 void ModelPsu::updateOutputVoltage(void){
     _out_voltage = psu_getOutputVoltage();
 }
@@ -185,7 +184,7 @@ void ModelPsu::applyChargerPreset(void){
     app_applyPreset(&_chg_preset);
 }
 void ModelPsu::applyLoadCurrent(void){
-    psu_setLoadCurrent(_load_preset.i);
+    psu_setLoadCurrent(_load_preset->i);
 }
 void ModelPsu::disableLoad(void){
     psu_setLoadCurrent(0);

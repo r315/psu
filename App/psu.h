@@ -37,7 +37,7 @@ extern "C" {
 
 #define CONSOLE_PROMPT              "PSU >"
 
-#define MAX_PRESETS                 6   
+#define MAX_PRESETS                 6
 
 #define WATCHDOG_TIME               3000U   // ms
 #define POWER_OFF_COUNT             20      // Iterations before calling power off
@@ -94,13 +94,17 @@ typedef struct preset{
     uint32_t i;
 }preset_t;
 
-typedef struct psu{ 
+typedef struct psu{
+    // Fields stored on EEPROM
+    // ----------------------------
     float an_channel_gain[AN_MUX_NUM_CH];
     pwmcal_t pwm_cal[PWM_NUM_CH];
     preset_t preset_list[MAX_PRESETS];
-    uint8_t preset_idx;                 
-    uint8_t cksum;
-    volatile uint8_t flags;         // Above fields are saved to eeprom
+    uint8_t preset_idx;
+    preset_t load_preset;
+    uint8_t cksum;  // this has to be the last parameter, DON'T move
+    // ----------------------------
+    volatile uint8_t flags;
     uint16_t *adc_data;
 }psu_t;
 
@@ -115,8 +119,8 @@ extern volatile uint32_t g_mgr_eoc_count;
 
 /**
  * @brief Get channel voltage
- * 
- * \param channel : Channel 
+ *
+ * \param channel : Channel
  * \return : voltage in mv
  * */
 uint32_t psu_getChannelVoltage(uint8_t channel);
@@ -172,7 +176,7 @@ void psu_setLoadCurrent(uint32_t ma);
 uint32_t psu_getUsbCurrent(void);
 
 /**
- * @brief Get input voltage at 
+ * @brief Get input voltage at
  * Buck converter
  * */
 uint32_t psu_getInputVoltage(void);
@@ -184,7 +188,7 @@ uint8_t app_isAdcDone(void);
 
 /**
  * @brief Get list of all presets
- * 
+ *
  * \return pointer to preset array
  * */
 preset_t *app_getPresetList(void);
@@ -195,35 +199,42 @@ uint8_t app_getPresetIdx(void);
 void app_setPresetIdx(uint8_t idx);
 
 /**
+ * @brief Get load preset
+ *
+ * @return preset_t*
+ */
+preset_t *app_getLoadPreset(void);
+
+/**
  * @brief Set psu output to values given by preset
- * 
+ *
  * \param preset : preset with values
  * */
 void app_applyPreset(preset_t *preset);
 
 /**
  * @brief Set psu output from preset values at given index
- * 
+ *
  * \param idx : new index
  * */
 void app_applyPresetByIdx(uint8_t idx);
 
 /**
  * @brief Saves app state to eeprom
- * 
+ *
  * The value of presets, pwm calibration, adc gains, current preset selected...
- * are saved to eeprom. 
- * 
+ * are saved to eeprom.
+ *
  * \return : 1 if successful, 0 other wise
  * */
 uint8_t app_saveState(void);
 
 /**
  * @brief Restore app state from eeprom
- * 
+ *
  * The value of presets, pwm calibration, adc gains, current preset selected...
- * are restored from eeprom. 
- * 
+ * are restored from eeprom.
+ *
  * \return : 1 if successful, 0 loaded default values
  * */
 uint8_t app_restoreState(void);
@@ -231,10 +242,10 @@ uint8_t app_restoreState(void);
 
 /**
  * @brief Restore app default state
- * 
+ *
  * The value of presets, pwm calibration, adc gains, current preset selected...
  * are set to defaults
- * 
+ *
  * */
 void app_defaultState(void);
 

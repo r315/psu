@@ -71,6 +71,15 @@ static ModelPsu model_psu;
 
 volatile uint32_t g_mgr_eoc_count = 0;
 
+/**
+ * @brief Default values, these are stored on eeprom
+ *
+ */
+
+#define PSU_DEFAULT_VLOAD   1000U   // Minimum end voltage to stop load
+#define PSU_DEFAULT_ILOAD   200U    // lod current set
+#define PSU_DEFAULT_PRESET  0
+
 const pwmcal_t default_pwm_calibration[] = {
     {490, (1<<PWM_RESOLUTION), 1024},   // pwm1 (VOUT) calibration <min, max, start>
     {0, (1<<PWM_RESOLUTION), 100},      // pwm2 (IOUT) calibration
@@ -305,6 +314,10 @@ void app_setPresetIdx(uint8_t idx){
     psu.preset_idx = idx;
 }
 
+preset_t *app_getLoadPreset(void){
+    return &psu.load_preset;
+}
+
 void app_applyPreset(preset_t *pre){
     psu_setOutputVoltage(pre->v);
     psu_setOutputCurrent(pre->i);
@@ -321,7 +334,9 @@ void app_defaultState(void){
     memcpy(psu.pwm_cal, default_pwm_calibration, sizeof(default_pwm_calibration));
     memcpy(psu.preset_list, default_preset, sizeof(default_preset));
     memcpy(psu.an_channel_gain, default_an_channel_gain, sizeof(default_an_channel_gain));
-    psu.preset_idx = 0;
+    psu.preset_idx = PSU_DEFAULT_PRESET;
+    psu.load_preset.v = PSU_DEFAULT_VLOAD;
+    psu.load_preset.i = PSU_DEFAULT_ILOAD;
     psu.flags = 0;
 }
 
@@ -477,7 +492,7 @@ void tskCmdLine(void *ptr)
 
     console.cls();
 
-    console.printf("PSU v%s\n", PSU_VERSION);
+    console.printf("PSU %s\n", PSU_VERSION);
     console.printf("FreeRTOS %s\n", tskKERNEL_VERSION_NUMBER);
     console.printf("Free mem: %u bytes\n\n", xPortGetFreeHeapSize());
 
@@ -502,7 +517,9 @@ extern "C" void app_setup(void){
     app_setOutputEnable(FALSE);
 
 #ifdef ENABLE_EEPROM
-    EEPROM_Init(PSU_I2C_BUS);
+    if(EEPROM_Init(PSU_I2C_BUS)){
+        DBG_PRINT("FAIL: to initialise eeprom\n");
+    }
 #endif
     app_restoreState();
 

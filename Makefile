@@ -216,13 +216,15 @@ BIN = $(CP) -O binary -S
 # CFLAGS
 #######################################
 
+DEVICE=STM32F103xB
+
 # macros for gcc
 # AS defines
 AS_DEFS =
 
 # C defines
 C_DEFS =  \
-STM32F103xB \
+$(DEVICE) \
 USE_HAL_DRIVER \
 
 ifeq ($(ENABLE_ADCMGR),yes)

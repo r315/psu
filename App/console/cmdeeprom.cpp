@@ -39,7 +39,7 @@ void CmdEeprom::help(void){
     console->print("EEPROM management\n\n");
     console->print("\tdump \t\tDisplay eeprom content\n");
     console->print("\terase \t\tErase eeprom\n");
-    //console->print("\tinit \t\tInitialize eeprom with default data\n");
+    console->print("\tdefault \t\tload default values (no eeprom write)\n");
     console->print("\tsave \t\tSave settings\n");
     console->print("\tr <addr> \t\tRead eeprom\n");
     console->print("\tw <addr> <data>\t\tWrite to eeprom\n");
@@ -92,6 +92,11 @@ char CmdEeprom::execute(int argc, char **argv){
                 return CMD_OK;
             }
         }
+    }
+
+    if(!xstrcmp(argv[1], "default")){
+        app_defaultState();
+        return CMD_OK;
     }
 
     return CMD_BAD_PARAM;

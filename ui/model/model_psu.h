@@ -40,7 +40,7 @@ public:
     void setChargerCurrentPreset(uint32_t i);
     void setLoadVoltagePreset(uint32_t mv);
     void setLoadCurrentPreset(uint32_t ma);
-    
+
     // Resource not shared, called from presenter
     uint8_t getOutputEnable(void);
     uint8_t toggleOutputEnable(void);
@@ -55,7 +55,7 @@ public:
     void updateLoadCurrent(void);
     void updateUsbCurrent(void);
     void updateCellVoltage(uint8_t c);
-    
+
     // Apply model data to app
     void applyPsuPreset(void);
     void applyChargerPreset(void);
@@ -71,9 +71,9 @@ private:
     uint32_t _vb[4];
     preset_t *_preset_list;
     preset_t *_psu_preset;
+    preset_t *_load_preset;
     preset_t _chg_preset;
-    preset_t _load_preset;
-    uint8_t _bt_ty;         // Current selected battery type [1, 4]    
+    uint8_t _bt_ty;         // Current selected battery type [1, 4]
 
     SemaphoreHandle_t access_data;
 };
