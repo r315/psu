@@ -4,9 +4,9 @@
 
 #ifdef ENABLE_EEPROM
 
-void EEPROM_Init(i2cbus_t *i2c){
+uint8_t EEPROM_Init(i2cbus_t *i2c){
     uint8_t data;
-    I2C_Read(i2c, EEPROM_I2C_ADDRESS, &data, 1);
+    return I2C_Read(i2c, EEPROM_I2C_ADDRESS, &data, 1) == 1;
 }
 
 uint16_t EEPROM_Read(i2cbus_t *i2c, uint16_t address, uint8_t *dst, uint16_t count){
