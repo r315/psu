@@ -39,7 +39,7 @@ public:
 
         data = EXPANDER_Read(PSU_I2C_BUS);
         console->printf("IO: b%08b\n", data);
-        console->printf("PWR: %s\n", GET_PWR_BTN ? "ON" : "OFF");
+        console->printf("PWR: %s\n", PWR_BTN_READ > PWR_BTN_PRESSED ? "ON" : "OFF");
 
         return CMD_OK;
     }

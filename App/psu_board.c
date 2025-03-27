@@ -21,6 +21,7 @@ void BOARD_Init(void){
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPCEN;
 
     LED_INIT;
+    LED_OFF;
     PSU_OE_INIT;
     MUX_SEL_INIT;
     SPOWER_INIT;
@@ -49,6 +50,7 @@ void BOARD_Init(void){
     psu_i2c_bus.speed = 100000;
     BOARD_I2C_Init();
 #endif
+
     RTC_Init();
 
 #if defined(ENABLE_IOEXPANDER) || defined(ENABLE_UI)

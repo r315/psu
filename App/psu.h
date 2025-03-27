@@ -24,7 +24,7 @@ extern "C" {
 #define MIN_VOLTAGE                 1300U
 #define MAX_CURRENT                 3000U
 #define MIN_CURRENT                 0U
-#define MAX_ILOAD                   1000U  // TODO: LIMIT in HW to 500mA
+#define MAX_ILOAD                   1000U
 #define MIN_ILOAD                   0U
 #define MAX_VLOAD                   20000U
 #define MIN_VLOAD                   0U

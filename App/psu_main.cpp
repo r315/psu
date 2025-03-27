@@ -281,9 +281,11 @@ pwmcal_t psu_getPwmChannelCalibration(uint8_t ch){
 void app_processPowerButton(void){
     static uint16_t pwr_off_counter = POWER_OFF_COUNT;
 
-    //DBG_PRINT("ADC2 :%x\n", ADC2_Read(ADC_PWR_SW_CH));
+    uint32_t pb_voltage = PWR_BTN_READ;
 
-    if(GET_PWR_BTN){
+    //DBG_INF("ADC2 :%x\n", pb_voltage);
+
+    if(pb_voltage > PWR_BTN_PRESSED){
         if(--pwr_off_counter == 0){
             DBG_INF("Powering off...\n");
             app_saveState();
@@ -556,11 +558,11 @@ extern "C" void vApplicationMallocFailedHook( void ){
 }
 
 void *operator new(size_t size){
-    DBG_INFO("Allocating: %u bytes\n", size);
+    DBG_INF("Allocating: %u bytes\n", size);
     return pvPortMalloc(size);
 }
 
 void operator delete(void *ptr){
     vPortFree(ptr);
-    DBG_INFO("Free mem: %u bytes\n", xPortGetFreeHeapSize());
+    DBG_INF("Free mem: %u bytes\n", xPortGetFreeHeapSize());
 }

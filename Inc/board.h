@@ -42,7 +42,7 @@ extern "C" {
  *       poweroff
  * */
 
-#define PWR_BTN_PRESSED      0x300 // TODO: Fix voltage fluctuation on PA2 with different input voltages
+#define PWR_BTN_PRESSED      0x300
 
 #define PWR_BTN_PIN          PA_2
 
@@ -58,7 +58,7 @@ extern "C" {
     GPIO_Config(PWR_BTN_PIN, GPI_ANALOG); \
 }
 
-#define GET_PWR_BTN         (ADC2_Read(ADC_PWR_SW_CH) > PWR_BTN_PRESSED)
+#define PWR_BTN_READ        ADC2_Read(ADC_PWR_SW_CH)
 
 
 /**
