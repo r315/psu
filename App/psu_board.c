@@ -19,7 +19,7 @@ static drvlcdspi_t lcd0;
 #endif
 
 #if ENABLE_IOEXPANDER
-const ioexp_t *ioexp = &pcf8574_ioexp;
+ioexp_t *ioexp = &pcf8574_ioexp;
 #endif
 
 void BOARD_Init(void){

@@ -33,7 +33,7 @@ extern "C" {
                      BUTTON_SET  | BUTTON_OUT   | BUTTON_MODE | BUTTON_MEM)
 #define BUTTON_VALUE (uint8_t)BUTTON_GetValue()
 
-extern const ioexp_t *ioexp;
+extern ioexp_t *ioexp;
 
 /**
  * Softpower pins PA1, PA2

@@ -164,7 +164,7 @@ endif
 
 ifeq ($(ENABLE_EEPROM),yes)
 C_SOURCES +=  \
-$(DRIVER_COMPONENT)/eeprom.c
+$(DRIVER_COMPONENT)/eeprom/eeprom.c
 endif
 
 ifeq ($(ENABLE_VCOM),yes)
