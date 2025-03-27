@@ -6,6 +6,7 @@ TARGET = app_psu
 
 ######################################
 # building options
+# Comments after not allowed
 ######################################
 ENABLE_DEBUG 		:=no
 ENABLE_CLI 			:=yes
@@ -16,7 +17,7 @@ ENABLE_VCOM 		:=yes
 ENABLE_UART 		:=no
 ENABLE_SOFT_POWER	:=yes
 ENABLE_ADCMGR 		:=yes
-RELEASE 			:=no
+RELEASE 			:=yes
 RELEASE_DFU 		:=no
 #######################################
 # paths
@@ -113,8 +114,6 @@ C_SOURCES =  \
 $(DRIVRES_SOC_SRC) \
 $(FREERTOS_SRC) \
 $(DRIVERS_SOC)/gpio/gpio_stm32f1xx.c \
-$(DRIVERS_SOC)/dma/dma_stm32f1xx.c \
-$(DRIVERS_SOC)/spi/spi_stm32f1xx.c \
 $(DRIVERS_SOC)/wdt/wdt_stm32f1xx.c \
 $(CURDIR)/Src/main.c \
 $(CURDIR)/Src/stm32f1xx_it.c \
@@ -138,7 +137,7 @@ DRIVRES_SOC_SRC += \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c
 endif
 
-ifeq ($(ENABLE_IOEXPANDER),yes)
+ifeq ($(filter $(ENABLE_IOEXPANDER) $(ENABLE_UI),yes),yes)
 C_SOURCES +=  \
 $(APP_SRC_DIR)/components/pcf8574.c
 endif
@@ -155,6 +154,10 @@ $(LIB_PATH)/src/liblcd.c \
 $(LIB_PATH)/src/button.c \
 $(LIB_PATH)/src/font.c \
 $(BUI_PATH)/bui_draw.c
+
+DRIVRES_SOC_SRC += \
+$(DRIVERS_SOC)/dma/dma_stm32f1xx.c \
+$(DRIVERS_SOC)/spi/spi_stm32f1xx.c
 endif
 
 ifeq ($(ENABLE_EEPROM),yes)
@@ -276,8 +279,8 @@ C_DEFS +=ENABLE_SOFT_POWER
 endif
 
 ifeq ($(RELEASE),yes)
-GIT_TAG :=$(shell git describe --abbrev=0 --tags 2>/dev/null || true)
-VERSION :=$(GIT_TAG)#$(GIT_TAG:v=%)
+GIT_TAG =$(shell git describe --abbrev=0 --tags 2>/dev/null || true)
+VERSION =$(GIT_TAG)
 else
 VERSION =v0.0.0
 endif
@@ -362,10 +365,10 @@ upload: $(BUILD_DIR)/$(TARGET).bin
 	dfu-util -a 0 -s 0x08001000 -D $< -R
 
 test:
-#@echo $(CURDIR)
+	@echo $(VERSION)
 #@echo ""; $(foreach d, $(VPATH), echo $(d);)
 #@echo $(filter yes $(ENABLE_EEPROM), $(ENABLE_UI))
-	@echo $(SYMBOLS)
+#@echo $(SYMBOLS)
 
 lib_cdc:
 	$(MAKE) -C $(USB_DIR)

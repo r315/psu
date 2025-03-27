@@ -14,7 +14,9 @@ static I2C_HandleTypeDef hi2c2;
 i2cbus_t psu_i2c_bus;
 #endif
 
+#if defined(ENABLE_UI)
 static drvlcdspi_t lcd0;
+#endif
 
 void BOARD_Init(void){
 
@@ -267,6 +269,8 @@ void serial_receive(const uint8_t *data, uint16_t len)
         xQueueSendToBackFromISR(serial_rx_queue, data++, NULL);
     }
 }
+#else
+void serial_receive(const uint8_t *data, uint16_t len){}
 #endif /* ENABLE_CLI */
 
 /**
