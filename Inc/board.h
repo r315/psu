@@ -28,10 +28,12 @@ extern "C" {
 #define BUTTON_PRE      (1<<7)
 
 #define BUTTON_HW_INIT
-#define BUTTON_HW_READ (255 - EXPANDER_Read(PSU_I2C_BUS))
+#define BUTTON_HW_READ (255 - ioexp->read(PSU_I2C_BUS))
 #define BUTTON_MASK (BUTTON_LEFT | BUTTON_RIGHT | BUTTON_UP   | BUTTON_DOWN |\
                      BUTTON_SET  | BUTTON_OUT   | BUTTON_MODE | BUTTON_MEM)
 #define BUTTON_VALUE (uint8_t)BUTTON_GetValue()
+
+extern const ioexp_t *ioexp;
 
 /**
  * Softpower pins PA1, PA2

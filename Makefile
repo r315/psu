@@ -78,6 +78,7 @@ $(BUI_PATH) \
 $(LIB_PATH)/inc \
 $(DRIVERS_PATH)/inc \
 $(DRIVER_COMPONENT)/tft \
+$(DRIVER_COMPONENT)/io_expander \
 $(UI_DIR)/model \
 $(UI_DIR)/common \
 $(UI_DIR)/screen_psu \
@@ -132,14 +133,14 @@ $(USB_DIR)/usbd_desc.c \
 $(USB_DIR)/usbd_conf.c \
 $(USB_DIR)/usb_device.c
 
-ifeq ($(filter $(ENABLE_EEPROM) $(ENABLE_UI),yes),yes)
+ifeq ($(filter $(ENABLE_EEPROM) $(ENABLE_IOEXPANDER) $(ENABLE_UI),yes),yes)
 DRIVRES_SOC_SRC += \
 $(REPOSITORY)/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c
 endif
 
 ifeq ($(filter $(ENABLE_IOEXPANDER) $(ENABLE_UI),yes),yes)
 C_SOURCES +=  \
-$(APP_SRC_DIR)/components/pcf8574.c
+$(DRIVER_COMPONENT)/io_expander/pcf8574.c
 endif
 
 ifeq ($(ENABLE_DEBUG),yes)

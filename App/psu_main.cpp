@@ -394,8 +394,8 @@ uint8_t app_saveState(void){
     if(!EEPROM_Write(PSU_I2C_BUS, EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1)){
         return 0;
     }
-    DBG_INF("done\n");
 #endif
+    DBG_INF("done\n");
     return 1;
 }
 

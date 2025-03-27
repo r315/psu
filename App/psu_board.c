@@ -18,6 +18,10 @@ i2cbus_t psu_i2c_bus;
 static drvlcdspi_t lcd0;
 #endif
 
+#if ENABLE_IOEXPANDER
+const ioexp_t *ioexp = &pcf8574_ioexp;
+#endif
+
 void BOARD_Init(void){
 
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPCEN;
@@ -56,7 +60,7 @@ void BOARD_Init(void){
     RTC_Init();
 
 #if defined(ENABLE_IOEXPANDER) || defined(ENABLE_UI)
-    EXPANDER_Init(PSU_I2C_BUS);
+    ioexp->init(PSU_I2C_BUS);
 #endif
 
 #if defined(ENABLE_UI)

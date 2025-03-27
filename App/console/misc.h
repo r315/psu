@@ -37,7 +37,7 @@ public:
 	char execute(int argc, char **argv){
         uint8_t data;
 
-        data = EXPANDER_Read(PSU_I2C_BUS);
+        data = ioexp->read(PSU_I2C_BUS);
         console->printf("IO: b%08b\n", data);
         console->printf("PWR: %s\n", PWR_BTN_READ > PWR_BTN_PRESSED ? "ON" : "OFF");
 
