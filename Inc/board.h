@@ -34,6 +34,8 @@ extern "C" {
 #define BUTTON_VALUE (uint8_t)BUTTON_GetValue()
 
 extern ioexp_t *ioexp;
+extern eeprom_t *eeprom;
+extern eeprom_t eeprom_256;
 
 /**
  * Softpower pins PA1, PA2

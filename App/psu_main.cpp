@@ -32,7 +32,8 @@ static CmdIo io;
 static CmdSet set;
 static CmdReset reset;
 #ifdef ENABLE_EEPROM
-static CmdEeprom eeprom;
+static CmdEeprom cmdeeprom;
+eeprom_t *eeprom = &eeprom_256;
 #endif
 
 #ifdef ENABLE_DFU
@@ -55,7 +56,7 @@ static ConsoleCommand *commands[] = {
     &reset,
     &status,
 #ifdef ENABLE_EEPROM
-    &eeprom,
+    &cmdeeprom,
 #endif
     NULL
 };
@@ -358,7 +359,7 @@ uint8_t app_restoreState(void){
 #ifdef ENABLE_EEPROM
     uint16_t size = (uint8_t*)&psu.cksum - (uint8_t*)&psu;
 
-    EEPROM_Read(PSU_I2C_BUS, EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1);
+    eeprom->read(PSU_I2C_BUS, EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1);
 
     uint8_t cksum = app_calcCksum((uint8_t*)&psu, size);
     if( psu.cksum != cksum){
@@ -383,7 +384,7 @@ uint8_t app_saveState(void){
     psu.cksum = app_calcCksum((uint8_t*)&psu, size);
     // Read cksum from eeprom and compare with previous calculated cksum
     uint8_t cksum;
-    EEPROM_Read(PSU_I2C_BUS, EEPROM_APP_OFFSET + size, (uint8_t*)&cksum, 1);
+    eeprom->read(PSU_I2C_BUS, EEPROM_APP_OFFSET + size, (uint8_t*)&cksum, 1);
     DBG_INF("EEPROM cksum: %2X, settings cksum: %2X\n", cksum, psu.cksum);
     if(cksum == psu.cksum){
         // No changes made on settings
@@ -391,7 +392,7 @@ uint8_t app_saveState(void){
     }
 
     DBG_INF("Writting %u bytes to EEPROM\n", size + 1);
-    if(!EEPROM_Write(PSU_I2C_BUS, EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1)){
+    if(!eeprom->write(PSU_I2C_BUS, EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1)){
         return 0;
     }
 #endif
@@ -527,7 +528,7 @@ extern "C" void app_setup(void){
     app_setOutputEnable(FALSE);
 
 #ifdef ENABLE_EEPROM
-    if(EEPROM_Init(PSU_I2C_BUS)){
+    if(eeprom->init(PSU_I2C_BUS)){
         DBG_WRN("FAIL: to initialise eeprom\n");
     }
 #endif

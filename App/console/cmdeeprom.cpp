@@ -7,7 +7,7 @@
 void CmdEeprom::dumpAddress(uint16_t addr){
     uint8_t buf[16];
 
-    if(!EEPROM_Read(PSU_I2C_BUS, addr, buf, 16)){
+    if(!eeprom->read(PSU_I2C_BUS, addr, buf, 16)){
         return;
     }
 
@@ -68,7 +68,7 @@ char CmdEeprom::execute(int argc, char **argv){
     }
 
     if(!xstrcmp(argv[1], "erase")){
-        EEPROM_Erase(PSU_I2C_BUS);
+        eeprom->erase(PSU_I2C_BUS);
         return CMD_OK;
     }
 
@@ -79,7 +79,7 @@ char CmdEeprom::execute(int argc, char **argv){
 
     if(!xstrcmp(argv[1], "r")){
         if(ha2i(argv[2], (uint32_t*)&addr)){
-            EEPROM_Read(PSU_I2C_BUS, addr, (uint8_t*)&data, 1);
+            eeprom->read(PSU_I2C_BUS, addr, (uint8_t*)&data, 1);
             console->printf("%02X\n", data);
             return CMD_OK;
         }
@@ -88,7 +88,7 @@ char CmdEeprom::execute(int argc, char **argv){
     if(!xstrcmp(argv[1], "w")){
         if(ha2i(argv[2], (uint32_t*)&addr)){
             if(ha2i(argv[3], (uint32_t*)&data)){
-                EEPROM_Write(PSU_I2C_BUS, addr, (uint8_t*)&data, 1);
+                eeprom->write(PSU_I2C_BUS, addr, (uint8_t*)&data, 1);
                 return CMD_OK;
             }
         }
