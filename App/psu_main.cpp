@@ -4,6 +4,8 @@
 #include "task.h"
 
 #include "psu.h"
+#include "logger.h"
+#include "debug.h"
 
 #if defined(ENABLE_CLI)
 #include "misc.h"
@@ -15,6 +17,7 @@
 #include "cmdstatus.h"
 #include "cmdeeprom.h"
 #endif
+
 
 static psu_t psu;
 #if defined(ENABLE_CLI)
@@ -136,7 +139,7 @@ extern "C" void psu_adc_cb(uint16_t *data){
 static void mapAndSetPwm(float x, float in_max, float in_min, uint8_t ch){
     uint16_t pwm_value = (x - in_min) * (psu.pwm_cal[ch].max - psu.pwm_cal[ch].min) / (in_max - in_min) + psu.pwm_cal[ch].min;
     PWM_Set(ch, pwm_value);
-    DBG_PRINT("Set PWM%d %u\n",ch, pwm_value);
+    DBG_INF("Set PWM%d %u\n",ch, pwm_value);
 }
 
 #if defined(ENABLE_EEPROM)
@@ -162,6 +165,7 @@ void psu_poweroff(void){
     LCD_Bkl(OFF);
 #endif
     vTaskDelay(pdMS_TO_TICKS(POWER_OFF_DELAY));
+    DBG_INF("Off\n");
     SOFT_POWER_OFF;
 }
 
@@ -281,7 +285,7 @@ void app_processPowerButton(void){
 
     if(GET_PWR_BTN){
         if(--pwr_off_counter == 0){
-            DBG_PRINT("Powering off...\n");
+            DBG_INF("Powering off...\n");
             app_saveState();
             psu_poweroff();
     }
@@ -356,7 +360,7 @@ uint8_t app_restoreState(void){
 
     uint8_t cksum = app_calcCksum((uint8_t*)&psu, size);
     if( psu.cksum != cksum){
-        DBG_PRINT("Invalid data on EEPROM, using default values!\n");
+        DBG_WRN("Invalid data on EEPROM, using default values!\n");
         app_defaultState();
         CLR_EEPROM_FLAG;
         return 0;
@@ -378,17 +382,17 @@ uint8_t app_saveState(void){
     // Read cksum from eeprom and compare with previous calculated cksum
     uint8_t cksum;
     EEPROM_Read(PSU_I2C_BUS, EEPROM_APP_OFFSET + size, (uint8_t*)&cksum, 1);
-    DBG_PRINT("EEPROM cksum: %2X, settings cksum: %2X\n", cksum, psu.cksum);
+    DBG_INF("EEPROM cksum: %2X, settings cksum: %2X\n", cksum, psu.cksum);
     if(cksum == psu.cksum){
         // No changes made on settings
         return 1;
     }
 
-    DBG_PRINT("Writting %u bytes to EEPROM\n", size + 1);
+    DBG_INF("Writting %u bytes to EEPROM\n", size + 1);
     if(!EEPROM_Write(PSU_I2C_BUS, EEPROM_APP_OFFSET, (uint8_t*)&psu, size + 1)){
         return 0;
     }
-    DBG_PRINT("done\n");
+    DBG_INF("done\n");
 #endif
     return 1;
 }
@@ -478,14 +482,14 @@ uint8_t count = 0;
  * */
 void tskCmdLine(void *ptr)
 {
-    stdout_t stdio_ops = {
+    stdinout_t stdio_ops = {
         .available = serial_available,
         .read = serial_read,
         .write = serial_write
     };
 
     #ifdef ENABLE_DEBUG
-    dbg_init(SERIAL_IO);
+    dbg_init(&stdio_ops);
     #endif
 
     console.init(&stdio_ops, CONSOLE_PROMPT);
@@ -511,7 +515,7 @@ void tskCmdLine(void *ptr)
  * */
 static void startTask(void(*task)(void*), const char *name, void *args, uint32_t stack, int priority){
     if(xTaskCreate( task, name, stack, args, priority, NULL ) != pdPASS){
-        DBG_PRINT("FAIL: to start task %s\n", name);
+        DBG_ERR("FAIL: to start task %s\n", name);
     }
 }
 
@@ -522,7 +526,7 @@ extern "C" void app_setup(void){
 
 #ifdef ENABLE_EEPROM
     if(EEPROM_Init(PSU_I2C_BUS)){
-        DBG_PRINT("FAIL: to initialise eeprom\n");
+        DBG_WRN("FAIL: to initialise eeprom\n");
     }
 #endif
     app_restoreState();
@@ -548,15 +552,15 @@ extern "C" void app_setup(void){
 }
 
 extern "C" void vApplicationMallocFailedHook( void ){
-    DBG_PRINT("Memory allocation fail\n");
+    DBG_ERR("Memory allocation fail\n");
 }
 
 void *operator new(size_t size){
-    DBG_PRINT("Allocating: %u bytes\n", size);
+    DBG_INFO("Allocating: %u bytes\n", size);
     return pvPortMalloc(size);
 }
 
 void operator delete(void *ptr){
     vPortFree(ptr);
-    DBG_PRINT("Free mem: %u bytes\n", xPortGetFreeHeapSize());
+    DBG_INFO("Free mem: %u bytes\n", xPortGetFreeHeapSize());
 }

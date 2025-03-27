@@ -76,14 +76,6 @@ extern "C" {
 #define DBG_PIN_LOW     GPIO_Write(DBG_PIN, GPIO_PIN_RESET)
 #define DBG_PIN_TOGGLE  GPIO_Toggle(DBG_PIN)
 
-#if defined(ENABLE_DEBUG)
-    #define DBG_PRINT dbg_printf
-    #define DBG_DUMP_LINE dbg_HexDumpLine
-#else
-    #define DBG_PRINT(...)
-    #define DBG_DUMP_LINE(...)
-#endif
-
 /**
  * Output enable pin
  * */

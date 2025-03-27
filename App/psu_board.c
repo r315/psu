@@ -7,6 +7,7 @@
 #include "spi.h"
 #include "console.h"
 #include "drvlcd.h"
+#include "logger.h"
 
 #if defined(ENABLE_I2C)
 static I2C_HandleTypeDef hi2c2;
@@ -766,7 +767,7 @@ uint16_t I2C_Write(i2cbus_t *i2c, uint8_t addr, const uint8_t *data, uint16_t si
     taskENTER_CRITICAL();
     {
         if(HAL_I2C_Master_Transmit(&hi2c2, addr << 1, (uint8_t*)data, size, 100) != HAL_OK){
-            DBG_PRINT("Fail write to I2C\n");
+            DBG_ERR("Fail write to I2C\n");
             return 0;
         }
     taskEXIT_CRITICAL();
@@ -779,7 +780,7 @@ uint16_t I2C_Read(i2cbus_t *i2c, uint8_t addr, uint8_t *data, uint16_t size){
     taskENTER_CRITICAL();
     {
         if(HAL_I2C_Master_Receive(&hi2c2, addr << 1, data, size, 100) != HAL_OK){
-            DBG_PRINT("Fail Read I2C\n");
+            DBG_ERR("Fail Read I2C\n");
             return 0;
         }
     }

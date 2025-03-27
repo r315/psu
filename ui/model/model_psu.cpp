@@ -1,6 +1,7 @@
 #include "psu.h"
 #include "bui.h"
 #include "model_psu.h"
+#include "logger.h"
 
 const uint32_t batVoltages[4] = {
     4100,
@@ -13,11 +14,11 @@ ModelPsu::ModelPsu(){
     access_data = xSemaphoreCreateBinary();
 
     if(access_data == NULL){
-        DBG_PRINT("Model: Fail to create semaphore\n");
+        DBG_ERR("Model: Fail to create semaphore\n");
     }
 
     if(xSemaphoreGive(access_data) != pdPASS){
-        DBG_PRINT("Model: WTF? Fail to give created semaphore\n");
+        DBG_ERR("Model: WTF? Fail to give created semaphore\n");
     }
 }
 

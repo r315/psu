@@ -34,21 +34,21 @@ static uint8_t fir_idx = 0;
 #endif
 
 /**
- * @brief Callback for single channel convertion 
+ * @brief Callback for single channel convertion
  * in sequence.
- * 
- * \param data : raw adc value 
+ *
+ * \param data : raw adc value
  * */
 static void eoc_seq_cb(uint16_t data){
-    //DBG_PIN_TOGGLE;   
+    //DBG_PIN_TOGGLE;
     if(!seq){
         return;
-    }    
-    
+    }
+
     if(seq_idx == seq_len){
         // End here while a new ADCMGR_Start() isn't issued
         if(mgr_cb){
-            mgr_cb(adcmgr_ch_data);            
+            mgr_cb(adcmgr_ch_data);
         }
     }else{
 #if defined(MGR_DEBUG_ENABLE)
@@ -56,7 +56,7 @@ static void eoc_seq_cb(uint16_t data){
 #endif
 #ifdef MRG_ENABLE_FIR
         fir_acc[seq_idx][fir_idx] = data;
-        
+
         uint16_t acc = 0;
 
         for(uint8_t n = fir_idx; n < fir_idx + MRG_FIR_ORDER; n++){
@@ -64,7 +64,7 @@ static void eoc_seq_cb(uint16_t data){
         }
 
         adcmgr_ch_data[seq_idx] = acc/MRG_FIR_ORDER;
-        
+
         if(seq_idx == (seq_len - 1)){
             fir_idx++;
             fir_idx = fir_idx % MRG_FIR_ORDER;
@@ -72,11 +72,11 @@ static void eoc_seq_cb(uint16_t data){
 #elif defined(MRG_ENABLE_IIR)
         adcmgr_ch_data[seq_idx] += ((data - adcmgr_ch_data[seq_idx])/MRG_IIR_COUNTS);
 #else
-        adcmgr_ch_data[seq_idx] = data;    
+        adcmgr_ch_data[seq_idx] = data;
 #endif
 #if defined(MGR_DEBUG_ENABLE)
         if(seq_idx == 0){
-            DBG_PRINT("%d,%d\r", raw_data[seq_idx], adcmgr_ch_data[seq_idx]);
+            DBG_INF("%d,%d\r", raw_data[seq_idx], adcmgr_ch_data[seq_idx]);
         }
 #endif
         ADCMGR_SetChannel(seq[++seq_idx]);
@@ -86,8 +86,8 @@ static void eoc_seq_cb(uint16_t data){
 
 /**
  * @brief Callback for single channel convertion
- * 
- * \param data : raw adc value 
+ *
+ * \param data : raw adc value
  * */
 static void eoc_single_cb(uint16_t data){
     adcmgr_ch_data[seq_idx++] = data;
@@ -96,8 +96,8 @@ static void eoc_single_cb(uint16_t data){
 
 
 /**
- * @brief Initializes ADC manager 
- * 
+ * @brief Initializes ADC manager
+ *
  * */
 void ADCMGR_Init(void){
     ADC_Init(ADC_SAMPLE_TIME/2);
@@ -105,7 +105,7 @@ void ADCMGR_Init(void){
 
 /**
  * @brief Convert single channel
- * 
+ *
  * \param channel : Channel to be converted
  * \return : raw adc value
  * */
@@ -130,7 +130,7 @@ uint16_t ADCMGR_Convert(uint8_t channel){
  * callback. If sequence is already set and converting the caller should wait for
  * the eoc before setting the new sequence
  * ADCMRG_SetSequence.
- * 
+ *
  * \param s   : Pointer to channel sequence
  * \param len : Size of sequence
  * \param cb  : Callback for when all channels are converted
@@ -146,7 +146,7 @@ void ADCMGR_SetSequence(uint8_t *s, uint8_t len, void(*cb)(uint16_t *data)){
     }
 
     seq_idx = 0;
-    
+
     mgr_cb = cb;
 
     ADC_SetCallBack(eoc_seq_cb);

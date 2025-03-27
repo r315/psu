@@ -12,9 +12,9 @@ ENABLE_CLI 			:=yes
 ENABLE_UI 			:=yes
 ENABLE_EEPROM 		:=yes
 ENABLE_IOEXPANDER   :=yes
-ENABLE_VCOM 		:=no
-ENABLE_UART 		:=yes
-ENABLE_SOFT_POWER	:=no #TODO: Fix voltage fluctuation on PA2 with different input voltages
+ENABLE_VCOM 		:=yes
+ENABLE_UART 		:=no
+ENABLE_SOFT_POWER	:=yes
 ENABLE_ADCMGR 		:=yes
 RELEASE 			:=no
 RELEASE_DFU 		:=no
@@ -145,7 +145,7 @@ endif
 
 ifeq ($(ENABLE_DEBUG),yes)
 C_SOURCES +=  \
-$(LIB_PATH)/misc/debug.c
+$(LIB_PATH)/lib/src/debug.c
 endif
 
 ifeq ($(ENABLE_UI),yes)
@@ -232,7 +232,7 @@ C_DEFS +=ENABLE_ADCMGR
 endif
 
 ifeq ($(ENABLE_DEBUG),yes)
-C_DEFS +=ENABLE_DEBUG
+C_DEFS +=ENABLE_DEBUG=1 DEBUG=1 LOG_PRINTF_FUNC=dbg_printf
 endif
 
 ifeq ($(ENABLE_CLI),yes)
@@ -309,6 +309,12 @@ else
 OPT =-Og -g# -gdwarf-2
 endif
 
+ifndef V
+VERBOSE =@
+else
+VERBOSE =
+endif
+
 ASFLAGS =$(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall -fdata-sections -ffunction-sections -x assembler-with-cpp
 CFLAGS =$(MCU) $(OPT) $(C_INCS) $(SYMBOLS) -Wall -fdata-sections -ffunction-sections -std=c11
 CPPFLAGS =$(MCU) $(OPT) $(C_INCS) $(SYMBOLS) -Wall -fdata-sections -ffunction-sections -fno-exceptions -fno-unwind-tables -fno-rtti
@@ -380,19 +386,19 @@ VPATH +=$(dir $(C_SOURCES)) $(dir $(CPP_SOURCES)) $(dir $(ASM_SOURCES))
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 	@echo "[CC]" $<
-	@$(CC) -c $(CFLAGS) $< -o $@
+	$(VERBOSE)$(CC) -c $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/%.obj: %.cpp Makefile | $(BUILD_DIR)
 	@echo "[CC]" $<
-	@$(CPP) -c $(CPPFLAGS) $< -o $@
+	$(VERBOSE)$(CPP) -c $(CPPFLAGS) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	@echo "[AS]" $<
-	@$(AS) -c $(CFLAGS) $< -o $@
+	$(VERBOSE)$(AS) -c $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) #Makefile
 	@echo "--- Linking ---"
-	@$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	$(VERBOSE)$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
