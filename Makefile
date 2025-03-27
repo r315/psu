@@ -79,6 +79,7 @@ $(LIB_PATH)/inc \
 $(DRIVERS_PATH)/inc \
 $(DRIVER_COMPONENT)/tft \
 $(DRIVER_COMPONENT)/io_expander \
+$(DRIVER_COMPONENT)/eeprom \
 $(UI_DIR)/model \
 $(UI_DIR)/common \
 $(UI_DIR)/screen_psu \
@@ -163,7 +164,7 @@ endif
 
 ifeq ($(ENABLE_EEPROM),yes)
 C_SOURCES +=  \
-$(APP_SRC_DIR)/components/eeprom.c
+$(DRIVER_COMPONENT)/eeprom.c
 endif
 
 ifeq ($(ENABLE_VCOM),yes)

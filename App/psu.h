@@ -68,6 +68,8 @@ extern "C" {
 #define CLR_EEPROM_FLAG     CLR_FLAG(4)
 #define GET_EEPROM_FLAG     GET_FLAG(4)
 
+#define EEPROM_APP_OFFSET   0x00
+
 
 #ifndef FALSE
 #define FALSE   (0)
