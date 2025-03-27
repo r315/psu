@@ -24,7 +24,7 @@ char CmdStatus::execute(int argc, char **argv){
     console->print("----------------------------------\n");
     console->printf("ADC Resolution:\t%.2fmv\n", ADC_GetResolution());
     console->print("----------------------------------\n");
-    console->printf("Preset idx:\t%d\n", app_getPresetIdx());
+    console->printf("PSU Preset idx:\t%d\n", app_getPsuPresetIdx());
     console->print("----------------------------------\n\n");
     return CMD_OK;
 }

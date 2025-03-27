@@ -302,15 +302,19 @@ uint8_t app_isOutputEnabled(void){
     return  GET_OE_FLAG;
 }
 
-preset_t *app_getPresetList(void){
-    return psu.preset_list;
+preset_t *app_getPsuPreset(void){
+    return &psu.preset_list[psu.preset_idx];
 }
 
-uint8_t app_getPresetIdx(void){
+preset_t *app_getPsuPresetFromIdx(uint8_t idx){
+    return &psu.preset_list[idx];
+}
+
+uint8_t app_getPsuPresetIdx(void){
     return psu.preset_idx;
 }
 
-void app_setPresetIdx(uint8_t idx){
+void app_setPsuPresetIdx(uint8_t idx){
     psu.preset_idx = idx;
 }
 
@@ -318,13 +322,13 @@ preset_t *app_getLoadPreset(void){
     return &psu.load_preset;
 }
 
-void app_applyPreset(preset_t *pre){
+void app_applyPsuPreset(preset_t *pre){
     psu_setOutputVoltage(pre->v);
     psu_setOutputCurrent(pre->i);
 }
 
 void app_applyPresetByIdx(uint8_t idx){
-    app_applyPreset(&psu.preset_list[idx]);
+    app_applyPsuPreset(&psu.preset_list[idx]);
 }
 
 /**

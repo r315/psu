@@ -8,7 +8,7 @@ void PresenterPsu::init(void){
     // Allocate view
     if(_view == NULL){
         _view = new ViewPsu();
-    }    
+    }
     // Set state fo be initialized
     _state = PSU_INIT;
 }
@@ -34,8 +34,8 @@ void PresenterPsu::tick(void){
                 _view->showOutIcon(true);
                 _state = PSU_ENABLED;
             }
-            break;       
-        
+            break;
+
         case PSU_ENTER_IDLE:
             _view->updateVoltage(_model->getOutVoltagePreset());
             _view->updateCurrent(_model->getOutCurrentPreset());
@@ -72,7 +72,7 @@ void PresenterPsu::tick(void){
             _state = _model->getOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
             break;
 
-        
+
         default:
             break;
     }
@@ -102,7 +102,7 @@ buievt_e PresenterPsu::eventHandler(buikeyevt_t *evt){
 
         case PSU_IDLE:
             return stateIdle(evt);
-            
+
         case PSU_SET_V:
             return stateSetV(evt);
 
@@ -163,10 +163,10 @@ buievt_e PresenterPsu::stateEnabled(buikeyevt_t *evt){
         case BUTTON_OUT:
             _state = _model->toggleOutputEnable() ? PSU_ENABLED : PSU_ENTER_IDLE;
             break;
-        
+
         case BUTTON_PRE:
             return BUI_EVT_SEL_SCR(1);      // select screen preset
-        
+
         default:
             break;
     }
@@ -174,20 +174,20 @@ buievt_e PresenterPsu::stateEnabled(buikeyevt_t *evt){
 }
 
 buievt_e PresenterPsu::stateSetV(buikeyevt_t *evt){
-    switch(evt->key){        
+    switch(evt->key){
 
         case BUTTON_UP: _view->changeVoltage(1); break;
-            
+
         case BUTTON_DOWN: _view->changeVoltage(-1); break;
 
         case BUTTON_LEFT: _view->editVoltage(1); break;
-            
+
         case BUTTON_RIGHT: _view->editVoltage(-1); break;
 
         case BUTTON_SET:
             _state = PSU_END_SET_V;
             break;
-            
+
         case BUTTON_MODE:
             _state = PSU_ABORT_SET_V;
             break;
@@ -210,7 +210,7 @@ buievt_e PresenterPsu::stateSetI(buikeyevt_t *evt){
         case BUTTON_UP:
             _view->changeCurrent(1);
             break;
-            
+
         case BUTTON_DOWN:
             _view->changeCurrent(-1);
             break;
@@ -218,7 +218,7 @@ buievt_e PresenterPsu::stateSetI(buikeyevt_t *evt){
         case BUTTON_LEFT:
             _view->editCurrent(1);
             break;
-            
+
         case BUTTON_RIGHT:
             _view->editCurrent(-1);
             break;

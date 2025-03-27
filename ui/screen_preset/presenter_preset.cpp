@@ -15,35 +15,34 @@ void PresenterPreset::tick(void){
     switch(_state){
         case PRE_INIT:
             _view->select(_model->getPresetIdx());
-            _view->showPreset(_model->getPreset(_view->getSelected()));
+            _view->showPreset(_model->getPresetFromIdx(_view->getSelected()));
             _view->init();
             _state = PRE_IDLE;
             break;
 
         case PRE_IDLE:
-            break;       
-        
-        case PRE_SET:            
-            _model->applyPsuPresetFromIdx();
+            break;
+
+        case PRE_SET:
+            _model->setPresetFromIdx(_view->getSelected());
             _state = PRE_EXIT;
             break;
 
         case PRE_CHG:
-            _view->showPreset(_model->getPreset(_view->getSelected()));
-            _model->setPresetIdx(_view->getSelected());
+            _view->showPreset(_model->getPresetFromIdx(_view->getSelected()));
             _state = PRE_IDLE;
             break;
-        
+
         default:
             break;
     }
 }
 
 void PresenterPreset::update(void){
-    
+
 }
 
-buievt_e PresenterPreset::eventHandler(buikeyevt_t *evt){   
+buievt_e PresenterPreset::eventHandler(buikeyevt_t *evt){
 
     if(_state == PRE_EXIT){
         return BUI_EVT_SEL_SCR(0); //select screen psu
@@ -55,7 +54,7 @@ buievt_e PresenterPreset::eventHandler(buikeyevt_t *evt){
 
     switch(evt->key){
         case BUTTON_PRE:
-            return  BUI_EVT_SEL_SCR(0);            
+            return  BUI_EVT_SEL_SCR(0);
 
         case BUTTON_UP:
             moveSelect((MAX_PRESETS>>1));
@@ -71,7 +70,7 @@ buievt_e PresenterPreset::eventHandler(buikeyevt_t *evt){
             moveSelect(-1);
             _state = PRE_CHG;
             break;
-        
+
         case BUTTON_RIGHT:
             moveSelect(1);
             _state = PRE_CHG;

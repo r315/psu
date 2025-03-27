@@ -27,7 +27,7 @@ public:
     preset_t getPsuPreset(void);
     preset_t getChargerPreset(void);
     uint8_t getPresetIdx(void);
-    preset_t getPreset(uint8_t idx);
+    preset_t getPresetFromIdx(uint8_t idx);
     uint8_t getBatteryType(void){return _bt_ty;}
     uint32_t getChargeCurrent(void);
     uint32_t getLoadVoltagePreset(void);
@@ -36,6 +36,7 @@ public:
     void setOutCurrentPreset(uint32_t i);
     void setOutPreset(preset_t pre);
     void setPresetIdx(uint8_t idx);
+    void setPresetFromIdx(uint8_t idx);
     void setBatteryTypePreset(uint8_t t);
     void setChargerCurrentPreset(uint32_t i);
     void setLoadVoltagePreset(uint32_t mv);
@@ -69,7 +70,6 @@ private:
     uint32_t _load_current;
     uint32_t _usb_current;
     uint32_t _vb[4];
-    preset_t *_preset_list;
     preset_t *_psu_preset;
     preset_t *_load_preset;
     preset_t _chg_preset;

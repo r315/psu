@@ -191,12 +191,14 @@ uint8_t app_isAdcDone(void);
  *
  * \return pointer to preset array
  * */
-preset_t *app_getPresetList(void);
+preset_t *app_getPsuPreset(void);
+preset_t *app_getPsuPresetFromIdx(uint8_t idx);
+
 /**
  * @brief Get/Set last used preset index
  * */
-uint8_t app_getPresetIdx(void);
-void app_setPresetIdx(uint8_t idx);
+uint8_t app_getPsuPresetIdx(void);
+void app_setPsuPresetIdx(uint8_t idx);
 
 /**
  * @brief Get load preset
@@ -210,7 +212,7 @@ preset_t *app_getLoadPreset(void);
  *
  * \param preset : preset with values
  * */
-void app_applyPreset(preset_t *preset);
+void app_applyPsuPreset(preset_t *preset);
 
 /**
  * @brief Set psu output from preset values at given index
