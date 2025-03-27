@@ -22,16 +22,16 @@ ViewCharger::ViewCharger(){
     _wi_vc = (BUIText**)bui_malloc(sizeof(BUIText*) * CHG_MAX_CELL);
     configASSERT(_wi_vc != NULL );
 
-    for(uint8_t i = 0 ; i < CHG_MAX_CELL; i++){        
+    for(uint8_t i = 0 ; i < CHG_MAX_CELL; i++){
         _wi_vc[i] = new BUIText(0, i*16);
         addWidget(_wi_vc[i]);
     }
 
-    _wi_ma = new BUIdro(MA_POS);    
+    _wi_ma = new BUIdro(MA_POS);
     _wi_ma->init(10, 100, MIN_CURRENT, MAX_CURRENT, currentFormat);
-    _wi_ma->setFont(&courierFont);    
-    
-    _wi_chg_icon = new BUIicon(CHG_CHARGING_ICON_POS,icon_chr);    
+    _wi_ma->setFont(BUI_DEFAULT_FONT);
+
+    _wi_chg_icon = new BUIicon(CHG_CHARGING_ICON_POS,icon_chr);
     _wi_chg_icon->setPal((const uint16_t[]){LCD_BLACK, LCD_BLACK, LCD_BLUE});
 
     _wi_bt = new BUIlist(CF_POS);
@@ -53,9 +53,9 @@ ViewCharger::ViewCharger(){
     configASSERT(_txt_buf != NULL);
 }
 
-void ViewCharger::init(void){    
+void ViewCharger::init(void){
     // Invalidate view, this will trigger a call to view->draw()
-    setInvalid(true);    
+    setInvalid(true);
     // Invalidate widgets
     BUIWidget::invalidateList(getWidgets());
 }

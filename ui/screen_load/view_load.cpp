@@ -20,7 +20,7 @@ const uint8_t icon_load[] = {17,8,
 };
 
 ViewLoad::ViewLoad(){
-    
+
     _wi_ah = new BUIText(LOAD_AH_POS);
     _wi_pwr = new BUIText(LOAD_PWR_POS);
     _wi_time = new BUIText(LOAD_TIME_POS);
@@ -28,21 +28,21 @@ ViewLoad::ViewLoad(){
     _wi_ma = new BUIdro(LOAD_MA_POS);
 
     _wi_graph = new BUIGraph(LOAD_GRAPH_POS,
-            LOAD_GRAPH_WIDTH, LOAD_GRAPH_HIGHT, 
+            LOAD_GRAPH_WIDTH, LOAD_GRAPH_HIGHT,
             2,
             (const uint16_t[]){0x18E3, RGB565(0x58,0x7c,0x0c), LCD_GREEN, LCD_YELLOW});
 
-    _wi_load_icon = new BUIicon(LOAD_ICON_POS, icon_load);    
+    _wi_load_icon = new BUIicon(LOAD_ICON_POS, icon_load);
     _wi_load_icon->setPal((const uint16_t[]){LCD_BLACK, LCD_BLACK, RGB565(0xAC, 0x2A, 0x77)});
 
     _wi_ma->init(10, 100, MIN_ILOAD, MAX_ILOAD, currentFormat);
-    _wi_ma->setFont(&courierFont);
+    _wi_ma->setFont(BUI_DEFAULT_FONT);
     _wi_ma->setPal((const uint16_t[]){LCD_BLACK, LCD_YELLOW});
     _wi_voltage->init(100,100, MIN_VLOAD, MAX_VLOAD, voltageFormat);
     _wi_voltage->setPal((const uint16_t[]){LCD_BLACK, LCD_GREEN});
-    _wi_voltage->setFont(&courierFont);    
+    _wi_voltage->setFont(BUI_DEFAULT_FONT);
     _wi_pwr->setPal((const uint16_t[]){LCD_BLACK, RGB565(0x54, 0x9c, 0xd6)});
-    
+
     addWidget(_wi_graph);
     addWidget(_wi_ah);
     addWidget(_wi_pwr);
@@ -71,11 +71,11 @@ void ViewLoad::draw(void){
 }
 
 void ViewLoad::updateCapacity(int32_t mah){
-    xsprintf(_txt_buf, "%umAh", mah);    
+    xsprintf(_txt_buf, "%umAh", mah);
     _wi_ah->setText(_txt_buf);
 }
 
-void ViewLoad::updateCurrent(uint32_t ma){   
+void ViewLoad::updateCurrent(uint32_t ma){
     _wi_ma->setValue(ma);
 }
 

@@ -18,6 +18,8 @@ extern "C" {
 #include "FreeRTOS.h"
 
 #define BUI_DEFAULT_FONT            &courierFont
+#define BUI_SMALL_FONT              &defaultFont
+#define BUI_BIG_FONT                &GroteskBold16x32
 /* Port macros */
 #define bui_malloc                  pvPortMalloc
 #define bui_free                    vPortFree
@@ -58,7 +60,7 @@ public:
     void setInvalid(uint8_t inv){ if(inv) setFlag(BUI_FLAG_INVALID); else clrFlag(BUI_FLAG_INVALID);}
     void setFlag(uint8_t flag){this->_flags |= flag;}
     void clrFlag(uint8_t flag){this->_flags &= ~flag;}
-    
+
     virtual void draw(void){}
     static void invalidateList(list_node *head){
         while(head != NULL){
@@ -82,9 +84,9 @@ public:
     virtual void draw(void);
     void setText(const char *text);
     void setPal(const uint16_t *pal);
-    void setFont(font_t *font);
+    void setFont(const font_t *font);
 protected:
-    font_t *_font;
+    const font_t *_font;
     const uint16_t *_pal;
     char *_text;
     uint8_t _len;
@@ -101,7 +103,7 @@ public:
     ~BUIGraph();
     /**
      * @brief Configure graph
-     * 
+     *
      * \param x,y : X,Y graph position
      * \param xsize : number of points on X axis
      * \param ysize : number of points on Y axis
@@ -117,7 +119,7 @@ public:
      * @brief Adds point to graph, each point is added to the last x.
      * When x is equal to graph width the graph starts scrolling and each new
      * point added is ploted on to graph end.
-     * 
+     *
      * \param value : y value
      * \param flags : bits 7:4 not used, bits 3:0 trace
      * */
@@ -141,8 +143,8 @@ uint16_t listInsert(struct list_node *head, void *elem);
 
 class BUIView{
 public:
-    BUIView(){ 
-        _widget_list.elem = NULL;  
+    BUIView(){
+        _widget_list.elem = NULL;
         _widget_list.next = NULL;
     }
     virtual ~BUIView(){}
@@ -158,13 +160,13 @@ public:
     void setFlag(uint8_t flag){this->_flags |= flag;}
     void clrFlag(uint8_t flag){this->_flags &= ~flag;}
     void suspend(void){setFlag(BUI_FLAG_SUSPEND);}
-private:    
+private:
     struct list_node _widget_list;
     uint8_t _flags;
 protected:
 };
 
-class BUIModel; 
+class BUIModel;
 
 class BUIPresenter{
 public:
@@ -189,7 +191,7 @@ protected:
     BUIPresenter *_presenter;
 };
 
-class BUI{    
+class BUI{
 public:
     BUI(BUIModel &m);
     uint8_t addPresenter(BUIPresenter *pre);

@@ -6,16 +6,16 @@
 #define BLINK_TIME_MASK             8
 
 void voltageFormat(char *out, int32_t mv){
-    xsprintf(out,"%02u.%uV", mv/1000, (mv/100)%10);    
+    xsprintf(out,"%02u.%uV", mv/1000, (mv/100)%10);
 }
 
 void currentFormat(char *out, int32_t ma){
-    xsprintf(out,"%d.%02uA", ma/1000, (ma/10)%100);   
+    xsprintf(out,"%d.%02uA", ma/1000, (ma/10)%100);
 }
 
 BUIdro::BUIdro(uint16_t x = 0, uint16_t y = 0) : BUIText(x ,y){
-    setFont(&GroteskBold16x32);
-    setPal((const uint16_t []){0x18E3, 0xEF58});    
+    setFont(BUI_BIG_FONT);
+    setPal((const uint16_t []){0x18E3, 0xEF58});
 }
 
 void BUIdro::init(uint32_t base_pow, uint32_t init_pow, int32_t min, int32_t max, void (*format)(char *, int32_t)){
@@ -30,7 +30,7 @@ void BUIdro::init(uint32_t base_pow, uint32_t init_pow, int32_t min, int32_t max
 
 void BUIdro::setValue(int32_t newvalue){
     _value = newvalue;
-    update();    
+    update();
 }
 
 void BUIdro::update(void){
@@ -45,13 +45,13 @@ void BUIdro::update(void){
 
 /**
  * @brief Enter/Exit edit value mode
- * 
+ *
  * \param dig : 0 exit edit mode
  *              1 select next left digit
  *             -1 select next right digit
  * */
 void BUIdro::editValue(int8_t dig){
-    if(dig == 0){        
+    if(dig == 0){
         clrFlag(BUI_FLAG_EDIT);
         setFlag(BUI_FLAG_INVALID);
         return;
@@ -63,7 +63,7 @@ void BUIdro::editValue(int8_t dig){
     }
 
     if(dig < 0){
-        if(_pow > _min_pow) 
+        if(_pow > _min_pow)
             _pow /= 10;
     }else{
         if(_pow < _max_pow)
@@ -75,7 +75,7 @@ void BUIdro::editValue(int8_t dig){
  * @brief Change current selected value digit
  * \param dt : change amount
  * */
-void BUIdro::changeValue(int8_t dt){        
+void BUIdro::changeValue(int8_t dt){
     int32_t tmp = _value + (dt < 0 ?  -_pow : _pow);
 
     if(tmp <= _max_value && tmp >= _min_value){
@@ -87,7 +87,7 @@ void BUIdro::changeValue(int8_t dt){
 // TODO: Optimize for not always write to display in edit mode
 void BUIdro::draw(void){
     if(isInvalid() || isFlagSet(BUI_FLAG_EDIT)){
-        if(isVisible()){            
+        if(isVisible()){
             if(isFlagSet(BUI_FLAG_EDIT) && (++_count) & BLINK_TIME_MASK){
                 uint32_t cur_dig = _min_pow;  // Right most digit
                 uint8_t blink_digit = 3;      // is located on index 3 of the string
@@ -110,11 +110,11 @@ void BUIdro::draw(void){
                 }
             }else{
                 DRAW_Text(_x, _y, _text, _font, _pal);
-            }            
+            }
         }else{
             uint16_t x = _x;
             for(uint16_t i = 0; i < _len; i++){
-                x = DRAW_Char(x, _y, ' ', _font, _pal);            
+                x = DRAW_Char(x, _y, ' ', _font, _pal);
             }
         }
         setInvalid(false);

@@ -12,7 +12,7 @@ BUIText::BUIText(uint16_t x = 0, uint16_t y = 0) : BUIWidget(x ,y){
 BUIText::~BUIText(void){
     if(_text != NULL){
         bui_free(_text);
-    }    
+    }
 }
 
 void BUIText::setText(const char *text){
@@ -25,8 +25,8 @@ void BUIText::setText(const char *text){
             bui_free(_text);
         }
         _text = (char*)bui_malloc(_len);
-    }    
-    
+    }
+
     if(_text != NULL){
         strcpy(_text, (char *)text);
         setInvalid(true);
@@ -36,11 +36,11 @@ void BUIText::setText(const char *text){
 void BUIText::draw(void){
     if(isInvalid()){
         if(isVisible()){
-            DRAW_Text(_x,_y, _text, _font, _pal);        
+            DRAW_Text(_x,_y, _text, _font, _pal);
         }else{
             uint16_t x = _x;
             for(uint16_t i = 0; i < _len; i++){
-                x = DRAW_Char(x, _y, ' ', _font, _pal);            
+                x = DRAW_Char(x, _y, ' ', _font, _pal);
             }
         }
         setInvalid(false);
@@ -51,6 +51,6 @@ void BUIText::setPal(const uint16_t *pal){
     _pal = pal;
 }
 
-void BUIText::setFont(font_t *font){
+void BUIText::setFont(const font_t *font){
     _font = font;
 }

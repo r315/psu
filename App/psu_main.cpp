@@ -416,7 +416,7 @@ void tskBui(void *ptr){
     DRAW_FillRect(0, 0, LCD_W, LCD_H, LCD_BLACK);
     char *text = (char*)bui_malloc(sizeof(PSU_VERSION));
     xsprintf(text, "%s", PSU_VERSION);
-    DRAW_Text(100, 70, text, &defaultFont, (const uint16_t[]){LCD_BLACK, LCD_GREEN});
+    DRAW_Text(100, 70, text, BUI_SMALL_FONT, (const uint16_t[]){LCD_BLACK, LCD_GREEN});
     bui_free(text);
     // Wait for lcd clear to end
     vTaskDelay(100);
