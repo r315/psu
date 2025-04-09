@@ -27,10 +27,12 @@ APP_SRC_DIR 	:=$(CURDIR)/App
 LIB_PATH        =$(LIBEMB_PATH)/lib
 CMSIS_PATH 		=$(LIBEMB_PATH)/CMSIS
 DRIVERS_PATH 	=$(LIBEMB_PATH)/drv
+
 DRIVERS_CORE    =$(CMSIS_PATH)/Core
 DRIVERS_CMSIS   =$(CMSIS_PATH)/Device/ST/STM32F10x
+DRIVERS_MFD     =$(DRIVERS_PATH)/SOC
 DRIVERS_SOC     =$(DRIVERS_PATH)
-DRIVER_COMPONENT =$(LIBEMB_PATH)/component
+DRIVER_COMP 	=$(LIBEMB_PATH)/component
 
 ifeq ($(shell uname -s), Linux)
 REPO_F1 :=STM32Cube_FW_F1_V1.8.0
@@ -60,7 +62,6 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 $(CURDIR)/Inc \
-$(CURDIR)/Src \
 $(APP_SRC_DIR) \
 $(APP_SRC_DIR)/components \
 $(APP_SRC_DIR)/console \
@@ -77,9 +78,9 @@ $(FREERTOS_DIR)/portable/GCC/ARM_CM3 \
 $(BUI_PATH) \
 $(LIB_PATH)/inc \
 $(DRIVERS_PATH)/inc \
-$(DRIVER_COMPONENT)/tft \
-$(DRIVER_COMPONENT)/io_expander \
-$(DRIVER_COMPONENT)/eeprom \
+$(DRIVER_COMP)/tft \
+$(DRIVER_COMP)/io_expander \
+$(DRIVER_COMP)/eeprom \
 $(UI_DIR)/model \
 $(UI_DIR)/common \
 $(UI_DIR)/screen_psu \
@@ -141,7 +142,7 @@ endif
 
 ifeq ($(filter $(ENABLE_IOEXPANDER) $(ENABLE_UI),yes),yes)
 C_SOURCES +=  \
-$(DRIVER_COMPONENT)/io_expander/pcf8574.c
+$(DRIVER_COMP)/io_expander/pcf8574.c
 endif
 
 ifeq ($(ENABLE_DEBUG),yes)
@@ -151,7 +152,7 @@ endif
 
 ifeq ($(ENABLE_UI),yes)
 C_SOURCES +=  \
-$(DRIVER_COMPONENT)/tft/st7735.c \
+$(DRIVER_COMP)/tft/st7735.c \
 $(LIB_PATH)/src/liblcd.c \
 $(LIB_PATH)/src/button.c \
 $(LIB_PATH)/src/font.c \
@@ -164,7 +165,7 @@ endif
 
 ifeq ($(ENABLE_EEPROM),yes)
 C_SOURCES +=  \
-$(DRIVER_COMPONENT)/eeprom/eeprom.c
+$(DRIVER_COMP)/eeprom/eeprom.c
 endif
 
 ifeq ($(ENABLE_VCOM),yes)
@@ -304,11 +305,8 @@ CPU =-mcpu=cortex-m3 -mthumb
 
 # mcu
 MCU = $(CPU)
-
 # compile gcc flags
-ifeq ($(RELEASE),yes)
-OPT =-Os
-else ifeq ($(RELEASE_DFU),yes)
+ifneq ($(filter yes, $(RELEASE) $(RELEASE_DFU)),)
 OPT =-Os
 else
 OPT =-Og -g# -gdwarf-2

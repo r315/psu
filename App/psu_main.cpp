@@ -4,8 +4,12 @@
 #include "task.h"
 
 #include "psu.h"
+#include "eeprom.h"
 #include "logger.h"
 #include "debug.h"
+#include "tone.h"
+#include "rtttl.h"
+
 
 #if defined(ENABLE_CLI)
 #include "misc.h"
