@@ -4,10 +4,6 @@
 #include "queue.h"
 #include "task.h"
 #include "usbd_cdc_if.h"
-#include "spi.h"
-#include "console.h"
-#include "drvlcd.h"
-#include "logger.h"
 
 #if defined(ENABLE_I2C)
 static I2C_HandleTypeDef hi2c2;
@@ -74,6 +70,17 @@ void BOARD_Init(void){
 
     LCD_Init(&lcd0);
     LCD_SetOrientation(LCD_REVERSE_LANDSCAPE);
+#endif
+
+#if defined(ENABLE_BUZZER)
+    tone_pwm_init_t init = {
+        .tim = TIM4,
+        .ch = 1 - 1,
+        .pin = PB_6,
+        .pin_idle = 0
+    };
+
+    TONE_PwmInit(&init);
 #endif
 }
 

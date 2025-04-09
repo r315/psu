@@ -471,9 +471,8 @@ uint8_t count = 0;
             LED_OFF;
         }
 
-        #ifndef ENABLE_DEBUG
         WDT_Reset();
-        #endif
+
         //DBG_PIN_HIGH;
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS(UPDATE_INTERVAL));
     }
@@ -544,10 +543,12 @@ extern "C" void app_setup(void){
 
     ADCMGR_SetSequence(NULL, 0 , psu_adc_cb);
 
-    // Configure watchdog
-    #ifndef ENABLE_DEBUG
     WDT_Init(WATCHDOG_TIME);
-    #endif
+
+#if defined(ENABLE_BUZZER)
+    TONE_Volume(30);
+	RTTTL_Play("rtttl_14:d=16,o=6,b=180:c,e,g");
+#endif
 
     startTask(tskPsu, "PSU", NULL, configMINIMAL_STACK_SIZE, PRIORITY_LOW + 1);
 #if defined(ENABLE_CLI)

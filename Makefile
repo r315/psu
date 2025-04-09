@@ -172,6 +172,13 @@ ifeq ($(ENABLE_VCOM),yes)
 C_SOURCES += $(USB_CDC_SOURCES)
 endif
 
+ifeq ($(ENABLE_BUZZER),yes)
+C_SOURCES += \
+$(DRIVERS_SOC)/tone/tone_stm32f1xx.c \
+$(LIB_PATH)/src/rtttl.c
+endif
+
+
 # CPP sources
 CPP_SOURCES = \
 $(wildcard $(APP_SRC_DIR)/*.cpp) \
@@ -280,6 +287,11 @@ endif
 ifeq ($(ENABLE_SOFT_POWER),yes)
 C_DEFS +=ENABLE_SOFT_POWER
 endif
+
+ifeq ($(ENABLE_BUZZER),yes)
+C_DEFS +=ENABLE_BUZZER
+endif
+
 
 ifeq ($(RELEASE),yes)
 GIT_TAG =$(shell git describe --abbrev=0 --tags 2>/dev/null || true)
